@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  databaseBlobenTest:
+    image: 'postgres:13.6-bullseye'
+    container_name: databaseBlobenTest
+    env_file:
+      - .env.test
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:6.2.6-bullseye
+    container_name: redis
+    ports:
+      - '6379:6379'

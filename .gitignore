@@ -1,0 +1,12 @@
+/tslint.json
+/node_modules/
+.env
+/env/
+/build/
+/.tsconfig.json
+.env.docker
+/logs/
+/backup/
+.idea/
+/src/bloben-interface/dist/
+/.husky/

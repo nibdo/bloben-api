@@ -1,0 +1,55 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [ development, staging, production ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.14.0
+          registry-url: https://registry.npmjs.org/
+      - uses: actions/checkout@v2
+      - name: Start containers
+        env:
+          POSTGRES_DB: bloben_test
+          POSTGRES_USER: bloben_test
+          POSTGRES_PASSWORD: bloben_test
+        run: docker-compose -f docker-compose.test-pipeline.yml up -d
+      - name: Install dependencies
+        run: npm i
+      - name: Lint code
+        run: npm run lint
+      - name: Build app
+        run: npm run build
+      - name: Run tests
+        env:
+          NODE_ENV: development
+          HOST: localhost
+          PORT: 8080
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USERNAME: bloben_test
+          DB_PASSWORD: bloben_test
+          DB_DATABASE: bloben_test
+          DB_CONNECTION: postgres
+          DB_SYNCHRONIZE: false
+          DB_ENTITIES: build/data/entity/*.js
+          DB_ENTITIES_DIR: src/data/entity
+          DB_MIGRATIONS: src/data/migrations/*.ts
+          SESSION_SECRET: asdasd
+          OTP_SECRET: vmiorigvds
+          POSTGRES_DB: bloben_test
+          POSTGRES_USER: bloben_test
+          POSTGRES_PASSWORD: bloben_test
+          APP_DOMAIN: test1
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          EMAIL_PASSWORD: fail
+          EMAIL_ADDRESS: test@bloben.com
+          INITIAL_ADMIN_PASSWORD: adminPass
+        run: npm run test-pipeline
+

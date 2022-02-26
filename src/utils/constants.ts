@@ -1,0 +1,1 @@
+export const EVENT_MAX_REPEAT_UNTIL = '2060-12-30T23:05:19+01:00';

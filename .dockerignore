@@ -1,0 +1,6 @@
+.env
+/env/
+.env.docker
+.env.test.local
+.env.test
+/node_modules/
