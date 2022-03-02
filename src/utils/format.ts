@@ -1,4 +1,5 @@
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
+import { EVENT_TYPE } from '../bloben-interface/enums';
 import { EventResult } from '../bloben-interface/event/event';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 
@@ -24,6 +25,7 @@ export const formatEventEntityToResult = (
   rRule: event.rRule,
   etag: event.etag,
   url: event.href,
+  type: EVENT_TYPE.CALDAV,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
   deletedAt: event.deletedAt ? event.deletedAt.toISOString() : null,
@@ -50,6 +52,7 @@ export const formatEventRawToResult = (
   // externalID: event.externalID,
   isRepeated: event.isRepeated,
   rRule: event.rRule,
+  type: EVENT_TYPE.CALDAV,
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
   deletedAt: event.deletedAt || null,

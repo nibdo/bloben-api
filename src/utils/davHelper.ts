@@ -6,7 +6,6 @@ import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
 import { DateTime } from 'luxon';
-import { EventJSON } from 'ical-js-parser-commonjs';
 import { Range } from '../bloben-interface/interface';
 import { cloneDeep, find, forEach } from 'lodash';
 import {
@@ -20,7 +19,7 @@ import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 import CalDavEventRepository from '../data/repository/CalDavEventRepository';
-import ICalParser from 'ical-js-parser-commonjs';
+import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 import logger from './logger';
@@ -324,7 +323,6 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 // let eventsResult: CalDavEventObj[] = [];
 // const toInsertResultEvents: CalDavEventObj[] = [];
 //
-// console.log('serverEvents', serverEvents);
 // forEach(serverEvents, (calDavServerItem: DAVCalendarObject) => {
 //   // eslint-disable-next-line no-unused-vars
 //   let foundLocalItem: any = null;
@@ -400,7 +398,6 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 //   calDavServerResult
 // );
 //
-// console.log('serverTodos', serverTodos);
 // // filter events to insert, update or delete
 // const { eventsResult, toInsertResultEvents } = await processServerEvents(
 //   serverEvents,
@@ -693,8 +690,6 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
         queryRunner,
         calDavAccount.userID
       );
-      // const events = await syncEvents(client, calendar);
-      // console.log('ee', events);
     }
 
     await queryRunner.commitTransaction();

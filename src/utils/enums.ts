@@ -116,6 +116,7 @@ export enum CALDAV_OBJ_TYPE {
 
 export enum BULL_QUEUE {
   CALDAV_SYNC = 'CALDAV_SYNC',
+  WEBCAL_SYNC = 'WEBCAL_SYNC',
 }
 
 export enum SOCKET_ROOM_NAMESPACE {
