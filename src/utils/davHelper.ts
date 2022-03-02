@@ -323,7 +323,6 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 // let eventsResult: CalDavEventObj[] = [];
 // const toInsertResultEvents: CalDavEventObj[] = [];
 //
-// console.log('serverEvents', serverEvents);
 // forEach(serverEvents, (calDavServerItem: DAVCalendarObject) => {
 //   // eslint-disable-next-line no-unused-vars
 //   let foundLocalItem: any = null;
@@ -399,7 +398,6 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 //   calDavServerResult
 // );
 //
-// console.log('serverTodos', serverTodos);
 // // filter events to insert, update or delete
 // const { eventsResult, toInsertResultEvents } = await processServerEvents(
 //   serverEvents,
@@ -692,8 +690,6 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
         queryRunner,
         calDavAccount.userID
       );
-      // const events = await syncEvents(client, calendar);
-      // console.log('ee', events);
     }
 
     await queryRunner.commitTransaction();

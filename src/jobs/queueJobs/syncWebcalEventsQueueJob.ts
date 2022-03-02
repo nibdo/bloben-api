@@ -167,9 +167,6 @@ export const syncWebcalEventsQueueJob = async (job: Job) => {
       }
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e);
-    // eslint-disable-next-line no-console
     logger.error(
       `[CRON]: Error checking webcal calendars: ${JSON.stringify(e)}`
     );
