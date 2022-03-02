@@ -44,6 +44,8 @@ export default class WebcalCalendarEntity {
   @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
+  @Column({ type: 'uuid', name: 'user_id' })
+  userID: string;
   @ManyToOne(() => UserEntity, (user) => user.externalCalendars, {
     onDelete: 'CASCADE',
   })

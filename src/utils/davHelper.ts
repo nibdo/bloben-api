@@ -6,7 +6,6 @@ import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
 import { DateTime } from 'luxon';
-import { EventJSON } from 'ical-js-parser-commonjs';
 import { Range } from '../bloben-interface/interface';
 import { cloneDeep, find, forEach } from 'lodash';
 import {
@@ -20,7 +19,7 @@ import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 import CalDavEventRepository from '../data/repository/CalDavEventRepository';
-import ICalParser from 'ical-js-parser-commonjs';
+import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 import logger from './logger';

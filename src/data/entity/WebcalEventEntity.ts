@@ -26,10 +26,10 @@ export default class WebcalEventEntity {
   @Column({ type: 'timestamptz', name: 'end_at' })
   endAt: Date;
 
-  @Column({ name: 'timezone_start' })
+  @Column({ name: 'timezone_start', nullable: true })
   timezoneStart: string;
 
-  @Column({ name: 'timezone_end' })
+  @Column({ name: 'timezone_end', nullable: true })
   timezoneEnd: string;
 
   @Column({ name: 'all_day' })
@@ -90,9 +90,11 @@ export default class WebcalEventEntity {
     defaultTimezone: string,
     webcalCalendar?: WebcalCalendarEntity
   ) => {
-    if (data !== null && webcalCalendar !== null) {
+    if (data !== null && webcalCalendar !== null && data?.dtstart) {
       const startDateTime: DateTime = DateTime.fromISO(data.dtstart.value);
-      const endDateTime: DateTime = DateTime.fromISO(data.dtend.value);
+      const endDateTime: DateTime = DateTime.fromISO(
+        data.dtend?.value ? data.dtend.value : data.dtstart.value
+      );
       this.summary = data.summary;
       this.startAt = startDateTime.toUTC().toJSDate();
       this.timezoneStart = data.dtstart.timezone

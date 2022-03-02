@@ -1,4 +1,4 @@
-import { ALARM_TYPE } from '../enums';
+import { ALARM_TYPE, EVENT_TYPE } from '../enums';
 
 export interface AlarmRequest {
   id: string;
@@ -131,8 +131,9 @@ export interface EventResult {
   allDay?: boolean;
   rRule: string | null;
   isRepeated: boolean;
-  etag: string;
-  url: string;
+  etag?: string;
+  url?: string;
+  type: EVENT_TYPE;
   color: string;
   calendarID: string;
   createdAt: string;

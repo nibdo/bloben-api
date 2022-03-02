@@ -9,7 +9,7 @@ export const initCronJobs = () => {
   const clearLogsJob = new CronJob('0 1 * * *', clearLogs);
   clearLogsJob.start();
 
-  // const webcalJob = new CronJob('*/60 * * * *', getWebcalEventsJob);
+  // const webcalJob = new CronJob('*/60 * * * *', syncWebcalEventsQueueJob());
   // webcalJob.start();
 
   const syncCalDavEventsJob = new CronJob('*/60 * * * *', syncCalDavCronJob); // every hour

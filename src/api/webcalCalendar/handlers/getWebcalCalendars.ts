@@ -22,8 +22,9 @@ export const getWebcalCalendars = async (
             wc.updated_at as "updatedAt"
          FROM webcal_calendars wc
          JOIN users u ON u.id = wc.user_id
-         WHERE u.id = $1
-               AND wc.deleted_at IS NULL
+         WHERE 
+            u.id = $1
+            AND wc.deleted_at IS NULL
          `,
       [userID]
     );

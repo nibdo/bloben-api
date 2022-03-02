@@ -3,6 +3,7 @@ import { userSeed } from "./1-user-seed";
 import { calDavCalendars } from "./3-calDavCalendars";
 import { calDavEvents } from "./4-calDavEvents";
 import { adminUserSeed } from "./0-adminUser-seed";
+import {webcal} from "./6-webcal";
 
 export const initSeeds = async () => {
   try {
@@ -11,6 +12,7 @@ export const initSeeds = async () => {
     await new deletedUser().up();
     const { calDavAccount, calDavCalendar } = await new calDavCalendars().up();
     const { event } = await new calDavEvents().up();
+    await new webcal().up()
 
     return {
       user,
