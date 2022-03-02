@@ -23,8 +23,8 @@
     "debug": "nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'\n",
     "test-pipeline": "NODE_ENV=test REDIS_HOST=localhost REDIS_PORT=6379 DB_PORT=5432 DB_HOST=localhost DB_CONNECTION=postgres DB_SYNCHRONIZE=true DB_ENTITIES=src/data/entity/*.ts DB_ENTITIES_DIR=../../src/data/entity/*.ts DB_USERNAME=bloben_test DB_PASSWORD=bloben_test DB_DATABASE=bloben_test ts-mocha --config ./mocharc.js",
     "test": "./node_modules/.bin/env-cmd -f ./.env.test.local ts-mocha --config ./mocharc.js",
-    "docker:test:up": "docker-compose -f docker-compose.test.yml up -d",
-    "docker:test:down": "docker-compose -f docker-compose.test.yml down",
+    "docker:test:up": "docker-compose -f docker-compose.test-local.yml up -d",
+    "docker:test:down": "docker-compose -f docker-compose.test-local.yml down",
     "lint": "eslint . --ext ts"
   },
   "devDependencies": {
