@@ -41,6 +41,11 @@ export enum SOCKET_CHANNEL {
   SYNC = 'sync',
 }
 
+export enum SOCKET_MSG_TYPE {
+  CALDAV_EVENTS = 'CALDAV_EVENTS',
+  CALDAV_CALENDARS = 'CALDAV_CALENDARS',
+}
+
 export enum TIMEZONE {
   FLOATING = 'floating',
 }

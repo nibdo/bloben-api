@@ -7,6 +7,11 @@ import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
 import { DateTime } from 'luxon';
 import { Range } from '../bloben-interface/interface';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from './enums';
 import { cloneDeep, find, forEach } from 'lodash';
 import {
   createCalDavCalendar,
@@ -15,6 +20,7 @@ import {
 import { createDavClient } from '../service/davService';
 import { formatEventEntityToResult } from './format';
 import { formatToRRule } from './common';
+import { io } from '../app';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
@@ -603,6 +609,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
   let connection: Connection | null;
   let queryRunner: QueryRunner | null;
 
+  let calendarsChanged = false;
   try {
     connection = null;
     queryRunner = null;
@@ -632,6 +639,8 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
               queryRunner
             )
           );
+
+          calendarsChanged = true;
         }
 
         if (serverCalendar.ctag !== localCalendar.ctag) {
@@ -650,6 +659,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
         );
 
         calendarsWithChangedEvents.push(serverCalendar);
+        calendarsChanged = true;
       }
 
       // check deleted local items
@@ -662,6 +672,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
 
         if (!foundItem) {
           calendarsToDelete.push(calDavCalendar.id);
+          calendarsChanged = true;
         }
       });
 
@@ -694,6 +705,13 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
 
     await queryRunner.commitTransaction();
     await queryRunner.release();
+
+    if (calendarsChanged) {
+      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${calDavAccount.userID}`).emit(
+        SOCKET_CHANNEL.SYNC,
+        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+      );
+    }
 
     if (calendarsWithChangedEvents.length > 0) {
       return true;

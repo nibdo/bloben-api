@@ -1,7 +1,13 @@
 import { Request, Response } from 'express';
 
 import { CommonResponse } from '../../../bloben-interface/interface';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { createCommonResponse } from '../../../utils/common';
+import { io } from '../../../app';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository, {
   CalDavAccount,
@@ -22,6 +28,15 @@ export const deleteCalDavAccount = async (
   }
 
   await CalDavAccountRepository.getRepository().delete(calDavAccount.id);
+
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+  );
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+  );
 
   return createCommonResponse('CalDav account deleted', {
     id: calDavAccount.id,
