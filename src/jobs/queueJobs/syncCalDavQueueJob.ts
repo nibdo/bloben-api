@@ -1,5 +1,9 @@
 import { Job } from 'bullmq';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../utils/enums';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../utils/enums';
 import { groupBy } from 'lodash';
 import { io } from '../../app';
 import { syncCalDavEvents } from '../../utils/davHelper';
@@ -29,7 +33,7 @@ export const syncCalDavQueueJob = async (job: Job): Promise<void> => {
     if (wasChanged) {
       io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
         SOCKET_CHANNEL.SYNC,
-        JSON.stringify({ type: 'SYNC' })
+        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
       );
     }
   }

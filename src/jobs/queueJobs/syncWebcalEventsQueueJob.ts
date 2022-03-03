@@ -1,7 +1,11 @@
 import { AxiosResponse } from 'axios';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { Job } from 'bullmq';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../utils/enums';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../utils/enums';
 import {
   deleteWebcalEventsExceptionsSql,
   deleteWebcalEventsSql,
@@ -127,7 +131,10 @@ export const syncWebcalEventsQueueJob = async (job: Job) => {
 
           io.to(
             `${SOCKET_ROOM_NAMESPACE.USER_ID}${webcalCalendar.userID}`
-          ).emit(SOCKET_CHANNEL.SYNC, JSON.stringify({ type: 'SYNC' }));
+          ).emit(
+            SOCKET_CHANNEL.SYNC,
+            JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+          );
 
           logger.info('[CRON]: Webcal update job done  ');
         } catch (e) {

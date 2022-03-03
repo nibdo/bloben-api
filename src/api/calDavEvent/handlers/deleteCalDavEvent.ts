@@ -2,7 +2,11 @@ import { Request, Response } from 'express';
 
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { DeleteCalDavEventRequest } from '../../../bloben-interface/event/event';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../../utils/enums';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { createCommonResponse } from '../../../utils/common';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
@@ -46,7 +50,7 @@ export const deleteCalDavEvent = async (
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: 'SYNC' })
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
   );
 
   // delete cache
