@@ -250,7 +250,9 @@ export const getWebcalEvents = async (
   // }
 
   return map(result, (event) => ({
-    internalID: event.id,
+    id: event.id,
+    externalID: event.externalID,
+    internalID: event.internalID,
     summary: event.summary,
     description: event.description,
     location: event.location,
@@ -266,7 +268,6 @@ export const getWebcalEvents = async (
     endAt: event.endAt.toISOString(),
     timezoneEnd: event.timezoneStart,
     timezoneStart: event.timezoneStart,
-    id: event.externalID,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
     type: EVENT_TYPE.WEBCAL,

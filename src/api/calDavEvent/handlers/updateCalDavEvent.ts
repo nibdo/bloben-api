@@ -51,13 +51,13 @@ export const updateCalDavEvent = async (
     await queryRunner.startTransaction();
 
     await queryRunner.manager.delete(CalDavEventEntity, {
-      id: body.internalID,
+      id: body.id,
     });
 
     if (body.prevEvent) {
       response = await client.createCalendarObject({
         calendar: calDavAccount.calendar,
-        filename: `${body.id}.ics`,
+        filename: `${body.externalID}.ics`,
         iCalString: body.iCalString,
       });
     } else {

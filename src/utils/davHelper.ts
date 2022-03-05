@@ -31,7 +31,7 @@ import RRule from 'rrule';
 import logger from './logger';
 
 export interface CalDavEventObj {
-  id: string;
+  externalID: string;
   calendarID: string;
   startAt: string;
   endAt: string;
@@ -56,7 +56,7 @@ export const formatEventJsonToCalDavEvent = (
   return {
     ...{ ...calendarObject, data: null }, // clear ical data prop
     calendarID: calendar.id,
-    id: event.uid || '',
+    externalID: event.uid || '',
     startAt: event.dtstart.value,
     endAt: event.dtend.value,
     timezone: event.dtstart.timezone || null,

@@ -4,7 +4,8 @@ import CalDavEventEntity from '../entity/CalDavEventEntity';
 
 export interface CalDavEventsRaw {
   id: string;
-  internalID: string;
+  externalID: string;
+  internalID?: string;
   startAt: string;
   endAt: string;
   timezoneStart: string | null;
@@ -26,7 +27,7 @@ export interface CalDavEventsRaw {
 @EntityRepository(CalDavEventEntity)
 export default class CalDavEventRepository extends Repository<CalDavEventEntity> {
   private static calDavEventRawProps = `
-        e.id as "internalID",
+        e.id as "id",
         e.start_at as "startAt",
         e.end_at as "endAt",
         e.timezone_start as "timezoneStart",
@@ -36,7 +37,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         e.all_day as "allDay",
         e.is_repeated as "isRepeated",
         e.r_rule as "rRule",
-        e.external_id as "id",
+        e.external_id as "externalID",
         e.etag as "etag",
         e.href as "href",
         e.created_at as "createdAt",
