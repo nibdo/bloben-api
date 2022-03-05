@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import {
+  LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
@@ -112,7 +113,10 @@ export const updateCalDavEvent = async (
 
     return createCommonResponse('Event updated');
   } catch (e) {
-    logger.error('Update calDav event error', e);
+    logger.error('Update calDav event error', e, [
+      LOG_TAG.REST,
+      LOG_TAG.CALDAV,
+    ]);
     if (queryRunner !== null) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();

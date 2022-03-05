@@ -1,10 +1,10 @@
-import { BULL_QUEUE } from '../../utils/enums';
+import { BULL_QUEUE, LOG_TAG } from '../../utils/enums';
 import { calDavSyncBullQueue } from '../../service/BullQueue';
 import UserRepository from '../../data/repository/UserRepository';
 import logger from '../../utils/logger';
 
 export const syncCalDavCronJob = async (): Promise<void> => {
-  logger.info('[CRON] syncCalDavCronJob start');
+  logger.info('syncCalDavCronJob start', [LOG_TAG.CRON, LOG_TAG.CALDAV]);
 
   // get users for sync
   const users = await UserRepository.getRepository().find({

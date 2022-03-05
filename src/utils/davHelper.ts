@@ -6,12 +6,13 @@ import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
 import { DateTime } from 'luxon';
-import { Range } from '../bloben-interface/interface';
 import {
+  LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from './enums';
+import { Range } from '../bloben-interface/interface';
 import { cloneDeep, find, forEach } from 'lodash';
 import {
   createCalDavCalendar,
@@ -765,7 +766,10 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
 
       connection = null;
       queryRunner = null;
-      logger.error('Sync caldav events error', e);
+      logger.error('Sync caldav events error', e, [
+        LOG_TAG.REST,
+        LOG_TAG.CALDAV,
+      ]);
     }
   }
 };

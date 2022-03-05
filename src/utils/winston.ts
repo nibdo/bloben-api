@@ -9,8 +9,8 @@ const { format } = winston;
 
 export const LOG_DIR = './logs';
 
-export const createWinstonLogger = () => {
-  if (env.nodeEnv === NODE_ENV.TEST) {
+export const createWinstonLogger = (forceCreate?: boolean) => {
+  if (env.nodeEnv === NODE_ENV.TEST && !forceCreate) {
     return {
       log: () => {
         return;

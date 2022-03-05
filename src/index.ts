@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import redis from 'redis';
 
 import { Env, loadEnv } from './config/env';
+import { LOG_TAG } from './utils/enums';
 import { createORMConfig } from './config/ormconfig';
 import { createRedisConfig } from './config/redis';
 import { createWinstonLogger } from './utils/winston';
@@ -42,12 +43,12 @@ export const startServer = async (): Promise<void> => {
   } catch (err) {
     // eslint-disable-next-line no-console
     console.log(err);
-    logger.error('Init error', err);
+    logger.error('Init error', err, [LOG_TAG.UNKNOWN]);
   }
 };
 
 process.on('uncaughtException', function (err) {
-  logger.error('UncaughtException', err);
+  logger.error('UncaughtException', err, [LOG_TAG.UNKNOWN]);
 });
 
 startServer();

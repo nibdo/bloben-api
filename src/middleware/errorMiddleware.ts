@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { NODE_ENV } from '../utils/enums';
+import { LOG_TAG, NODE_ENV } from '../utils/enums';
 import { env } from '../index';
 import logger from '../utils/logger';
 
@@ -30,7 +30,13 @@ export default (
         console.log(error);
       }
 
-      logger.error('Unknown error', error, req.method, req.originalUrl);
+      logger.error(
+        'Unknown error',
+        error,
+        [LOG_TAG.UNKNOWN, LOG_TAG.REST],
+        req.method,
+        req.originalUrl
+      );
       return res
         .status(500)
         .json({ code: 500, message: 'Something went wrong' })
@@ -41,7 +47,13 @@ export default (
       // eslint-disable-next-line no-console
       console.log(error);
     }
-    logger.error('Unknown error', e, req.method, req.originalUrl);
+    logger.error(
+      'Unknown error',
+      e,
+      [LOG_TAG.UNKNOWN, LOG_TAG.REST],
+      req.method,
+      req.originalUrl
+    );
     return res
       .status(500)
       .json({ code: 500, message: 'Something went wrong' })

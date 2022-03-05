@@ -1,6 +1,7 @@
 import { AxiosResponse } from 'axios';
 import {
   BULL_QUEUE,
+  LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
@@ -56,13 +57,19 @@ export const getWebcalendarsForSync = (data?: { userID: string }) => {
 export const syncWebcalEventsQueueJob = async (job?: Job) => {
   const data = job?.data;
 
-  logger.info(`[CRON]: Checking webcal calendars for sync`);
+  logger.info(`Checking webcal calendars for sync`, [
+    LOG_TAG.QUEUE,
+    LOG_TAG.WEBCAL,
+  ]);
   try {
     const webcalCalendars: WebcalCalendar[] = await getWebcalendarsForSync(
       data
     );
 
-    logger.info(`[CRON]: ${webcalCalendars.length} webcal calendars to check`);
+    logger.info(`${webcalCalendars.length} webcal calendars to check`, [
+      LOG_TAG.QUEUE,
+      LOG_TAG.WEBCAL,
+    ]);
 
     if (!webcalCalendars.length) {
       return;
@@ -79,7 +86,8 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
         let queryRunner: QueryRunner | null;
         try {
           logger.info(
-            `[CRON]: Checking webcal calendar with id: ${webcalCalendar.id} `
+            `Checking webcal calendar with id: ${webcalCalendar.id}`,
+            [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
           );
 
           // get file
@@ -96,7 +104,8 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           const parsedIcal: ICalJSON = ICalParser.toJSON(response.data);
 
           logger.info(
-            `[CRON]: Deleting previous records for webcal calendar ${webcalCalendar.id}`
+            `Deleting previous records for webcal calendar ${webcalCalendar.id}`,
+            [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
           );
           // delete previous records
           await queryRunner.manager.query(deleteWebcalEventsExceptionsSql, [
@@ -106,7 +115,8 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             webcalCalendar.id,
           ]);
           logger.info(
-            `[CRON]: Deleted previous records for webcal calendar ${webcalCalendar.id}`
+            `Deleted previous records for webcal calendar ${webcalCalendar.id}`,
+            [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
           );
 
           // recreate records
@@ -155,7 +165,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
           );
 
-          logger.info('[CRON]: Webcal update job done  ');
+          logger.info('Webcal update job done', [
+            LOG_TAG.QUEUE,
+            LOG_TAG.WEBCAL,
+          ]);
         } catch (e) {
           if (queryRunner) {
             await queryRunner.rollbackTransaction();
@@ -163,9 +176,9 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           }
 
           logger.error(
-            `[CRON]: Error updating webcal calendar ${webcalCalendar.id} ${
-              e.message
-            } ${JSON.stringify(e)}`
+            `Error updating webcal calendar ${webcalCalendar.id} ${e.message}`,
+            e,
+            [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
           );
 
           webcalCalendarEntity.onFail();
@@ -178,9 +191,9 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
         }
       } catch (e) {
         logger.error(
-          `[CRON]: Error fetching webcal calendar ${webcalCalendar.id} ${
-            e.message
-          } ${JSON.stringify(e)}`
+          `Error fetching webcal calendar ${webcalCalendar.id} ${e.message}`,
+          e,
+          [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
         );
 
         webcalCalendarEntity.onFail();
@@ -193,27 +206,38 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
       }
     }
   } catch (e) {
-    logger.error(
-      `[CRON]: Error checking webcal calendars: ${JSON.stringify(e)}`
-    );
+    logger.error(`Error checking webcal calendars`, e, [
+      LOG_TAG.QUEUE,
+      LOG_TAG.WEBCAL,
+    ]);
   }
 };
 
 export const webcalSyncQueueSocketJob = async () => {
-  logger.info('[CRON] webcalSyncQueueSocketJob start');
+  try {
+    logger.info('webcalSyncQueueSocketJob start', [
+      LOG_TAG.CRON,
+      LOG_TAG.WEBCAL,
+    ]);
 
-  const socketClients = io.sockets.adapter.rooms;
+    const socketClients = io.sockets.adapter.rooms;
 
-  const activeUserIDs: string[] = [];
+    const activeUserIDs: string[] = [];
 
-  socketClients.forEach((_set, room) => {
-    const userID = getUserIDFromWsRoom(room);
+    socketClients.forEach((_set, room) => {
+      const userID = getUserIDFromWsRoom(room);
 
-    activeUserIDs.push(userID);
-  });
+      activeUserIDs.push(userID);
+    });
 
-  // schedule sync job for each user
-  for (const userID of activeUserIDs) {
-    await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID: userID });
+    // schedule sync job for each user
+    for (const userID of activeUserIDs) {
+      await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID: userID });
+    }
+  } catch (e) {
+    logger.error(`Error checking webcal calendars`, e, [
+      LOG_TAG.CRON,
+      LOG_TAG.WEBCAL,
+    ]);
   }
 };

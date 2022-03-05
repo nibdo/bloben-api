@@ -81,3 +81,10 @@ export interface CalDavEvent extends DAVCalendarObject {
   recurenceID?: string;
   internalID?: string;
 }
+
+export interface Log {
+  timestamp: string;
+  message: string;
+  level: string;
+  tags: string[];
+}
