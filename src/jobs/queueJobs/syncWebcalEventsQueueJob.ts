@@ -1,16 +1,20 @@
 import { AxiosResponse } from 'axios';
-import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { Job } from 'bullmq';
 import {
+  BULL_QUEUE,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../utils/enums';
+import { Connection, QueryRunner, getConnection } from 'typeorm';
+import { Job } from 'bullmq';
+import { WEBCAL_FAILED_THRESHOLD } from '../../utils/constants';
 import {
   deleteWebcalEventsExceptionsSql,
   deleteWebcalEventsSql,
 } from '../../data/sql/deleteWebcalEvents';
+import { getUserIDFromWsRoom } from '../../utils/common';
 import { io } from '../../app';
+import { webcalSyncBullQueue } from '../../service/BullQueue';
 import AxiosService from '../../service/AxiosService';
 import ICalParser, { ICalJSON } from 'ical-js-parser-commonjs';
 import WebcalCalendarEntity from '../../data/entity/WebcalCalendarEntity';
@@ -27,27 +31,42 @@ interface WebcalCalendar {
   attempt: number;
 }
 
-export const syncWebcalEventsQueueJob = async (job: Job) => {
-  const { data } = job;
+export const getWebcalendarsForSync = (data?: { userID: string }) => {
+  return WebcalCalendarRepository.getRepository().query(
+    `
+            SELECT 
+                wc.id as id, 
+                wc.url as url, 
+                wc.user_id as "userID",
+                wc.attempt as "attempt",
+                wc.updated_at as "updatedAt"
+            FROM 
+                webcal_calendars wc
+            WHERE 
+                (
+                    (SELECT wc.attempt = 0 AND wc.last_sync_at IS NULL) OR
+                    (wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 minutes') OR
+                    (wc.attempt > 0 AND wc.updated_at <= now () - INTERVAL '${WEBCAL_FAILED_THRESHOLD}')
+                )
+                ${data?.userID ? `AND wc.user_id = '${data.userID}'` : ''}
+                `
+  );
+};
+
+export const syncWebcalEventsQueueJob = async (job?: Job) => {
+  const data = job?.data;
 
   logger.info(`[CRON]: Checking webcal calendars for sync`);
   try {
-    const webcalCalendars: WebcalCalendar[] =
-      await WebcalCalendarRepository.getRepository().query(
-        `SELECT 
-            wc.id as id, 
-            wc.url as url, 
-            wc.user_id as "userID",
-            wc.attempt as "attempt",
-            wc.updated_at as "updatedAt"
-         FROM webcal_calendars wc
-         WHERE 
-            ((wc.attempt = 0 AND wc.last_sync_at IS NULL) OR 
-            wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 minutes' OR
-            (wc.attempt > 0 AND wc.updated_at <= now () - INTERVAL '4 HOURS'))
-            ${data.userID ? `AND wc.user_id = '${data.userID}'` : ''}
-         `
-      );
+    const webcalCalendars: WebcalCalendar[] = await getWebcalendarsForSync(
+      data
+    );
+
+    logger.info(`[CRON]: ${webcalCalendars.length} webcal calendars to check`);
+
+    if (!webcalCalendars.length) {
+      return;
+    }
 
     for (const webcalCalendar of webcalCalendars) {
       const webcalCalendarEntity: WebcalCalendarEntity =
@@ -177,5 +196,24 @@ export const syncWebcalEventsQueueJob = async (job: Job) => {
     logger.error(
       `[CRON]: Error checking webcal calendars: ${JSON.stringify(e)}`
     );
+  }
+};
+
+export const webcalSyncQueueSocketJob = async () => {
+  logger.info('[CRON] webcalSyncQueueSocketJob start');
+
+  const socketClients = io.sockets.adapter.rooms;
+
+  const activeUserIDs: string[] = [];
+
+  socketClients.forEach((_set, room) => {
+    const userID = getUserIDFromWsRoom(room);
+
+    activeUserIDs.push(userID);
+  });
+
+  // schedule sync job for each user
+  for (const userID of activeUserIDs) {
+    await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID: userID });
   }
 };

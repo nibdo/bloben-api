@@ -13,6 +13,11 @@ export const testUserData: AdminCreateUserRequest = {
   password: TEST_USER_PASSWORD,
 };
 
+export const testUserDataWebcal: AdminCreateUserRequest = {
+  username: 'test_user_webcal',
+  password: TEST_USER_PASSWORD,
+};
+
 export const testDemoUserData: AdminCreateUserRequest = {
   username: 'demo_user',
   password: TEST_USER_PASSWORD,
