@@ -1,11 +1,15 @@
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { GetCalDavCalendar } from '../../../bloben-interface/calDavCalendar/calDavCalendar';
+import {
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { Request, Response } from 'express';
 import {
   SOCKET_APP_TYPE,
   SOCKET_CRUD_ACTION,
 } from '../../../bloben-interface/enums';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../../utils/enums';
 import {
   createCalDavCalendar,
   updateCalDavCalendar,
@@ -152,7 +156,10 @@ export const getRemoteCalDavCalendars = async (userID: string) => {
       await queryRunner.commitTransaction();
       await queryRunner.release();
     } catch (e) {
-      logger.error('Sync calDav calendars error', e);
+      logger.error('Sync calDav calendars error', e, [
+        LOG_TAG.REST,
+        LOG_TAG.CALDAV,
+      ]);
       if (queryRunner !== null) {
         await queryRunner.rollbackTransaction();
         await queryRunner.release();

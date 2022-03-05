@@ -1,4 +1,4 @@
-import { REDIS_PREFIX, SOCKET_ROOM_NAMESPACE } from './enums';
+import { LOG_TAG, REDIS_PREFIX, SOCKET_ROOM_NAMESPACE } from './enums';
 import { SocketSession } from '../common/interface/common';
 import { io } from '../app';
 import { redisClient } from '../index';
@@ -32,6 +32,6 @@ export const initWebsockets = () => {
     await handleJoinRoom(socket);
   });
   io.on('error', (error: any) => {
-    logger.error(error.toString(), 'ws', '');
+    logger.error(error.toString(), 'ws', [LOG_TAG.WEBSOCKET]);
   });
 };

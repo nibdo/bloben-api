@@ -127,3 +127,13 @@ export enum BULL_QUEUE {
 export enum SOCKET_ROOM_NAMESPACE {
   USER_ID = 'user_id_',
 }
+
+export enum LOG_TAG {
+  CRON = 'CRON',
+  QUEUE = 'QUEUE',
+  REST = 'REST',
+  WEBSOCKET = 'WEBSOCKET',
+  WEBCAL = 'WEBCAL',
+  CALDAV = 'CALDAV',
+  UNKNOWN = 'UNKNOWN',
+}
