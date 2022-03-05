@@ -44,11 +44,12 @@ export interface GetEventResponse {
   createdAt: string;
   updatedAt: string;
   deletedAt: string;
+  internalID?: string;
   externalID: string;
 }
 
 export interface CreateCalDavEventRequest {
-  id: string;
+  externalID: string;
   calendarID: string;
   iCalString: string;
 }
@@ -57,12 +58,12 @@ export interface UpdateCalDavEventRequest {
   id: string;
   calendarID: string;
   iCalString: string;
-  internalID: string;
+  externalID: string;
   etag: string;
   url: string;
   prevEvent: {
     id: string;
-    internalID: string;
+    externalID: string;
     url: string;
     etag: string;
   } | null;
@@ -70,7 +71,7 @@ export interface UpdateCalDavEventRequest {
 
 export interface DeleteCalDavEventRequest {
   calendarID: string;
-  internalID: string;
+  id: string;
   etag: string;
   url: string;
 }
@@ -96,6 +97,7 @@ export interface EventBody {
 
 export interface EventDecrypted {
   id: string;
+  externalID: string | null;
   calendarID: string;
   summary: string;
   startAt: string;
@@ -115,12 +117,12 @@ export interface EventDecrypted {
   rRule: string | null;
   alarms: any;
   sequence: string;
-  externalID: string | null;
 }
 
 export interface EventResult {
-  id: string;
-  internalID: string;
+  id: string; // entity id
+  externalID: string; // caldav, webcal id
+  internalID?: string; // id to ref repeated events
   startAt: string;
   endAt: string;
   timezoneStart: string | null;

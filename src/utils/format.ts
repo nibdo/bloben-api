@@ -6,8 +6,8 @@ import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 export const formatEventEntityToResult = (
   event: CalDavEventEntity
 ): EventResult => ({
-  id: event.externalID,
-  internalID: event.id,
+  id: event.id,
+  externalID: event.externalID,
   summary: event.summary,
   location: event.location,
   description: event.description,
@@ -34,6 +34,7 @@ export const formatEventRawToResult = (
   event: CalDavEventsRaw
 ): EventResult => ({
   id: event.id,
+  externalID: event.externalID,
   internalID: event.internalID,
   summary: event.summary,
   location: event.location,
@@ -49,7 +50,6 @@ export const formatEventRawToResult = (
   timezoneStart: event.timezoneStart,
   etag: event.etag,
   url: event.href,
-  // externalID: event.externalID,
   isRepeated: event.isRepeated,
   rRule: event.rRule,
   type: EVENT_TYPE.CALDAV,

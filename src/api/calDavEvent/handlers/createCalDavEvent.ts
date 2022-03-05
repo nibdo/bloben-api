@@ -40,7 +40,7 @@ export const createCalDavEvent = async (
 
   const response: any = await client.createCalendarObject({
     calendar: calDavAccount.calendar,
-    filename: `${body.id}.ics`,
+    filename: `${body.externalID}.ics`,
     iCalString: body.iCalString,
   });
 
