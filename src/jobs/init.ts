@@ -3,14 +3,14 @@ import { syncCalDavCronJob } from './cronJobs/syncCalDavCronJob';
 import { syncCalDavCronJobConnectedUsers } from './cronJobs/syncCalDavCronJobConnectedUsers';
 
 import { CronJob } from 'cron';
-import { syncWebcalEventsQueueJob } from './queueJobs/syncWebcalEventsQueueJob';
+import { webcalSyncQueueSocketJob } from './queueJobs/syncWebcalEventsQueueJob';
 
 export const initCronJobs = () => {
   // clean logs
   const clearLogsJob = new CronJob('0 1 * * *', clearLogs);
   clearLogsJob.start();
 
-  const webcalJob = new CronJob('*/60 * * * *', syncWebcalEventsQueueJob);
+  const webcalJob = new CronJob('*/5 * * * *', webcalSyncQueueSocketJob);
   webcalJob.start();
 
   const syncCalDavEventsJob = new CronJob('*/60 * * * *', syncCalDavCronJob); // every hour
