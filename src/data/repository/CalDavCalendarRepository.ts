@@ -5,7 +5,18 @@ import CalDavCalendarEntity from '../entity/CalDavCalendar';
 
 export interface CalDavCalendarInterface {
   id: string;
-  principalUrl: string;
+  url: string;
+}
+
+export interface CalDavCalendarWithAccountInterface {
+  id: string;
+  url: string;
+  account: {
+    id: string;
+    username: string;
+    password: string;
+    url: string;
+  };
 }
 
 @EntityRepository(CalDavCalendarEntity)
@@ -26,7 +37,7 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
       `
       SELECT 
         id,
-        principal_url as "principalUrl"
+        url as "url"
       FROM 
         caldav_calendars
       WHERE
@@ -38,6 +49,49 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
     );
 
     return getOneResult(result);
+  }
+
+  public static async getByIDWithAccount(
+    id: string,
+    userID: string
+  ): Promise<CalDavCalendarWithAccountInterface | null> {
+    const result: any = await getRepository(CalDavCalendarEntity).query(
+      `
+      SELECT 
+        cc.id as id,
+        cc.url as "url",
+        ca.id as "accountID",
+        ca.username as "accountUsername",
+        ca.password as "accountPassword",
+        ca.url as "accountUrl"
+      FROM 
+        caldav_calendars cc
+      INNER JOIN caldav_accounts ca on ca.id = cc.caldav_account_id
+      WHERE
+        cc.id = $1
+        AND ca.user_id = $2
+        AND cc.deleted_at IS NULL
+        AND ca.deleted_at IS NULL;
+    `,
+      [id, userID]
+    );
+
+    const oneResult = getOneResult(result);
+
+    if (oneResult) {
+      return {
+        id: oneResult.id,
+        url: oneResult.url,
+        account: {
+          id: oneResult.accountID,
+          username: oneResult.accountUsername,
+          password: oneResult.accountPassword,
+          url: oneResult.accountUrl,
+        },
+      };
+    }
+
+    return null;
   }
 
   public static async update(data: CalDavCalendarEntity) {
