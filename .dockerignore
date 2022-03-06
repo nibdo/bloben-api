@@ -4,3 +4,9 @@
 .env.test.local
 .env.test
 /node_modules/
+build
+logs
+.husky
+node_modules
+.github
+.git

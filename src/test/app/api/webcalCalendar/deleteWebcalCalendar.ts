@@ -1,4 +1,3 @@
-import { testCalendarsData } from '../../../seeds/3-calDavCalendars';
 import { v4 } from 'uuid';
 
 const request = require('supertest');
@@ -8,7 +7,7 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../utils/initTestServer';
-import { createWebcalCalendars } from '../../../seeds/6-webcal';
+import {createWebcalCalendars, webcalTestData} from '../../../seeds/6-webcal';
 
 const PATH = `/v1/webcal/calendars`;
 
@@ -21,7 +20,7 @@ describe(`Delete calendar [DELETE] ${PATH}/:calendarID`, async function () {
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer()).delete(
-      `${PATH}/${testCalendarsData[0].id}`
+      `${PATH}/${webcalTestData[0].id}`
     );
 
     const { status } = response;

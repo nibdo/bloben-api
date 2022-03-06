@@ -41,6 +41,11 @@ export enum SOCKET_CHANNEL {
   SYNC = 'sync',
 }
 
+export enum SOCKET_MSG_TYPE {
+  CALDAV_EVENTS = 'CALDAV_EVENTS',
+  CALDAV_CALENDARS = 'CALDAV_CALENDARS',
+}
+
 export enum TIMEZONE {
   FLOATING = 'floating',
 }
@@ -116,8 +121,19 @@ export enum CALDAV_OBJ_TYPE {
 
 export enum BULL_QUEUE {
   CALDAV_SYNC = 'CALDAV_SYNC',
+  WEBCAL_SYNC = 'WEBCAL_SYNC',
 }
 
 export enum SOCKET_ROOM_NAMESPACE {
   USER_ID = 'user_id_',
+}
+
+export enum LOG_TAG {
+  CRON = 'CRON',
+  QUEUE = 'QUEUE',
+  REST = 'REST',
+  WEBSOCKET = 'WEBSOCKET',
+  WEBCAL = 'WEBCAL',
+  CALDAV = 'CALDAV',
+  UNKNOWN = 'UNKNOWN',
 }

@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 
 import { CalDavCacheService } from '../../../service/CalDavCacheService';
-import { CalDavEvent } from '../../../bloben-interface/interface';
 import { DAVCalendarObject } from 'tsdav';
+import { EventResult } from '../../../bloben-interface/event/event';
 import { createDavClient } from '../../../service/davService';
 import { createEventsFromCalendarObject } from '../../../utils/davHelper';
 import { forEach } from 'lodash';
+import { getWebcalEvents } from '../helpers/getWebCalEvents';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 
 /**
@@ -25,7 +26,7 @@ export const getEventsInRange = async (
     userID
   );
 
-  let resultCalDavEvents: CalDavEvent[] = [];
+  let resultCalDavEvents: EventResult[] = [];
 
   // try to get events from cache
   const cacheResult = await CalDavCacheService.get(userID, {
@@ -72,6 +73,10 @@ export const getEventsInRange = async (
         });
       }
     }
+
+    const webCalEvents = await getWebcalEvents(userID, rangeFrom, rangeTo);
+
+    resultCalDavEvents = [...resultCalDavEvents, ...webCalEvents];
 
     await CalDavCacheService.set(
       userID,

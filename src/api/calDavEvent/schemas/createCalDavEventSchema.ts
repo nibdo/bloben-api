@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 export const createEventBodySchema = Joi.object({
   iCalString: Joi.string().min(1).required(),
-  id: Joi.string().uuid().required(),
+  externalID: Joi.string().uuid().required(),
   calendarID: Joi.string().uuid().required(),
 });
 

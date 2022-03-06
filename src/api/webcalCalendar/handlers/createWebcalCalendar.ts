@@ -1,19 +1,13 @@
 import { Request, Response } from 'express';
 
-import {
-  createCommonResponse,
-  createSocketCrudMsg,
-} from '../../../utils/common';
+import { createCommonResponse } from '../../../utils/common';
 
+import { BULL_QUEUE } from '../../../utils/enums';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { CreateWebcalCalendarRequest } from '../../../bloben-interface/webcalCalendar/webcalCalendar';
-import {
-  SOCKET_APP_TYPE,
-  SOCKET_CRUD_ACTION,
-} from '../../../bloben-interface/enums';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../../utils/enums';
-import { io } from '../../../app';
+
 import { throwError } from '../../../utils/errorCodes';
+import { webcalSyncBullQueue } from '../../../service/BullQueue';
 import WebcalCalendarEntity from '../../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../../data/repository/WebcalCalendarRepository';
 
@@ -24,15 +18,23 @@ export const createWebcalCalendar = async (
   const { user } = res.locals;
   const body: CreateWebcalCalendarRequest = req.body;
 
-  const existingWebcalCalendar: WebcalCalendarEntity | undefined =
-    await WebcalCalendarRepository.getRepository().findOne({
-      where: {
-        url: body.url,
-        // user_id: user.id
-      },
-    });
+  const existingWebcalCalendar: any =
+    await WebcalCalendarRepository.getRepository().query(
+      `
+      SELECT 
+        wc.id, wc.url
+      FROM webcal_calendars wc
+      INNER JOIN users u ON u.id = wc.user_id
+      WHERE 
+        u.id = $1 
+        AND wc.url = $2
+        AND wc.deleted_at IS NULL
+        AND u.deleted_at IS NULL
+`,
+      [user.id, body.url]
+    );
 
-  if (existingWebcalCalendar) {
+  if (existingWebcalCalendar?.length) {
     throw throwError(409, 'Webcal calendar already exists');
   }
 
@@ -43,15 +45,17 @@ export const createWebcalCalendar = async (
 
   await WebcalCalendarRepository.getRepository().save(webcalCalendar);
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
-    SOCKET_CHANNEL.CALENDAR,
-    createSocketCrudMsg(
-      webcalCalendar.id,
-      new Date().toISOString(),
-      SOCKET_CRUD_ACTION.CREATE,
-      SOCKET_APP_TYPE.WEBCAL_CALENDAR
-    )
-  );
+  await webcalSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID: user.id });
 
-  return createCommonResponse();
+  // io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+  //   SOCKET_CHANNEL.CALENDAR,
+  //   createSocketCrudMsg(
+  //     webcalCalendar.id,
+  //     new Date().toISOString(),
+  //     SOCKET_CRUD_ACTION.CREATE,
+  //     SOCKET_APP_TYPE.WEBCAL_CALENDAR
+  //   )
+  // );
+
+  return createCommonResponse('Webcalendar created');
 };

@@ -14,9 +14,9 @@ import { v4 } from 'uuid';
 export const createDummyCalDavEvent = (
   calendarID: string
 ): CreateCalDavEventRequest => {
-  const id = v4();
+  const externalID = v4();
   return {
-    id,
+    externalID,
     calendarID,
     iCalString: `BEGIN:VCALENDAR
 METHOD:REQUEST
@@ -26,7 +26,7 @@ BEGIN:VEVENT
 DESCRIPTION:adadasd174C5B7301A82E0080000000089FCDD3B6C29D701000000000000000
  samasiioasfioasjfio ja asfmioasiof asjio fjasifj ioasjf ioasji jfsaijfio j
  mcXXXXXXx
-UID:${id}
+UID:${externalID}
 SUMMARY:teaaaaa
 DTSTART:20210401T110000Z
 DTEND:20210401T113000Z
@@ -67,12 +67,12 @@ END:VCALENDAR`;
 
 export const testEventsData: CreateCalDavEventRequest[] = [
   {
-    id: '7becdebb-81d1-45b6-b8db-4a50f06b2a2c',
+    externalID: '7becdebb-81d1-45b6-b8db-4a50f06b2a2c',
     calendarID: '',
     iCalString: testIcalString,
   },
   {
-    id: 'ca5be5b5-c73f-4040-b909-e4a73a716671',
+    externalID: 'ca5be5b5-c73f-4040-b909-e4a73a716671',
     calendarID: '',
     iCalString: testIcalString,
   },

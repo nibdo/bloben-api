@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 
 import { CommonResponse } from '../../../bloben-interface/interface';
+import { LOG_TAG } from '../../../utils/enums';
 import { LoginRequest } from '../../../bloben-interface/user/user';
 import { createCommonResponse } from '../../../utils/common';
 import { throwError } from '../../../utils/errorCodes';
@@ -50,7 +51,7 @@ export const deleteUser = async (
 
     return createCommonResponse('Account deleted');
   } catch (e) {
-    logger.error('Delete user error', e);
+    logger.error('Delete user error', e, [LOG_TAG.REST]);
     if (queryRunner !== null) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();

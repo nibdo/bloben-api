@@ -27,3 +27,13 @@ export enum SOCKET_CRUD_ACTION {
   BULK = 'BULK',
   FULL = 'FULL',
 }
+
+export enum EVENT_TYPE {
+  CALDAV = 'CALDAV',
+  WEBCAL = 'WEBCAL',
+}
+
+export enum LOG_FILE_TYPE {
+  COMBINED = 'combined',
+  ERROR = 'error',
+}

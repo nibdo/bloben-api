@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { BULL_QUEUE } from '../../../utils/enums';
+import { BULL_QUEUE, LOG_TAG } from '../../../utils/enums';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { CreateCalDavAccountRequest } from '../../../bloben-interface/calDavAccount/calDavAccount';
@@ -87,7 +87,10 @@ export const createCalDavAccount = async (
       id: calDavAccount.id,
     });
   } catch (e) {
-    logger.error('Create calDav account error', e);
+    logger.error('Create calDav account error', e, [
+      LOG_TAG.REST,
+      LOG_TAG.CALDAV,
+    ]);
     if (queryRunner) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();

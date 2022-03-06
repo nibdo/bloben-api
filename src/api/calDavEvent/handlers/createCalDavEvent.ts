@@ -2,7 +2,11 @@ import { Request, Response } from 'express';
 
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { CreateCalDavEventRequest } from '../../../bloben-interface/event/event';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../../utils/enums';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { createCommonResponse } from '../../../utils/common';
 import { createEventFromCalendarObject } from '../../../utils/davHelper';
 import { io } from '../../../app';
@@ -36,7 +40,7 @@ export const createCalDavEvent = async (
 
   const response: any = await client.createCalendarObject({
     calendar: calDavAccount.calendar,
-    filename: `${body.id}.ics`,
+    filename: `${body.externalID}.ics`,
     iCalString: body.iCalString,
   });
 
@@ -58,7 +62,7 @@ export const createCalDavEvent = async (
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: 'SYNC' })
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
   );
 
   // delete cache

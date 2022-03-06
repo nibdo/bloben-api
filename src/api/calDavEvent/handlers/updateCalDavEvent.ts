@@ -2,7 +2,12 @@ import { Request, Response } from 'express';
 
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../../utils/enums';
+import {
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { UpdateCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse } from '../../../utils/common';
 import { createEventFromCalendarObject } from '../../../utils/davHelper';
@@ -47,13 +52,13 @@ export const updateCalDavEvent = async (
     await queryRunner.startTransaction();
 
     await queryRunner.manager.delete(CalDavEventEntity, {
-      id: body.internalID,
+      id: body.id,
     });
 
     if (body.prevEvent) {
       response = await client.createCalendarObject({
         calendar: calDavAccount.calendar,
-        filename: `${body.id}.ics`,
+        filename: `${body.externalID}.ics`,
         iCalString: body.iCalString,
       });
     } else {
@@ -103,12 +108,15 @@ export const updateCalDavEvent = async (
 
     io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
       SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: 'SYNC' })
+      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
     );
 
     return createCommonResponse('Event updated');
   } catch (e) {
-    logger.error('Update calDav event error', e);
+    logger.error('Update calDav event error', e, [
+      LOG_TAG.REST,
+      LOG_TAG.CALDAV,
+    ]);
     if (queryRunner !== null) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();

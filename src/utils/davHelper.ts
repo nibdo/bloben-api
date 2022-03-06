@@ -6,7 +6,12 @@ import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
 import { DateTime } from 'luxon';
-import { EventJSON } from 'ical-js-parser-commonjs';
+import {
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from './enums';
 import { Range } from '../bloben-interface/interface';
 import { cloneDeep, find, forEach } from 'lodash';
 import {
@@ -16,17 +21,18 @@ import {
 import { createDavClient } from '../service/davService';
 import { formatEventEntityToResult } from './format';
 import { formatToRRule } from './common';
+import { io } from '../app';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 import CalDavEventRepository from '../data/repository/CalDavEventRepository';
-import ICalParser from 'ical-js-parser-commonjs';
+import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 import logger from './logger';
 
 export interface CalDavEventObj {
-  id: string;
+  externalID: string;
   calendarID: string;
   startAt: string;
   endAt: string;
@@ -51,7 +57,7 @@ export const formatEventJsonToCalDavEvent = (
   return {
     ...{ ...calendarObject, data: null }, // clear ical data prop
     calendarID: calendar.id,
-    id: event.uid || '',
+    externalID: event.uid || '',
     startAt: event.dtstart.value,
     endAt: event.dtend.value,
     timezone: event.dtstart.timezone || null,
@@ -324,7 +330,6 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 // let eventsResult: CalDavEventObj[] = [];
 // const toInsertResultEvents: CalDavEventObj[] = [];
 //
-// console.log('serverEvents', serverEvents);
 // forEach(serverEvents, (calDavServerItem: DAVCalendarObject) => {
 //   // eslint-disable-next-line no-unused-vars
 //   let foundLocalItem: any = null;
@@ -400,7 +405,6 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 //   calDavServerResult
 // );
 //
-// console.log('serverTodos', serverTodos);
 // // filter events to insert, update or delete
 // const { eventsResult, toInsertResultEvents } = await processServerEvents(
 //   serverEvents,
@@ -606,6 +610,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
   let connection: Connection | null;
   let queryRunner: QueryRunner | null;
 
+  let calendarsChanged = false;
   try {
     connection = null;
     queryRunner = null;
@@ -635,6 +640,8 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
               queryRunner
             )
           );
+
+          calendarsChanged = true;
         }
 
         if (serverCalendar.ctag !== localCalendar.ctag) {
@@ -653,6 +660,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
         );
 
         calendarsWithChangedEvents.push(serverCalendar);
+        calendarsChanged = true;
       }
 
       // check deleted local items
@@ -665,6 +673,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
 
         if (!foundItem) {
           calendarsToDelete.push(calDavCalendar.id);
+          calendarsChanged = true;
         }
       });
 
@@ -693,12 +702,17 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
         queryRunner,
         calDavAccount.userID
       );
-      // const events = await syncEvents(client, calendar);
-      // console.log('ee', events);
     }
 
     await queryRunner.commitTransaction();
     await queryRunner.release();
+
+    if (calendarsChanged) {
+      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${calDavAccount.userID}`).emit(
+        SOCKET_CHANNEL.SYNC,
+        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+      );
+    }
 
     if (calendarsWithChangedEvents.length > 0) {
       return true;
@@ -752,7 +766,10 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
 
       connection = null;
       queryRunner = null;
-      logger.error('Sync caldav events error', e);
+      logger.error('Sync caldav events error', e, [
+        LOG_TAG.REST,
+        LOG_TAG.CALDAV,
+      ]);
     }
   }
 };

@@ -29,9 +29,9 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer()).put(PATH).send({
       calendarID: calDavEvent.calendar.id,
-      id: calDavEvent.externalID,
+      externalID: calDavEvent.externalID,
       iCalString: testIcalString,
-      internalID: calDavEvent.id,
+      id: calDavEvent.id,
       etag: 'CTGARAF',
       url: calDavEvent.href,
       prevEvent: null,
@@ -47,9 +47,9 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
       .put(PATH)
       .send({
         calendarID: invalidUUID,
-        id: calDavEvent.externalID,
+        externalID: calDavEvent.externalID,
         iCalString: testIcalString,
-        internalID: calDavEvent.id,
+        id: calDavEvent.id,
         etag: 'CTGARAF',
         url: calDavEvent.href,
         prevEvent: null,
@@ -67,10 +67,10 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
     const response: any = await request(createTestServerWithSession())
       .put(PATH)
       .send({
-        id: calDavEvent.externalID,
+        externalID: calDavEvent.externalID,
         calendarID: calDavEvent.calendar.id,
         iCalString: testIcalString,
-        internalID: calDavEvent.id,
+        id: calDavEvent.id,
         etag: 'CTGARAF',
         url: calDavEvent.href,
         prevEvent: null,
@@ -88,10 +88,10 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
     const response: any = await request(createTestServerWithSession(true))
       .put(PATH)
       .send({
-        id: calDavEvent.externalID,
+        externalID: calDavEvent.externalID,
         calendarID: calDavEvent.calendar.id,
         iCalString: testIcalString,
-        internalID: calDavEvent.id,
+        id: calDavEvent.id,
         etag: 'CTGARAF',
         url: calDavEvent.href,
         prevEvent: null,
@@ -106,10 +106,10 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
     const response: any = await request(createTestServerWithSession())
       .put(PATH)
       .send({
-        id: calDavEvent.externalID,
+        externalID: calDavEvent.externalID,
         calendarID: calDavEvent.calendar.id,
         iCalString: testIcalString,
-        internalID: calDavEvent.id,
+        id: calDavEvent.id,
         etag: 'CTGARAF',
         url: calDavEvent.href,
         prevEvent: null,
@@ -124,15 +124,15 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
     const response: any = await request(createTestServerWithSession())
       .put(PATH)
       .send({
-        id: calDavEvent.externalID,
+        externalID: calDavEvent.externalID,
         calendarID: calDavEvent.calendar.id,
         iCalString: testIcalString,
-        internalID: calDavEvent.id,
+        id: calDavEvent.id,
         etag: 'CTGARAF',
         url: calDavEvent.href,
         prevEvent: {
+          externalID: calDavEvent.externalID,
           id: calDavEvent.id,
-          internalID: calDavEvent.id,
           url: calDavEvent.href,
           etag: 'CTGARAF',
         },

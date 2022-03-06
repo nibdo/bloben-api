@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import { forEach, groupBy, map } from 'lodash';
 
 import { DateTime } from 'luxon';
@@ -15,12 +14,10 @@ export const overlapCondition: string =
   ' timestamp))';
 
 export const getWebcalEvents = async (
-  req: Request,
-  res: Response
+  userID: string,
+  rangeFrom: string,
+  rangeTo: string
 ): Promise<EventResult[]> => {
-  const { userID } = res.locals;
-  const { rangeFrom, rangeTo } = req.query;
-
   let result: any = [];
 
   const rangeFromDateTime: DateTime = LuxonHelper.parseToDateTime(

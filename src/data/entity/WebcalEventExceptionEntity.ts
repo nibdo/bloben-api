@@ -1,6 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { DateTime } from 'luxon';
 import { EventJSON } from 'ical-js-parser-commonjs';
+import WebcalCalendarEntity from './WebcalCalendarEntity';
 
 @Entity('webcal_event_exceptions')
 export default class WebcalEventExceptionEntity {
@@ -18,6 +25,14 @@ export default class WebcalEventExceptionEntity {
 
   @Column({ name: 'webcal_calendar_id' })
   webcalCalendarID: string;
+
+  @ManyToOne(
+    () => WebcalCalendarEntity,
+    (webcalCalendar) => webcalCalendar.webcalEvents,
+    { onDelete: 'CASCADE' }
+  )
+  @JoinColumn({ name: 'webcal_calendar_id', referencedColumnName: 'id' })
+  webcalCalendar: WebcalCalendarEntity;
 
   @Column({ name: 'user_id' })
   userID: string;

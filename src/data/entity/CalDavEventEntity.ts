@@ -91,7 +91,7 @@ export default class CalDavEventEntity {
       const calendar = new CalDavCalendarEntity();
       calendar.id = item.calendarID;
 
-      this.externalID = item.id;
+      this.externalID = item.externalID;
       this.startAt = DateTime.fromISO(item.startAt).toUTC().toJSDate();
       this.endAt = DateTime.fromISO(item.endAt).toUTC().toJSDate();
       this.timezoneStart = item.timezone;
