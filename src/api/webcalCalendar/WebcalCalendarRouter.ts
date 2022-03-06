@@ -31,7 +31,7 @@ WebcalCalendarRouter.get(
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
     authMiddleware,
-    roleMiddleware([USER_ROLE.USER]),
+    roleMiddleware([USER_ROLE.USER, USER_ROLE.DEMO]),
     validationMiddleware(getWebcalCalendarSchema),
   ],
   WebcalCalendarController.getWebcalCalendars
