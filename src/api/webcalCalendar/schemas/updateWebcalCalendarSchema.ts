@@ -9,6 +9,6 @@ export const updateWebcalCalendarSchema = Joi.object({
     url: Joi.string().uri().required(),
     name: Joi.string().required(),
     color: Joi.string().required(),
-    syncFrequency: Joi.number().integer().min(15).required(),
+    syncFrequency: Joi.number().integer().min(30).required(),
   }),
 });
