@@ -11,6 +11,8 @@ import {
 
 import CalDavAccountEntity from './CalDavAccount';
 import CalDavEventEntity from './CalDavEventEntity';
+import CalDavTaskEntity from './CalDavTaskEntity';
+import CalDavTaskSettingsEntity from './CalDavTaskSettings';
 
 @Entity('caldav_calendars')
 export default class CalDavCalendarEntity {
@@ -38,10 +40,13 @@ export default class CalDavCalendarEntity {
   @Column({ name: 'ctag', nullable: true })
   ctag: string;
 
+  @Column({ name: 'ctag_tasks', nullable: true })
+  ctagTasks: string;
+
   @Column({ type: 'timestamptz', name: 'last_update_at', nullable: true })
   lastUpdateAt: Date;
 
-  @Column({ type: 'json', name: 'components', nullable: true })
+  @Column({ type: 'text', name: 'components', nullable: true, array: true })
   components: string[];
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
@@ -63,4 +68,13 @@ export default class CalDavCalendarEntity {
 
   @OneToMany(() => CalDavEventEntity, (event) => event.calendar)
   events: CalDavEventEntity[];
+
+  @OneToMany(() => CalDavTaskEntity, (task) => task.calendar)
+  tasks: CalDavTaskEntity[];
+
+  @OneToMany(
+    () => CalDavTaskSettingsEntity,
+    (taskSettings) => taskSettings.calendar
+  )
+  taskSettings: CalDavTaskSettingsEntity[];
 }

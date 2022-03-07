@@ -4,6 +4,7 @@ import { GetCalDavCalendar } from '../../../bloben-interface/calDavCalendar/calD
 import { QueryRunner } from 'typeorm';
 import CalDavAccountEntity from '../../../data/entity/CalDavAccount';
 import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
+import CalDavTaskSettingsEntity from '../../../data/entity/CalDavTaskSettings';
 
 /**
  * Internal function
@@ -34,6 +35,12 @@ export const createCalDavCalendar = async (
   calDavCalendar.url = data.url;
 
   await queryRunner.manager.save(calDavCalendar);
+
+  const calDavTaskSettings = new CalDavTaskSettingsEntity();
+  calDavTaskSettings.calendar = calDavCalendar;
+  calDavTaskSettings.orderBy = 'createdAt';
+
+  await queryRunner.manager.save(calDavTaskSettings);
 
   return calDavCalendar;
 };

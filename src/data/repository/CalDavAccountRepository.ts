@@ -14,6 +14,7 @@ export interface CalDavAccount {
 }
 
 export interface CalendarFromAccount extends DAVCalendar {
+  ctagTasks?: string | null;
   id: string;
   lastUpdateAt?: any;
   color: string;
@@ -31,6 +32,7 @@ interface BaseAccount {
   calendarColor: string;
   calendarUrl: string;
   calendarLastUpdateAt?: string;
+  ctagTasks?: string | null;
 }
 export interface AccountRaw extends BaseAccount {
   calendar: string;
@@ -173,6 +175,7 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         cc.data as "calendar",
         cc.url as "calendarUrl",
         cc.color as "calendarColor",
+        cc.ctag_tasks as "ctagTasks",
         cc.last_update_at as "calendarLastUpdateAt"
     FROM 
         caldav_accounts ca
@@ -203,6 +206,7 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
             lastUpdateAt: item.calendarLastUpdateAt,
             color: item.calendarColor,
             url: item.calendarUrl,
+            ctagTasks: item.ctagTasks,
           });
         }
       });

@@ -51,6 +51,33 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
     return getOneResult(result);
   }
 
+  public static async getByIDAndComponent(
+    id: string,
+    userID: string,
+    component: string
+  ): Promise<CalDavCalendarInterface | null> {
+    const result: any = await getRepository(CalDavCalendarEntity).query(
+      `
+      SELECT 
+        cc.id as id,
+        cc.url as "url"
+      FROM 
+        caldav_calendars cc
+      INNER JOIN 
+        caldav_accounts ca ON cc.caldav_account_id = ca.id
+      WHERE
+        cc.id = $1
+        AND ca.user_id = $2
+        AND $3 = ANY (cc.components)
+        AND ca.deleted_at IS NULL
+        AND cc.deleted_at IS NULL;
+    `,
+      [id, userID, component]
+    );
+
+    return getOneResult(result);
+  }
+
   public static async getByIDWithAccount(
     id: string,
     userID: string

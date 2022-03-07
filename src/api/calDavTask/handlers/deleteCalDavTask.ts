@@ -12,9 +12,9 @@ import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
-import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
+import CalDavTaskRepository from '../../../data/repository/CalDavTaskRepository';
 
-export const deleteCalDavEvent = async (
+export const deleteCalDavTask = async (
   req: Request,
   res: Response
 ): Promise<CommonResponse> => {
@@ -44,21 +44,15 @@ export const deleteCalDavEvent = async (
     },
   });
 
-  await CalDavEventRepository.getRepository().delete({
+  await CalDavTaskRepository.getRepository().delete({
     href: body.url,
     id: body.id,
   });
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_TASKS })
   );
 
-  // delete cache
-  // await CalDavCacheService.deleteByUserID(userID);
-
-  // trigger resync for cached events
-  // await CalDavCacheService.syncEventsForAccount(calDavAccount);
-
-  return createCommonResponse('Event deleted');
+  return createCommonResponse('Task deleted');
 };
