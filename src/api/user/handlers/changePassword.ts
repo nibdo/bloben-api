@@ -2,11 +2,13 @@ import { Request, Response } from 'express';
 
 import { ChangePasswordRequest } from '../../../bloben-interface/user/user';
 import { CommonResponse } from '../../../bloben-interface/interface';
+import { LOG_TAG } from '../../../utils/enums';
 import { createCommonResponse } from '../../../utils/common';
 import { throwError } from '../../../utils/errorCodes';
 import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
+import logger from '../../../utils/logger';
 
 export const changePassword = async (
   req: Request,
@@ -28,6 +30,10 @@ export const changePassword = async (
   isPasswordMatching = await bcrypt.compare(oldPassword, user.hash);
 
   if (!isPasswordMatching) {
+    logger.warn(`User wrong changed password`, [
+      LOG_TAG.REST,
+      LOG_TAG.SECURITY,
+    ]);
     throw throwError(409, 'Wrong password', req);
   }
 

@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { LOG_TAG, SESSION } from '../utils/enums';
 import { ROLE } from '../bloben-interface/enums';
-import { SESSION } from '../utils/enums';
 import { throwError } from '../utils/errorCodes';
 import UserEntity from '../data/entity/UserEntity';
+import logger from '../utils/logger';
 
 /*
  * Authentication middleware
@@ -18,6 +19,7 @@ export const authMiddleware = async (
     const role: string = req.session[SESSION.ROLE];
 
     if (!userID || !role) {
+      logger.warn(`Login no session data`, [LOG_TAG.REST, LOG_TAG.SECURITY]);
       throw throwError(401, 'Not authorized', req);
     }
 
