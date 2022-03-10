@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { RATE_LIMIT } from '../utils/enums';
+import { LOG_TAG, RATE_LIMIT } from '../utils/enums';
 import { RateLimiter } from '../utils/RateLimiter';
 import { throwError } from '../utils/errorCodes';
+import logger from '../utils/logger';
 
 const X_REAL_IP = 'X-Real-IP';
 
@@ -17,6 +18,10 @@ export const rateLimiterMiddleware = (
         const record: any = await RateLimiter.get(realIP, req);
 
         if (record) {
+          logger.warn(
+            `Too many requests for URL: ${req.originalUrl} METHOD: ${req.method}`,
+            [LOG_TAG.REST, LOG_TAG.SECURITY]
+          );
           throw throwError(429, 'Too many requests', req);
         } else {
           await RateLimiter.set(realIP, req, limit);

@@ -1,4 +1,5 @@
 import { AdminLoginRequest } from '../../../bloben-interface/admin/admin';
+import { LOG_TAG } from '../../../utils/enums';
 import { ROLE } from '../../../bloben-interface/enums';
 import { Request } from 'express';
 import { env } from '../../../index';
@@ -7,6 +8,7 @@ import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import logger from '../../../utils/logger';
 
 export const loginAdmin = async (req: Request): Promise<any> => {
   const body: AdminLoginRequest = req.body;
@@ -19,12 +21,22 @@ export const loginAdmin = async (req: Request): Promise<any> => {
     });
 
   if (!user) {
+    logger.warn(`Admin login for unknown username ${username}`, [
+      LOG_TAG.REST,
+      LOG_TAG.SECURITY,
+    ]);
+
     throw throwError(401, 'Unauthorized', req);
   }
 
   const isMatchingPassword: boolean = await bcrypt.compare(password, user.hash);
 
   if (!isMatchingPassword) {
+    logger.warn(`Admin login for username ${username} wrong password`, [
+      LOG_TAG.REST,
+      LOG_TAG.SECURITY,
+    ]);
+
     throw throwError(401, 'Unauthorized', req);
   }
 

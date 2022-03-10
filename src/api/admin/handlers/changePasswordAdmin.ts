@@ -1,11 +1,13 @@
 import { AdminChangePasswordRequest } from '../../../bloben-interface/admin/admin';
 import { CommonResponse } from '../../../bloben-interface/interface';
+import { LOG_TAG } from '../../../utils/enums';
 import { Request, Response } from 'express';
 import { createCommonResponse } from '../../../utils/common';
 import { throwError } from '../../../utils/errorCodes';
 import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
+import logger from '../../../utils/logger';
 
 export const changePasswordAdmin = async (
   req: Request,
@@ -27,6 +29,10 @@ export const changePasswordAdmin = async (
   );
 
   if (!isOldPasswordMatching) {
+    logger.warn(`Admin changed password wrong`, [
+      LOG_TAG.REST,
+      LOG_TAG.SECURITY,
+    ]);
     throw throwError(401, 'Wrong password', req);
   }
 

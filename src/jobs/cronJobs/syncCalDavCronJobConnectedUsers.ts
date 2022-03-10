@@ -1,17 +1,17 @@
-import { BULL_QUEUE, LOG_TAG } from '../../utils/enums';
+import { BULL_QUEUE, GROUP_LOG_KEY } from '../../utils/enums';
 import { calDavSyncBullQueue } from '../../service/BullQueue';
 import { getUserIDFromWsRoom } from '../../utils/common';
+import { groupLogs } from '../../utils/logger';
 import { io } from '../../app';
-import logger from '../../utils/logger';
 
 /**
  * Get users connected with ws for more frequent sync
  */
 export const syncCalDavCronJobConnectedUsers = async (): Promise<void> => {
-  logger.info('syncCalDavCronJobConnectedUsers start', [
-    LOG_TAG.CRON,
-    LOG_TAG.CALDAV,
-  ]);
+  await groupLogs(
+    GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
+    'syncCalDavCronJobConnectedUsers start'
+  );
 
   const socketClients = io.sockets.adapter.rooms;
 

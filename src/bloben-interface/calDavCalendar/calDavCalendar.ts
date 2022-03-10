@@ -7,3 +7,16 @@ export interface GetCalDavCalendar {
   timezone: string;
   url: string;
 }
+
+export interface CreateCalDavCalendarRequest {
+  accountID: string;
+  name: string;
+  color: string;
+  components: string[];
+}
+
+export interface UpdateCalDavCalendarRequest {
+  name: string;
+  color: string;
+  components: string[];
+}

@@ -1,14 +1,15 @@
 import { Request } from 'express';
 
+import { LOG_TAG, REDIS_PREFIX, SESSION } from '../../../utils/enums';
 import {
   LoginRequest,
   LoginResponse,
 } from '../../../bloben-interface/user/user';
-import { REDIS_PREFIX, SESSION } from '../../../utils/enums';
 import { throwError } from '../../../utils/errorCodes';
 import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
+import logger from '../../../utils/logger';
 
 export const login = async (req: Request): Promise<LoginResponse> => {
   const body: LoginRequest = req.body;
@@ -19,10 +20,18 @@ export const login = async (req: Request): Promise<LoginResponse> => {
   );
 
   if (!user) {
+    logger.warn(`User login unknown user ${username}`, [
+      LOG_TAG.REST,
+      LOG_TAG.SECURITY,
+    ]);
     throw throwError(401, 'Cannot login', req);
   }
 
   if (!user.isEnabled) {
+    logger.warn(`User login disabled user ${username}`, [
+      LOG_TAG.REST,
+      LOG_TAG.SECURITY,
+    ]);
     throw throwError(401, 'Cannot login', req);
   }
 
@@ -32,6 +41,7 @@ export const login = async (req: Request): Promise<LoginResponse> => {
   isPasswordMatching = await bcrypt.compare(password, user.hash);
 
   if (!isPasswordMatching) {
+    logger.warn(`User login wrong password`, [LOG_TAG.REST, LOG_TAG.SECURITY]);
     throw throwError(401, 'Cannot login', req);
   }
 

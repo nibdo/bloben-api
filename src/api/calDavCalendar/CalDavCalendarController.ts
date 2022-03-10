@@ -30,3 +30,45 @@ export const syncCalDavCalendars = async (
     next(error);
   }
 };
+
+export const createCalDavCalendar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavCalendarService.createCalDavCalendar(req, res);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCalDavCalendar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavCalendarService.updateCalDavCalendar(req, res);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteCalDavCalendar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavCalendarService.deleteCalDavCalendar(req, res);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};

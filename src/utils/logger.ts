@@ -1,8 +1,8 @@
 import { LOG_LEVEL, LOG_TAG, NODE_ENV } from './enums';
-import { env, winstonLogger } from '../index';
+import { env, redisClient, winstonLogger } from '../index';
 
 const logger = {
-  info: async (message: string, tags?: LOG_TAG[]) => {
+  info: (message: string, tags?: LOG_TAG[]) => {
     if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
       // eslint-disable-next-line no-console
       console.log(message);
@@ -15,12 +15,7 @@ const logger = {
     });
   },
 
-  warn: async (
-    message: string,
-    tags?: LOG_TAG[],
-    method?: string,
-    path?: string
-  ) => {
+  warn: (message: string, tags?: LOG_TAG[], method?: string, path?: string) => {
     winstonLogger?.log({
       level: LOG_LEVEL.WARN,
       message,
@@ -30,7 +25,7 @@ const logger = {
     });
   },
 
-  debug: async (message: string, tags?: LOG_TAG[]) => {
+  debug: (message: string, tags?: LOG_TAG[]) => {
     if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
       // eslint-disable-next-line no-console
       console.log(message);
@@ -43,7 +38,7 @@ const logger = {
     });
   },
 
-  error: async (
+  error: (
     message: string,
     error?: any,
     tags?: LOG_TAG[],
@@ -63,6 +58,23 @@ const logger = {
       tags,
     });
   },
+};
+
+export const groupLogs = async (key: string, msg: string) => {
+  const resultRaw = await redisClient.get(key);
+  const result = resultRaw ? JSON.parse(resultRaw) : [];
+
+  if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
+    // eslint-disable-next-line no-console
+    console.log(`[GROUP LOG]: ${key} - ${msg}`);
+  }
+
+  result.push({
+    timestamp: new Date().toISOString(),
+    message: msg,
+  });
+
+  await redisClient.set(key, JSON.stringify(result));
 };
 
 export default logger;
