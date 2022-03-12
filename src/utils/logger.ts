@@ -1,5 +1,5 @@
 import { LOG_LEVEL, LOG_TAG, NODE_ENV } from './enums';
-import { env, winstonLogger } from '../index';
+import { env, redisClient, winstonLogger } from '../index';
 
 const logger = {
   info: (message: string, tags?: LOG_TAG[]) => {
@@ -58,6 +58,23 @@ const logger = {
       tags,
     });
   },
+};
+
+export const groupLogs = async (key: string, msg: string) => {
+  const resultRaw = await redisClient.get(key);
+  const result = resultRaw ? JSON.parse(resultRaw) : [];
+
+  if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
+    // eslint-disable-next-line no-console
+    console.log(`[GROUP LOG]: ${key} - ${msg}`);
+  }
+
+  result.push({
+    timestamp: new Date().toISOString(),
+    message: msg,
+  });
+
+  await redisClient.set(key, JSON.stringify(result));
 };
 
 export default logger;

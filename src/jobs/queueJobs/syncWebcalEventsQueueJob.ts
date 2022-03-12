@@ -1,6 +1,7 @@
 import { AxiosResponse } from 'axios';
 import {
   BULL_QUEUE,
+  GROUP_LOG_KEY,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
@@ -22,7 +23,7 @@ import WebcalCalendarEntity from '../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../data/repository/WebcalCalendarRepository';
 import WebcalEventEntity from '../../data/entity/WebcalEventEntity';
 import WebcalEventExceptionEntity from '../../data/entity/WebcalEventExceptionEntity';
-import logger from '../../utils/logger';
+import logger, { groupLogs } from '../../utils/logger';
 
 interface WebcalCalendar {
   id: string;
@@ -57,19 +58,20 @@ export const getWebcalendarsForSync = (data?: { userID: string }) => {
 export const syncWebcalEventsQueueJob = async (job?: Job) => {
   const data = job?.data;
 
-  logger.info(`Checking webcal calendars for sync`, [
-    LOG_TAG.QUEUE,
-    LOG_TAG.WEBCAL,
-  ]);
+  await groupLogs(
+    GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
+    `Checking webcal calendars for sync`
+  );
+
   try {
     const webcalCalendars: WebcalCalendar[] = await getWebcalendarsForSync(
       data
     );
 
-    logger.info(`${webcalCalendars.length} webcal calendars to check`, [
-      LOG_TAG.QUEUE,
-      LOG_TAG.WEBCAL,
-    ]);
+    await groupLogs(
+      GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
+      `${webcalCalendars.length} webcal calendars to check`
+    );
 
     if (!webcalCalendars.length) {
       return;
@@ -85,9 +87,9 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
         let connection: Connection | null;
         let queryRunner: QueryRunner | null;
         try {
-          logger.info(
-            `Checking webcal calendar with id: ${webcalCalendar.id}`,
-            [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
+          await groupLogs(
+            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
+            `Checking webcal calendar with id: ${webcalCalendar.id}`
           );
 
           // get file
@@ -103,9 +105,9 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           // parse to JSON
           const parsedIcal: ICalJSON = ICalParser.toJSON(response.data);
 
-          logger.info(
-            `Deleting previous records for webcal calendar ${webcalCalendar.id}`,
-            [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
+          await groupLogs(
+            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
+            `Deleting previous records for webcal calendar ${webcalCalendar.id}`
           );
           // delete previous records
           await queryRunner.manager.query(deleteWebcalEventsExceptionsSql, [
@@ -114,9 +116,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           await queryRunner.manager.query(deleteWebcalEventsSql, [
             webcalCalendar.id,
           ]);
-          logger.info(
-            `Deleted previous records for webcal calendar ${webcalCalendar.id}`,
-            [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
+
+          await groupLogs(
+            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
+            `Deleted previous records for webcal calendar ${webcalCalendar.id}`
           );
 
           // recreate records
@@ -165,10 +168,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
           );
 
-          logger.info('Webcal update job done', [
-            LOG_TAG.QUEUE,
-            LOG_TAG.WEBCAL,
-          ]);
+          await groupLogs(
+            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
+            `Webcal update job done for ${webcalCalendar.id}`
+          );
         } catch (e) {
           if (queryRunner) {
             await queryRunner.rollbackTransaction();
@@ -215,10 +218,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
 
 export const webcalSyncQueueSocketJob = async () => {
   try {
-    logger.info('webcalSyncQueueSocketJob start', [
-      LOG_TAG.CRON,
-      LOG_TAG.WEBCAL,
-    ]);
+    await groupLogs(
+      GROUP_LOG_KEY.CALDAV_JOB_CONNECTED_USERS,
+      'webcalSyncQueueSocketJob start'
+    );
 
     const socketClients = io.sockets.adapter.rooms;
 

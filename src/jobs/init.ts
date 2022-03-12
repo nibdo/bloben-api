@@ -3,6 +3,7 @@ import { syncCalDavCronJob } from './cronJobs/syncCalDavCronJob';
 import { syncCalDavCronJobConnectedUsers } from './cronJobs/syncCalDavCronJobConnectedUsers';
 
 import { CronJob } from 'cron';
+import { groupLogsCronJob } from './cronJobs/groupLogsCronJob';
 import { syncCalDavTaskCronJobConnectedUsers } from './cronJobs/syncCalDavTaskCronJobConnectedUsers';
 import { webcalSyncQueueSocketJob } from './queueJobs/syncWebcalEventsQueueJob';
 
@@ -28,4 +29,8 @@ export const initCronJobs = () => {
     syncCalDavTaskCronJobConnectedUsers
   );
   syncCalDavTodoConnectedUsersJob.start();
+
+  const groupLogsJob = new CronJob('10 */3 * * *', groupLogsCronJob); // At
+  // minute 10 past every 3rd hour
+  groupLogsJob.start();
 };
