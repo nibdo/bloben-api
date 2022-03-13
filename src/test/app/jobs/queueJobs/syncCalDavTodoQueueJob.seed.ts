@@ -11,7 +11,6 @@ import { forEach } from 'lodash';
 import ICalParser, { TodoJSON } from 'ical-js-parser-commonjs';
 import { generateRandomString } from '../../../../utils/common';
 import { io } from '../../../../app';
-import { calendarToUpdateID } from './syncCalDavQueueJob.seed';
 import { formatTodoJsonToCalDavTodo } from '../../../../utils/davHelperTodo';
 import CalDavTaskEntity from '../../../../data/entity/CalDavTaskEntity';
 import CalDavTaskRepository from '../../../../data/repository/CalDavTaskRepository';
@@ -40,8 +39,6 @@ export const todoToUpdateID = '1ad2b4f3-f4d3-47ff-93d2-99a8eec4c0b2';
 export const todoToKeepID = '3235e210-5678-4975-aa05-56b4747fbd4c';
 export const todoToDeleteID = 'bebdce1a-f576-2b38-9ac7-e301ab32d6f9';
 
-export const calendarA = '1d47a736-8c55-4d55-a36a-73331f3f8023';
-export const calendarB = 'dc8f142e-07b1-476e-84e1-87761543719c';
 const etagToKeep = 'FGHBAFJi123';
 
 const prepareData = async (accountUrl: string, calendarUrl: string) => {
@@ -62,29 +59,16 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
   newAccount.principalUrl = accountUrl;
   newAccount.url = accountUrl;
 
-  const calendars: CalDavCalendarEntity[] = [];
-  let defaultCalendar;
+  const newCalendar = new CalDavCalendarEntity();
 
-  const calendarIDS = [calendarA, calendarB];
-
-  forEach(calendarIDS, (id) => {
-    const newCalendar = new CalDavCalendarEntity();
-
-    newCalendar.calDavAccount = newAccount;
-    newCalendar.displayName = 'default';
-    newCalendar.data = JSON.stringify({ displayName: 'default' });
-    newCalendar.ctagTasks = 'AB1212341';
-    newCalendar.url = `${accountUrl}/${id}`;
-
-    calendars.push(newCalendar);
-
-    if (id === calendarB) {
-      defaultCalendar = newCalendar;
-    }
-  });
+  newCalendar.calDavAccount = newAccount;
+  newCalendar.displayName = 'default';
+  newCalendar.data = JSON.stringify({ displayName: 'default' });
+  newCalendar.ctagTasks = 'AB1212341';
+  newCalendar.url = `${calendarUrl}`;
 
   await CalDavAccountRepository.getRepository().save(newAccount);
-  await CalDavCalendarRepository.getRepository().save(calendars);
+  await CalDavCalendarRepository.getRepository().save(newCalendar);
 
   const todos: CalDavTaskEntity[] = [];
 
@@ -100,7 +84,7 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
         etag: id === todoToKeepID ? etagToKeep : generateRandomString(20),
         url: `${calendarUrl}/${id}`,
       } as DAVCalendarObject,
-      defaultCalendar
+      newCalendar
     );
 
     todos.push(new CalDavTaskEntity(todoObj));
@@ -111,7 +95,7 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
   return user;
 };
 
-const prepareMock = (accountUrl: string) => {
+const prepareMock = (accountUrl: string, calendarUrl: string) => {
   ImportMock.restore();
 
   // @ts-ignore
@@ -133,14 +117,14 @@ const prepareMock = (accountUrl: string) => {
 
   // @ts-ignore
   mockManager.set('fetchCalendars', () => {
-    const calendarIDS = [calendarA, calendarB];
-
-    return calendarIDS.map((id) => ({
-      components: ['VEVENT', 'VTODO'],
-      ctag: 'BGTPY123111',
-      displayName: 'default',
-      url: `${accountUrl}/${id}`,
-    }));
+    return [
+      {
+        components: ['VEVENT', 'VTODO'],
+        ctag: 'BGTPY123111',
+        displayName: 'default',
+        url: `${calendarUrl}`,
+      },
+    ];
   });
 
   // @ts-ignore
@@ -149,7 +133,7 @@ const prepareMock = (accountUrl: string) => {
 
     return todoIDS.map((id) => ({
       raw: '',
-      href: `${accountUrl}/${calendarToUpdateID}/${id}`,
+      href: `${calendarUrl}/${id}`,
       status: 200,
       statusText: 'Ok',
       ok: true,
@@ -169,7 +153,7 @@ const prepareMock = (accountUrl: string) => {
         id === todoToKeepID ? undefined : 'New value'
       ),
       etag: id === todoToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
-      url: `${accountUrl}/${calendarToUpdateID}/${id}`,
+      url: `${calendarUrl}/${id}`,
     }));
   });
 
@@ -194,7 +178,7 @@ export const initSyncCalDavTodoQueueJobData = async (accountUrl: string) => {
   const user = await prepareData(accountUrl, calendarUrl);
 
   // prepare mock data
-  await prepareMock(accountUrl);
+  await prepareMock(accountUrl, calendarUrl);
 
   return user;
 };

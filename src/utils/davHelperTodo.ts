@@ -9,7 +9,13 @@ import { find, forEach } from 'lodash';
 import { getCalendarObjectsByUrl } from './davHelper';
 
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { LOG_TAG } from './enums';
+import {
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from './enums';
+import { io } from '../app';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavTaskEntity from '../data/entity/CalDavTaskEntity';
 import CalDavTaskRepository from '../data/repository/CalDavTaskRepository';
@@ -224,7 +230,6 @@ const syncTasksForAccount = async (calDavAccount: AccountWithCalendars) => {
             foundItem = calDavServerItem;
           }
         });
-
         if (!foundItem) {
           toSoftDelete.push(existingTask.id);
           softDeleteExternalID.push(existingTask.externalID);
@@ -295,20 +300,24 @@ const syncTasksForAccount = async (calDavAccount: AccountWithCalendars) => {
 
         connection = null;
         queryRunner = null;
-        logger.error('Sync caldav tasks error', e, [
-          LOG_TAG.QUEUE,
-          LOG_TAG.CALDAV_TASK,
-        ]);
       }
+      logger.error('Sync caldav tasks error', e, [
+        LOG_TAG.QUEUE,
+        LOG_TAG.CALDAV_TASK,
+      ]);
     }
   }
 };
 
 export const syncCalDavTasks = async (userID: string, calDavAccounts: any) => {
-  let wasChanged = false;
   for (const calDavAccount of calDavAccounts) {
-    wasChanged = await syncTasksForAccount(calDavAccount);
-  }
+    const wasChanged = await syncTasksForAccount(calDavAccount);
 
-  return wasChanged;
+    if (wasChanged) {
+      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+        SOCKET_CHANNEL.SYNC,
+        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_TASKS })
+      );
+    }
+  }
 };

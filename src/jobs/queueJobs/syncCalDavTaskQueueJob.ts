@@ -1,12 +1,6 @@
 import { Job } from 'bullmq';
-import {
-  LOG_TAG,
-  SOCKET_CHANNEL,
-  SOCKET_MSG_TYPE,
-  SOCKET_ROOM_NAMESPACE,
-} from '../../utils/enums';
+import { LOG_TAG } from '../../utils/enums';
 import { groupBy } from 'lodash';
-import { io } from '../../app';
 import { syncCalDavTasks } from '../../utils/davHelperTodo';
 import CalDavAccountRepository from '../../data/repository/CalDavAccountRepository';
 import logger from '../../utils/logger';
@@ -31,13 +25,6 @@ export const syncCalDavTaskQueueJob = async (job: Job) => {
 
   for (const [userID, items] of Object.entries(groupedByUserID)) {
     // sync items
-    const wasChanged = await syncCalDavTasks(userID, items);
-
-    if (wasChanged) {
-      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
-        SOCKET_CHANNEL.SYNC,
-        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_TASKS })
-      );
-    }
+    await syncCalDavTasks(userID, items);
   }
 };
