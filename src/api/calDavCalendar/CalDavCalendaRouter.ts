@@ -7,6 +7,7 @@ import { authMiddleware } from '../../middleware/authMiddleware';
 import { createCalDavCalendarSchema } from './schemas/createCalDavCalendarSchema';
 import { deleteCalDavCalendarSchema } from './schemas/deleteCalDavCalendarSchema';
 import { emptySchema } from '../../common/schemas/emptySchema';
+import { getCalDavCalendarSchema } from './schemas/getCalDavCalendarSchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
@@ -19,7 +20,7 @@ CalDavACalendarRouter.get(
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER, USER_ROLE.DEMO]),
-    validationMiddleware(emptySchema),
+    validationMiddleware(getCalDavCalendarSchema),
   ],
   CalDavCalendarController.getCalDavCalendars
 );

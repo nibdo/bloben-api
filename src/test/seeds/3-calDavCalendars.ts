@@ -6,6 +6,7 @@ import UserEntity from "../../data/entity/UserEntity";
 import { CreateCalDavAccountRequest } from "../../bloben-interface/calDavAccount/calDavAccount";
 import CalDavAccountEntity from "../../data/entity/CalDavAccount";
 import CalDavCalendarEntity from "../../data/entity/CalDavCalendar";
+import {CALDAV_COMPONENTS} from "../../bloben-interface/enums";
 
 export const testAccountsData: CreateCalDavAccountRequest[] = [
   {
@@ -50,6 +51,7 @@ export class calDavCalendars implements MigrationInterface {
       newCalendar.calDavAccount = newAccount;
       newCalendar.displayName = "default";
       newCalendar.data = JSON.stringify({displayName: "default"});
+      newCalendar.components = [CALDAV_COMPONENTS.VEVENT, CALDAV_COMPONENTS.VTODO]
 
       calDavAccounts.push(newAccount);
       calDavCalendars.push(newCalendar);

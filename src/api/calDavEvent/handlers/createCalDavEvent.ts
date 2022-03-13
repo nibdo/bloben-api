@@ -71,5 +71,5 @@ export const createCalDavEvent = async (
   // trigger resync for cached events
   // await CalDavCacheService.syncEventsForAccount(calDavAccount);
 
-  return createCommonResponse();
+  return createCommonResponse('Event created');
 };
