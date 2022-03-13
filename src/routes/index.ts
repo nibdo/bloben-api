@@ -5,6 +5,8 @@ import CalDavAccountRouter from '../api/caldavAccount/CalDavAccountRoutes';
 import CalDavCalendarRouter from '../api/calDavCalendar/CalDavCalendaRouter';
 import CalDavEventRouter from '../api/calDavEvent/CalDavEventRoutes';
 import CalDavEventRouterV2 from '../api/calDavEvent/CalDavEventRoutesV2';
+import CalDavTaskRoutes from '../api/calDavTask/CalDavTaskRoutes';
+import CalDavTaskSettingsRoutes from '../api/calDavTaskSettings/CalDavTaskSettingsRoutes';
 import EventRoutes from '../api/event/EventRoutes';
 import PushSubscriptionRouter from '../api/pushSubscription/PushSubscriptionRoutes';
 import SocketRouter from '../api/socket/SocketRoutes';
@@ -25,6 +27,11 @@ AppRouter.use(`/${API_VERSIONS.V1}/events`, EventRoutes);
 AppRouter.use(`/${API_VERSIONS.V1}/timezones`, TimezoneRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/caldav-accounts`, CalDavAccountRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/caldav-calendars`, CalDavCalendarRouter);
+AppRouter.use(`/${API_VERSIONS.V1}/caldav-tasks`, CalDavTaskRoutes);
+AppRouter.use(
+  `/${API_VERSIONS.V1}/caldav-task/settings`,
+  CalDavTaskSettingsRoutes
+);
 AppRouter.use(`/${API_VERSIONS.V1}/push/subscription`, PushSubscriptionRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/webcal/calendars`, WebcalCalendarRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/webcal/events`, WebcalEventsRouter);

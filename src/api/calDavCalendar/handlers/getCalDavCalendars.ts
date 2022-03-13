@@ -26,6 +26,9 @@ export const getCalDavCalendars = async (
   res: Response
 ): Promise<GetCalDavCalendar[]> => {
   const { userID } = res.locals;
+  const { component } = req.query;
+
+  const parameters = component ? [userID, component] : [userID];
 
   const calendarsRaw: any =
     await CalDavCalendarRepository.getRepository().query(
@@ -43,9 +46,10 @@ export const getCalDavCalendars = async (
         JOIN caldav_accounts ca ON ca.id = c.caldav_account_id AND ca.deleted_at IS NULL
       WHERE
         ca.user_id = $1
-        AND c.deleted_at IS NULL;
+        AND c.deleted_at IS NULL
+        ${component ? 'AND $2 = ANY(c.components)' : ''};
     `,
-      [userID]
+      parameters
     );
 
   return map(calendarsRaw, (calendar) => formatCalendarResponse(calendar));

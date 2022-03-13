@@ -72,7 +72,7 @@ export let io: Server = null;
 const createApp = (): Promise<void> => {
   return new Promise((resolve) => {
     // eslint-disable-next-line no-console
-    console.log(`[NODE_ENV]: ${env.nodeEnv}`);
+    console.log(`[NODE_ENV]:  ${env.nodeEnv}`);
 
     if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
       coverageTestUtil();
