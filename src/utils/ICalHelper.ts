@@ -1,14 +1,19 @@
 import ICalParser from 'ical-js-parser-commonjs';
 
+import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser-commonjs';
-import { EventDecrypted } from '../bloben-interface/event/event';
-import { env } from '../index';
-import LuxonHelper from './luxonHelper';
+import { forEach } from 'lodash';
 
 export type CalendarMethod = 'REQUEST' | 'REPLY';
 export const CALENDAR_REQUEST_METHOD: CalendarMethod = 'REQUEST';
 export const CALENDAR_REPLY_METHOD: CalendarMethod = 'REPLY';
+
+export enum CALENDAR_METHOD {
+  REQUEST = 'REQUEST',
+  REPLY = 'REPLY',
+  CANCEL = 'CANCEL',
+}
 
 class ICalHelper {
   dtstart: DateTimeObject;
@@ -27,11 +32,9 @@ class ICalHelper {
   transp?: string;
   rrule?: string;
 
-  constructor(event: EventDecrypted) {
+  constructor(event: CalDavEventsRaw) {
     const {
-      id,
       createdAt,
-      updatedAt,
       startAt,
       endAt,
       summary,
@@ -40,38 +43,53 @@ class ICalHelper {
       isRepeated,
       rRule,
       timezoneStart,
-      attendees,
+      props,
       externalID,
-      sequence,
     } = event;
 
-    this.dtstart = {
-      value: LuxonHelper.toUtcString(startAt),
-      timezone: timezoneStart,
-    };
-    this.dtend = {
-      value: LuxonHelper.toUtcString(endAt),
-      timezone: timezoneStart,
-    };
-    this.uid = externalID
-      ? externalID
-      : `${id}@${env.email.identity.slice(
-          env.email.identity.indexOf('@' + 1)
-        )}`;
-    this.organizer = { cn: env.email.identity, mailto: env.email.identity };
-    this.attendee = attendees;
-    this.created = { value: LuxonHelper.toUtcString(createdAt) };
+    this.dtstart = timezoneStart
+      ? {
+          value: startAt,
+          timezone: timezoneStart,
+        }
+      : {
+          value: startAt,
+        };
+    this.dtend = timezoneStart
+      ? {
+          value: endAt,
+          timezone: timezoneStart,
+        }
+      : {
+          value: endAt,
+        };
+    this.uid = externalID;
+    // this.organizer = props.organizer;
+    // this.attendee = props.attendee;
+    this.created = { value: createdAt };
     this.dtstamp = {
       value: DateTime.local().toUTC().toString(),
     };
     this.description = description;
-    this.lastModified = { value: LuxonHelper.toUtcString(updatedAt) };
+    this.lastModified = {
+      value: DateTime.local().toUTC().toString(),
+    };
     this.rrule = isRepeated && rRule ? rRule : undefined;
     this.summary = summary;
     this.location = location;
-    this.sequence = sequence;
-    this.status = 'CONFIRMED';
-    this.transp = 'OPAQUE';
+    // this.sequence = props.sequence;
+    // this.status = props.status;
+    // this.transp = props.transp;
+
+    if (props) {
+      forEach(Object.entries(props), (propItem) => {
+        if (propItem[0] === 'sequence') {
+          this[propItem[0]] = String(Number(propItem[1]) + 1);
+        } else {
+          this[propItem[0]] = propItem[1];
+        }
+      });
+    }
   }
   /**
    * Remove undefined props
@@ -93,7 +111,7 @@ class ICalHelper {
     return result;
   };
 
-  private createCalendar = (method: CalendarMethod) => ({
+  private createCalendar = (method: CALENDAR_METHOD) => ({
     begin: 'BEGIN:VCALENDAR',
     prodid: 'BLOBEN 1.0',
     method: method,
@@ -102,7 +120,7 @@ class ICalHelper {
     end: 'END:VCALENDAR',
   });
 
-  public parseTo = (method: CalendarMethod = CALENDAR_REQUEST_METHOD) => {
+  public parseTo = (method: CALENDAR_METHOD = CALENDAR_METHOD.REQUEST) => {
     const template: any = {
       calendar: this.createCalendar(method),
       events: [this.getKnownProps()],

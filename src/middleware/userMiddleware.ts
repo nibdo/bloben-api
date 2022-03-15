@@ -1,13 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import dotenv from 'dotenv';
 
 import { LOG_TAG } from '../utils/enums';
 import { throwError } from '../utils/errorCodes';
 import UserEntity from '../data/entity/UserEntity';
 import UserRepository from '../data/repository/UserRepository';
 import logger from '../utils/logger';
-
-dotenv.config();
 
 /*
  * Authentication middleware

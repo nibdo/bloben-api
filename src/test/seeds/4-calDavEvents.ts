@@ -42,6 +42,40 @@ END:VCALENDAR`,
   };
 };
 
+export const createDummyCalDavEventWithAttendees = (
+  calendarID: string
+): CreateCalDavEventRequest => {
+  const externalID = v4();
+  return {
+    externalID,
+    calendarID,
+    iCalString: `BEGIN:VCALENDAR
+METHOD:REQUEST
+PRODID:Test
+VERSION:2.0
+BEGIN:VEVENT
+DESCRIPTION:adadasd174C5B7301A82E0080000000089FCDD3B6C29D701000000000000000
+ samasiioasfioasjfio ja asfmioasiof asjio fjasifj ioasjf ioasji jfsaijfio j
+ mcXXXXXXx
+UID:${externalID}
+ORGANIZER;CN=test:mailto:test@bloben.com
+ATTENDEE;CN=tester@bloben.com;ROLE=REQ-PARTICIPANT;RSVP=TRUE;PARTSTAT=NEEDS-A
+ CTION:mailto:tester@bloben.com
+SUMMARY:teaaaaa
+DTSTART:20210401T110000Z
+DTEND:20210401T113000Z
+CLASS:PUBLIC
+PRIORITY:5
+DTSTAMP:20210402T205602Z
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+SEQUENCE:0
+LOCATION:asdsfdf
+END:VEVENT
+END:VCALENDAR`,
+  };
+};
+
 export const testIcalString = `BEGIN:VCALENDAR
 METHOD:REQUEST
 PRODID:Test

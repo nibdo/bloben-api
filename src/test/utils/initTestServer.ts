@@ -12,7 +12,7 @@ import { createRedisConfig } from '../../config/redis';
 import { createSessionConfig } from '../../config/session';
 import {getTestDemoUser, getTestUser} from './getTestUser';
 import { io } from '../../app';
-import { redisClient } from '../../index';
+import {env, redisClient} from '../../index';
 import Router from '../../routes';
 import UserEntity from '../../data/entity/UserEntity';
 import errorMiddleware from '../../middleware/errorMiddleware';
@@ -90,6 +90,14 @@ export const createTestServerWithSession = (isDemoUser?: boolean) => {
       };
     },
   };
+
+  env.email = {
+    smtpHost: 'smtp.bloben.com',
+    smtpPort: 587,
+    username: 'asafsaf',
+    password: 'asfafasf',
+    identity: 'asfasf'
+  }
 
   return TestBlobenApp;
 };
