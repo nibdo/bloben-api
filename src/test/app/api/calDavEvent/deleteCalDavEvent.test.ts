@@ -27,7 +27,7 @@ describe(`Delete calDav event [DELETE] ${PATH}`, async function () {
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer()).delete(PATH).send({
       calendarID: calDavEvent.calendar.id,
-      id: invalidUUID,
+      id: calDavEvent.id,
       etag: 'CTGARAF',
       url: calDavEvent.href,
     });
@@ -42,6 +42,21 @@ describe(`Delete calDav event [DELETE] ${PATH}`, async function () {
       .delete(PATH)
       .send({
         calendarID: invalidUUID,
+        id: calDavEvent.id,
+        etag: 'CTGARAF',
+        url: calDavEvent.href,
+      });
+
+    const { status } = response;
+
+    assert.equal(status, 404);
+  });
+
+  it('Should get status 404', async function () {
+    const response: any = await request(createTestServerWithSession())
+      .delete(PATH)
+      .send({
+        calendarID: calDavEvent.calendar.id,
         id: invalidUUID,
         etag: 'CTGARAF',
         url: calDavEvent.href,
@@ -60,7 +75,7 @@ describe(`Delete calDav event [DELETE] ${PATH}`, async function () {
       .delete(PATH)
       .send({
         calendarID: calDavEvent.calendar.id,
-        id: invalidUUID,
+        id: calDavEvent.id,
         etag: 'CTGARAF',
         url: calDavEvent.href,
       });
@@ -93,7 +108,7 @@ describe(`Delete calDav event [DELETE] ${PATH}`, async function () {
       .delete(PATH)
       .send({
         calendarID: calDavEvent.calendar.id,
-        id: invalidUUID,
+        id: calDavEvent.id,
         etag: 'CTGARAF',
         url: calDavEvent.href,
       });
