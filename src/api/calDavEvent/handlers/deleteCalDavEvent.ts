@@ -10,10 +10,9 @@ import { CommonResponse } from '../../../bloben-interface/interface';
 import { DeleteCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse } from '../../../utils/common';
 import { emailBullQueue } from '../../../service/BullQueue';
-import { formatEventInviteSubject } from '../../../utils/format';
+import { formatInviteData } from '../../../utils/davHelper';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
-import { map } from 'lodash';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
@@ -59,25 +58,17 @@ export const deleteCalDavEvent = async (
   if (event.props?.attendee) {
     const icalString = new ICalHelper(event).parseTo(CALENDAR_METHOD.CANCEL);
 
-    await emailBullQueue.add(BULL_QUEUE.EMAIL, {
-      userID,
-      email: {
-        subject: formatEventInviteSubject(
-          event.summary,
-          event.startAt,
-          event.timezoneStart
-        ),
-        body: formatEventInviteSubject(
-          event.summary,
-          event.startAt,
-          event.timezoneStart
-        ),
-        ical: icalString,
-        method: CALENDAR_METHOD.CANCEL,
+    await emailBullQueue.add(
+      BULL_QUEUE.EMAIL,
+      formatInviteData(
+        userID,
+        event,
+        icalString,
         // @ts-ignore
-        recipients: map(event.props.attendee, 'mailto'),
-      },
-    });
+        newEvent.props.attendee,
+        CALENDAR_METHOD.CANCEL
+      )
+    );
   }
 
   await CalDavEventRepository.getRepository().delete({

@@ -32,7 +32,7 @@ export const getUserEmailConfig = async (
   const HIDDEN_RESPONSE = '*****';
 
   return {
-    smtpEmail: userEmailConfigData?.smtpEmail || 'SERVER CONFIG',
+    smtpEmail: userEmailConfigData?.smtpEmail || env.email.identity,
     smtpHost: userEmailConfigData?.smtpHost || 'SERVER CONFIG',
     smtpPassword: HIDDEN_RESPONSE,
     smtpPort: userEmailConfigData?.smtpPort || env.email.smtpPort,
