@@ -54,9 +54,8 @@ export const deleteCalDavEvent = async (
     throw throwError('404', 'Event not found');
   }
 
-  // @ts-ignore
   if (event.props?.attendee) {
-    const icalString = new ICalHelper(event).parseTo(CALENDAR_METHOD.CANCEL);
+    const icalString = new ICalHelper(event).parseTo();
 
     await emailBullQueue.add(
       BULL_QUEUE.EMAIL,
@@ -64,8 +63,7 @@ export const deleteCalDavEvent = async (
         userID,
         event,
         icalString,
-        // @ts-ignore
-        newEvent.props.attendee,
+        event.props.attendee,
         CALENDAR_METHOD.CANCEL
       )
     );

@@ -93,7 +93,6 @@ export const updateCalDavEvent = async (
       await queryRunner.manager.save(newEvent);
     }
 
-    // @ts-ignore
     if (eventTemp.props?.attendee) {
       await emailBullQueue.add(
         BULL_QUEUE.EMAIL,
@@ -101,8 +100,7 @@ export const updateCalDavEvent = async (
           userID,
           eventTemp,
           body.iCalString,
-          // @ts-ignore
-          newEvent.props.attendee,
+          eventTemp.props.attendee,
           CALENDAR_METHOD.REQUEST
         )
       );
