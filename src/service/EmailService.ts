@@ -40,6 +40,21 @@ export const sendEmailInvite = async (
       },
     };
 
+    // eslint-disable-next-line no-console
+    console.log({
+      messageId: createMessageID(),
+      from: emailInvite.from,
+      to: emailInvite.recipients,
+      subject: emailInvite.subject,
+      text: emailInvite.body,
+      method: emailInvite.method,
+      icalEvent: {
+        filename: 'invite.ics',
+        method: emailInvite.method,
+        content: emailInvite.ical,
+      },
+    });
+
     // handle test cases
     if (env.nodeEnv === NODE_ENV.TEST) {
       if (env.email.password === 'fail') {

@@ -2,6 +2,7 @@ import {
   AccountWithCalendars,
   CalendarFromAccount,
 } from '../data/repository/CalDavAccountRepository';
+import { CALENDAR_METHOD } from './ICalHelper';
 import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
@@ -13,19 +14,21 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from './enums';
 import { Range } from '../bloben-interface/interface';
-import { cloneDeep, find, forEach } from 'lodash';
+import { cloneDeep, find, forEach, map } from 'lodash';
 import {
   createCalDavCalendar,
   updateCalDavCalendar,
 } from '../api/caldavAccount/helpers/createCalDavCalendar';
 import { createDavClient } from '../service/davService';
-import { formatEventEntityToResult } from './format';
+import { formatEventEntityToResult, formatEventInviteSubject } from './format';
 import { formatToRRule } from './common';
 import { io } from '../app';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
-import CalDavEventRepository from '../data/repository/CalDavEventRepository';
+import CalDavEventRepository, {
+  CalDavEventsRaw,
+} from '../data/repository/CalDavEventRepository';
 import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
@@ -605,4 +608,39 @@ export const removeSupportedProps = (originalItem: EventJSON) => {
   delete item.url;
 
   return item;
+};
+
+export const injectMethod = (icalString: string, method: CALENDAR_METHOD) => {
+  const firstPart = icalString.slice(0, icalString.indexOf('CALSCALE:'));
+  const secondPart = icalString.slice(icalString.indexOf('CALSCALE:') - 1);
+
+  return `${firstPart}METHOD:${method}${secondPart}`;
+};
+
+export const formatInviteData = (
+  userID: string,
+  event: CalDavEventObj | CalDavEventsRaw,
+  iCalString: string,
+  attendees: any[],
+  method: CALENDAR_METHOD
+) => {
+  return {
+    userID,
+    email: {
+      subject: formatEventInviteSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStart
+      ),
+      body: formatEventInviteSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStart
+      ),
+      ical: injectMethod(iCalString, method),
+      method: method,
+      // @ts-ignore
+      recipients: map(attendees, 'mailto'),
+    },
+  };
 };

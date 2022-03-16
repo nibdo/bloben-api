@@ -22,6 +22,7 @@ export const createDummyCalDavEvent = (
 METHOD:REQUEST
 PRODID:Test
 VERSION:2.0
+CALSCALE:GREGORIAN
 BEGIN:VEVENT
 DESCRIPTION:adadasd174C5B7301A82E0080000000089FCDD3B6C29D701000000000000000
  samasiioasfioasjfio ja asfmioasiof asjio fjasifj ioasjf ioasji jfsaijfio j
@@ -50,9 +51,9 @@ export const createDummyCalDavEventWithAttendees = (
     externalID,
     calendarID,
     iCalString: `BEGIN:VCALENDAR
-METHOD:REQUEST
 PRODID:Test
 VERSION:2.0
+CALSCALE:GREGORIAN
 BEGIN:VEVENT
 DESCRIPTION:adadasd174C5B7301A82E0080000000089FCDD3B6C29D701000000000000000
  samasiioasfioasjfio ja asfmioasiof asjio fjasifj ioasjf ioasji jfsaijfio j
@@ -77,9 +78,9 @@ END:VCALENDAR`,
 };
 
 export const testIcalString = `BEGIN:VCALENDAR
-METHOD:REQUEST
 PRODID:Test
 VERSION:2.0
+CALSCALE:GREGORIAN
 BEGIN:VEVENT
 DESCRIPTION:adadasd174C5B7301A82E0080000000089FCDD3B6C29D701000000000000000
  samasiioasfioasjfio ja asfmioasiof asjio fjasifj ioasjf ioasji jfsaijfio j

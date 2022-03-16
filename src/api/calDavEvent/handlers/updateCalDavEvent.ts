@@ -7,16 +7,18 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../utils/enums';
+import { CALENDAR_METHOD } from '../../../utils/ICalHelper';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { UpdateCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse } from '../../../utils/common';
-import { createEventFromCalendarObject } from '../../../utils/davHelper';
+import {
+  createEventFromCalendarObject,
+  formatInviteData,
+} from '../../../utils/davHelper';
 import { emailBullQueue } from '../../../service/BullQueue';
-import { formatEventInviteSubject } from '../../../utils/format';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
-import { map } from 'lodash';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
@@ -93,25 +95,17 @@ export const updateCalDavEvent = async (
 
     // @ts-ignore
     if (eventTemp.props?.attendee) {
-      await emailBullQueue.add(BULL_QUEUE.EMAIL, {
-        userID,
-        email: {
-          subject: formatEventInviteSubject(
-            eventTemp.summary,
-            eventTemp.startAt,
-            eventTemp.timezoneStart
-          ),
-          body: formatEventInviteSubject(
-            eventTemp.summary,
-            eventTemp.startAt,
-            eventTemp.timezoneStart
-          ),
-          ical: body.iCalString,
-          method: 'REQUEST',
+      await emailBullQueue.add(
+        BULL_QUEUE.EMAIL,
+        formatInviteData(
+          userID,
+          eventTemp,
+          body.iCalString,
           // @ts-ignore
-          recipients: map(eventTemp.props.attendee, 'mailto'),
-        },
-      });
+          newEvent.props.attendee,
+          CALENDAR_METHOD.REQUEST
+        )
+      );
     }
 
     // delete previous event if calendar was changed
