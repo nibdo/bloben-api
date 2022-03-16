@@ -8,7 +8,10 @@ import { initSeeds } from "../../../seeds/init";
 import { initCalDavMock } from "../../../__mocks__/calDavMock";
 import { mockTsDav, mockTsDavUnauthorized } from "../../../__mocks__/tsdav";
 import { ImportMock } from "ts-mock-imports";
-import { createDummyCalDavEvent } from "../../../seeds/4-calDavEvents";
+import {
+  createDummyCalDavEvent,
+  createDummyCalDavEventWithAttendees
+} from "../../../seeds/4-calDavEvents";
 import { invalidUUID } from "../adminUsers/adminUpdateUser.test";
 
 const PATH = "/api/v1/caldav-events";
@@ -16,6 +19,7 @@ const PATH = "/api/v1/caldav-events";
 describe(`Create calDav event [POST] ${PATH}`, async function () {
   let mockManager;
   let requestBody;
+  let requestBodyAttendees;
   before(async () => {
     mockManager = initCalDavMock();
   });
@@ -23,6 +27,7 @@ describe(`Create calDav event [POST] ${PATH}`, async function () {
   beforeEach(async () => {
     const { calDavCalendar } = await initSeeds();
     requestBody = createDummyCalDavEvent(calDavCalendar.id);
+    requestBodyAttendees = createDummyCalDavEventWithAttendees(calDavCalendar.id)
   });
   //
   it("Should get status 401", async function () {
@@ -77,6 +82,16 @@ describe(`Create calDav event [POST] ${PATH}`, async function () {
     const response: any = await request(createTestServerWithSession())
       .post(PATH)
       .send(requestBody);
+
+    const { status } = response;
+
+    assert.equal(status, 200);
+  });
+
+  it("Should get status 200 with attendees", async function () {
+    const response: any = await request(createTestServerWithSession())
+        .post(PATH)
+        .send(requestBodyAttendees);
 
     const { status } = response;
 

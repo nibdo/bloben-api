@@ -12,6 +12,7 @@ import PushSubscriptionRouter from '../api/pushSubscription/PushSubscriptionRout
 import SocketRouter from '../api/socket/SocketRoutes';
 import SyncRouter from '../api/sync/SyncRoutes';
 import TimezoneRouter from '../api/timezone/TimezoneRoutes';
+import UserEmailConfigRoutes from '../api/userEmailConfig/UserEmailConfigRoutes';
 import UserRouter from '../api/user/UserRoutes';
 import VersionRouter from '../api/version/VersionRoutes';
 import WebcalCalendarRouter from '../api/webcalCalendar/WebcalCalendarRouter';
@@ -20,6 +21,7 @@ import WebcalEventsRouter from '../api/webcalEvents/WebcalEventRouter';
 const AppRouter: Router = Router();
 
 AppRouter.use(`/${API_VERSIONS.V1}/users`, UserRouter);
+AppRouter.use(`/${API_VERSIONS.V1}/users/email-config`, UserEmailConfigRoutes);
 AppRouter.use(`/${API_VERSIONS.V1}/socket`, SocketRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/caldav-events`, CalDavEventRouter);
 AppRouter.use(`/${API_VERSIONS.V2}/caldav-events`, CalDavEventRouterV2);

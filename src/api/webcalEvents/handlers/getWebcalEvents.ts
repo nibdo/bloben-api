@@ -263,6 +263,7 @@ export const getWebcalEvents = async (
     organizer: event.organizer,
     attendees: event.attendees,
     alarms: [],
+    props: null,
     // alarms: event.alarms ? event.alarms : [],
     allDay: event.allDay,
     calendarID: event.webcalCalendar.id,

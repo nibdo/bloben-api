@@ -23,6 +23,7 @@ export interface EmailInvite {
 export interface EmailInviteData {
   subject: string;
   body: string;
+  from: string;
   ical: string;
   method: string;
   recipients: string[];
@@ -138,6 +139,7 @@ export interface EventResult {
   type: EVENT_TYPE;
   color: string;
   calendarID: string;
+  props: any;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

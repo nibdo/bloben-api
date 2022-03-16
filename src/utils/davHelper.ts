@@ -55,6 +55,7 @@ export const formatEventJsonToCalDavEvent = (
   calendar: CalDavCalendarEntity
 ): CalDavEventObj => {
   return {
+    props: removeSupportedProps(event),
     ...{ ...calendarObject, data: null }, // clear ical data prop
     calendarID: calendar.id,
     externalID: event.uid || '',
@@ -580,4 +581,28 @@ export const syncCalDavEvents = async (userID: string, calDavAccounts: any) => {
   }
 
   return wasChanged;
+};
+
+export const removeSupportedProps = (originalItem: EventJSON) => {
+  const item = cloneDeep(originalItem);
+  delete item.begin;
+  delete item.end;
+  delete item.uid;
+  delete item.summary;
+  delete item.timezone;
+  delete item.dtstart;
+  delete item.dtend;
+  delete item.dtstamp;
+  delete item.href;
+  delete item.calendarID;
+  delete item.location;
+  delete item.externalID;
+  delete item.etag;
+  delete item.color;
+  delete item.description;
+  delete item.rRule;
+  delete item.data;
+  delete item.url;
+
+  return item;
 };
