@@ -6,8 +6,9 @@ export interface UpdateUserEmailConfigRequest {
   smtpEmail: string;
 }
 
-export interface GetUserEmailConfigResponse
-  extends UpdateUserEmailConfigRequest {
-  isSystemConfig: boolean;
+export interface GetUserEmailConfigResponse {
+  hasSystemConfig: boolean;
+  hasCustomConfig: boolean;
 }
+
 export type UserEmailConfigData = UpdateUserEmailConfigRequest;
