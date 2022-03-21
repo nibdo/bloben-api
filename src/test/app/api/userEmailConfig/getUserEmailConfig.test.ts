@@ -7,7 +7,6 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../utils/initTestServer';
-import {userEmailConfigData} from "../../../seeds/9-userEmailConfig";
 
 const PATH = '/api/v1/users/email-config';
 
@@ -31,28 +30,13 @@ describe(`Get user email config [GET] ${PATH}`, async function () {
 
     const response: any = await request(server).get(PATH).send();
 
-    const { status, body } = response;
+    const { status } = response;
 
     assert.equal(status, 200);
-    assert.equal(body.smtpPassword, '*****')
-    assert.equal(body.smtpUsername, '*****')
   });
 
   it('Should get status 200 user config', async function () {
     await initSeeds()
-
-    const server: any = createTestServerWithSession();
-
-    const response: any = await request(server).get(PATH).send();
-
-    const { status, body } = response;
-
-    assert.equal(status, 200);
-    assert.equal(body.smtpPassword, '*****')
-  });
-
-  it('Should get status 404 config not found', async function () {
-    await initUserSeed()
 
     const server: any = createTestServerWithSession();
 
