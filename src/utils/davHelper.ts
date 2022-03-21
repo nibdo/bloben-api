@@ -2,6 +2,7 @@ import {
   AccountWithCalendars,
   CalendarFromAccount,
 } from '../data/repository/CalDavAccountRepository';
+import { CALENDAR_METHOD } from './ICalHelper';
 import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
@@ -13,19 +14,21 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from './enums';
 import { Range } from '../bloben-interface/interface';
-import { cloneDeep, find, forEach } from 'lodash';
+import { cloneDeep, find, forEach, map } from 'lodash';
 import {
   createCalDavCalendar,
   updateCalDavCalendar,
 } from '../api/caldavAccount/helpers/createCalDavCalendar';
 import { createDavClient } from '../service/davService';
-import { formatEventEntityToResult } from './format';
+import { formatEventEntityToResult, formatEventInviteSubject } from './format';
 import { formatToRRule } from './common';
 import { io } from '../app';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
-import CalDavEventRepository from '../data/repository/CalDavEventRepository';
+import CalDavEventRepository, {
+  CalDavEventsRaw,
+} from '../data/repository/CalDavEventRepository';
 import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
@@ -49,18 +52,51 @@ export interface CalDavEventObj {
   [key: string]: any;
 }
 
+const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
+  let result;
+
+  isAllDay
+    ? (result = DateTime.fromFormat(event.dtstart.value, 'yyyyMMdd')
+        .toISO()
+        .toString())
+    : (result = event.dtstart.value);
+
+  return result;
+};
+const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
+  let result;
+
+  if (!event.dtend?.value) {
+    result = formatDTStartValue(event, isAllDay);
+  } else {
+    isAllDay
+      ? (result = DateTime.fromFormat(event.dtend.value, 'yyyyMMdd')
+          .minus({ day: 1 })
+          .set({ hour: 0, minute: 0, second: 0 })
+          .toISO()
+          .toString())
+      : (result = event.dtend.value);
+  }
+
+  return result;
+};
+
 export const formatEventJsonToCalDavEvent = (
   event: EventJSON,
   calendarObject: DAVCalendarObject,
   calendar: CalDavCalendarEntity
 ): CalDavEventObj => {
+  const isAllDay = event?.dtstart?.value?.length === '20220318'.length;
+
   return {
+    props: removeSupportedProps(event),
     ...{ ...calendarObject, data: null }, // clear ical data prop
     calendarID: calendar.id,
     externalID: event.uid || '',
-    startAt: event.dtstart.value,
-    endAt: event.dtend.value,
-    timezone: event.dtstart.timezone || null,
+    startAt: formatDTStartValue(event, isAllDay),
+    endAt: formatDTEndValue(event, isAllDay),
+    allDay: isAllDay,
+    timezone: isAllDay ? 'floating' : event.dtstart.timezone || null,
     isRepeated: event.rrule !== undefined || false,
     rRule: event.rrule || null,
     summary: event.summary || '',
@@ -580,4 +616,63 @@ export const syncCalDavEvents = async (userID: string, calDavAccounts: any) => {
   }
 
   return wasChanged;
+};
+
+export const removeSupportedProps = (originalItem: EventJSON) => {
+  const item = cloneDeep(originalItem);
+  delete item.begin;
+  delete item.end;
+  delete item.uid;
+  delete item.summary;
+  delete item.timezone;
+  delete item.dtstart;
+  delete item.dtend;
+  delete item.dtstamp;
+  delete item.href;
+  delete item.calendarID;
+  delete item.location;
+  delete item.externalID;
+  delete item.etag;
+  delete item.color;
+  delete item.description;
+  delete item.rRule;
+  delete item.data;
+  delete item.url;
+
+  return item;
+};
+
+export const injectMethod = (icalString: string, method: CALENDAR_METHOD) => {
+  const firstPart = icalString.slice(0, icalString.indexOf('CALSCALE:'));
+  const secondPart = icalString.slice(icalString.indexOf('CALSCALE:') - 1);
+
+  return `${firstPart}METHOD:${method}${secondPart}`;
+};
+
+export const formatInviteData = (
+  userID: string,
+  event: CalDavEventObj | CalDavEventsRaw,
+  iCalString: string,
+  attendees: any[],
+  method: CALENDAR_METHOD
+) => {
+  return {
+    userID,
+    email: {
+      subject: formatEventInviteSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStart
+      ),
+      body: formatEventInviteSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStart
+      ),
+      ical: injectMethod(iCalString, method),
+      method: method,
+      // @ts-ignore
+      recipients: map(attendees, 'mailto'),
+    },
+  };
 };

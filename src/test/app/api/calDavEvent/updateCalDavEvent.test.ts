@@ -1,4 +1,7 @@
-import { testIcalString } from '../../../seeds/4-calDavEvents';
+import {
+    createDummyCalDavEventWithAttendees,
+    testIcalString
+} from '../../../seeds/4-calDavEvents';
 
 const request = require('supertest');
 const assert = require('assert');
@@ -142,4 +145,23 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
 
     assert.equal(status, 200);
   });
+
+
+    it('Should get status 200 with attendees', async function () {
+        const response: any = await request(createTestServerWithSession())
+            .put(PATH)
+            .send({
+                externalID: calDavEvent.externalID,
+                calendarID: calDavEvent.calendar.id,
+                iCalString: createDummyCalDavEventWithAttendees(calDavEvent.calendar.id).iCalString,
+                id: calDavEvent.id,
+                etag: 'CTGARAF',
+                url: calDavEvent.href,
+                prevEvent: null,
+            });
+
+        const { status } = response;
+
+        assert.equal(status, 200);
+    });
 });

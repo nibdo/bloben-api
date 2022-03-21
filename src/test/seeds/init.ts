@@ -6,6 +6,7 @@ import { adminUserSeed } from './0-adminUser-seed';
 import { webcal } from './6-webcal';
 import { calDavTasks } from './7-calDavTasks';
 import {calDavTaskSettings} from "./8-calDavTaskSettings";
+import {userEmailConfig} from "./9-userEmailConfig";
 
 export const initSeeds = async () => {
   try {
@@ -17,6 +18,7 @@ export const initSeeds = async () => {
     await new webcal().up();
     const { task } = await new calDavTasks().up();
     const { taskSettings } = await new calDavTaskSettings().up();
+    await new userEmailConfig().up();
 
     return {
       user,
@@ -31,3 +33,7 @@ export const initSeeds = async () => {
     console.log(e);
   }
 };
+
+export const initUserSeed = async () => {
+   await new userSeed().up();
+}

@@ -1,18 +1,22 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../bloben-interface/interface';
-import { DeleteCalDavEventRequest } from '../../../bloben-interface/event/event';
 import {
+  BULL_QUEUE,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../utils/enums';
+import { CommonResponse } from '../../../bloben-interface/interface';
+import { DeleteCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse } from '../../../utils/common';
+import { emailBullQueue } from '../../../service/BullQueue';
+import { formatInviteData } from '../../../utils/davHelper';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
+import ICalHelper, { CALENDAR_METHOD } from '../../../utils/ICalHelper';
 
 export const deleteCalDavEvent = async (
   req: Request,
@@ -29,7 +33,7 @@ export const deleteCalDavEvent = async (
   );
 
   if (!calDavAccount) {
-    throw throwError('404', 'Not found');
+    throw throwError('404', 'Account not found');
   }
 
   const client = await loginToCalDav(calDavAccount.url, {
@@ -43,6 +47,27 @@ export const deleteCalDavEvent = async (
       etag: body.etag,
     },
   });
+
+  const event = await CalDavEventRepository.getCalDavEventByID(userID, body.id);
+
+  if (!event) {
+    throw throwError('404', 'Event not found');
+  }
+
+  if (event.props?.attendee) {
+    const icalString = new ICalHelper(event).parseTo();
+
+    await emailBullQueue.add(
+      BULL_QUEUE.EMAIL,
+      formatInviteData(
+        userID,
+        event,
+        icalString,
+        event.props.attendee,
+        CALENDAR_METHOD.CANCEL
+      )
+    );
+  }
 
   await CalDavEventRepository.getRepository().delete({
     href: body.url,

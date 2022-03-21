@@ -1,16 +1,22 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../bloben-interface/interface';
-import { Connection, QueryRunner, getConnection } from 'typeorm';
 import {
+  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../utils/enums';
+import { CALENDAR_METHOD } from '../../../utils/ICalHelper';
+import { CommonResponse } from '../../../bloben-interface/interface';
+import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { UpdateCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse } from '../../../utils/common';
-import { createEventFromCalendarObject } from '../../../utils/davHelper';
+import {
+  createEventFromCalendarObject,
+  formatInviteData,
+} from '../../../utils/davHelper';
+import { emailBullQueue } from '../../../service/BullQueue';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
 import { throwError } from '../../../utils/errorCodes';
@@ -85,6 +91,19 @@ export const updateCalDavEvent = async (
       const newEvent = new CalDavEventEntity(eventTemp);
 
       await queryRunner.manager.save(newEvent);
+    }
+
+    if (eventTemp.props?.attendee) {
+      await emailBullQueue.add(
+        BULL_QUEUE.EMAIL,
+        formatInviteData(
+          userID,
+          eventTemp,
+          body.iCalString,
+          eventTemp.props.attendee,
+          CALENDAR_METHOD.REQUEST
+        )
+      );
     }
 
     // delete previous event if calendar was changed

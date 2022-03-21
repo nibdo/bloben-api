@@ -5,22 +5,20 @@ import { testUserData } from './1-user-seed';
 import UserEntity from '../../data/entity/UserEntity';
 import { CreateCalDavEventRequest } from '../../bloben-interface/event/event';
 import CalDavCalendarEntity from '../../data/entity/CalDavCalendar';
-import CalDavEventEntity from '../../data/entity/CalDavEventEntity';
-import ICalParser, {EventJSON, TodoJSON} from 'ical-js-parser-commonjs';
-import { formatEventJsonToCalDavEvent } from '../../utils/davHelper';
+import ICalParser, { TodoJSON } from 'ical-js-parser-commonjs';
 import { DAVCalendarObject } from 'tsdav';
 import { v4 } from 'uuid';
-import CalDavTaskEntity from "../../data/entity/CalDavTaskEntity";
-import {formatTodoJsonToCalDavTodo} from "../../utils/davHelperTodo";
+import CalDavTaskEntity from '../../data/entity/CalDavTaskEntity';
+import { formatTodoJsonToCalDavTodo } from '../../utils/davHelperTodo';
 
 export const createDummyCalDavTask = (
-    calendarID: string
+  calendarID: string
 ): CreateCalDavEventRequest => {
-    const externalID = v4();
-    return {
-        externalID,
-        calendarID,
-        iCalString: `BEGIN:VCALENDAR
+  const externalID = v4();
+  return {
+    externalID,
+    calendarID,
+    iCalString: `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:Bloben
 CALSCALE:GREGORIAN
@@ -35,7 +33,7 @@ STATUS:NEEDS-ACTION
 CREATED:20220306T214034Z
 END:VTODO
 END:VCALENDAR`,
-    };
+  };
 };
 
 export const testTodoIcalString = `BEGIN:VCALENDAR
@@ -55,60 +53,60 @@ END:VTODO
 END:VCALENDAR`;
 
 export const testTodosData: CreateCalDavEventRequest[] = [
-    {
-        externalID: '7becdebb-81d1-45b6-b8db-4a50f06b2a2c',
-        calendarID: '',
-        iCalString: testTodoIcalString,
-    },
-    {
-        externalID: 'ca5be5b5-c73f-4040-b909-e4a73a716671',
-        calendarID: '',
-        iCalString: testTodoIcalString,
-    },
+  {
+    externalID: '7becdebb-81d1-45b6-b8db-4a50f06b2a2c',
+    calendarID: '',
+    iCalString: testTodoIcalString,
+  },
+  {
+    externalID: 'ca5be5b5-c73f-4040-b909-e4a73a716671',
+    calendarID: '',
+    iCalString: testTodoIcalString,
+  },
 ];
 
 export class calDavTasks implements MigrationInterface {
-    public async up(): Promise<{ task: CalDavTaskEntity }> {
-        // @ts-ignore
-        const connection: Connection = await getConnection();
+  public async up(): Promise<{ task: CalDavTaskEntity }> {
+    // @ts-ignore
+    const connection: Connection = await getConnection();
 
-        const [user, calendar] = await Promise.all([
-            connection.manager.findOne(UserEntity, {
-                where: {
-                    username: testUserData.username,
-                },
-            }),
-            connection.manager.findOne(CalDavCalendarEntity, {
-                where: {
-                    url: `http://${testUserData.username}`,
-                },
-            }),
-        ]);
+    const [user, calendar] = await Promise.all([
+      connection.manager.findOne(UserEntity, {
+        where: {
+          username: testUserData.username,
+        },
+      }),
+      connection.manager.findOne(CalDavCalendarEntity, {
+        where: {
+          url: `http://${testUserData.username}`,
+        },
+      }),
+    ]);
 
-        const todos: CalDavTaskEntity[] = [];
+    const todos: CalDavTaskEntity[] = [];
 
-        forEach(testTodosData, (todo) => {
-            const icalJS = ICalParser.toJSON(todo.iCalString);
-            const todoJSON: TodoJSON = icalJS.todos[0];
-            const todoObj = formatTodoJsonToCalDavTodo(
-                todoJSON,
-                {
-                    data: '',
-                    etag: '123',
-                    url: `http://${testUserData.username}`,
-                } as DAVCalendarObject,
-                calendar
-            );
+    forEach(testTodosData, (todo) => {
+      const icalJS = ICalParser.toJSON(todo.iCalString);
+      const todoJSON: TodoJSON = icalJS.todos[0];
+      const todoObj = formatTodoJsonToCalDavTodo(
+        todoJSON,
+        {
+          data: '',
+          etag: '123',
+          url: `http://${testUserData.username}`,
+        } as DAVCalendarObject,
+        calendar
+      );
 
-            todos.push(new CalDavTaskEntity(todoObj));
-        });
+      todos.push(new CalDavTaskEntity(todoObj));
+    });
 
-        await connection.manager.save(todos);
+    await connection.manager.save(todos);
 
-        return { task: todos[0] };
-    }
+    return { task: todos[0] };
+  }
 
-    public async down(): Promise<void> {
-        return Promise.resolve();
-    }
+  public async down(): Promise<void> {
+    return Promise.resolve();
+  }
 }

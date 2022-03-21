@@ -51,5 +51,11 @@ jobs:
           EMAIL_PASSWORD: fail
           EMAIL_ADDRESS: test@bloben.com
           INITIAL_ADMIN_PASSWORD: adminPass
+          SMTP_PORT: 587
+          SMTP_HOST: smtp.bloben.com
+          SMTP_EMAIL: asf@bloben.com
+          SMTP_USERNAME: asfasfasfaf
+          SMTP_PASSWORD: asfasf
+          ENCRYPTION_PASSWORD: sdoifjsdiog
         run: npm run test-pipeline
 

@@ -23,6 +23,7 @@ export interface EmailInvite {
 export interface EmailInviteData {
   subject: string;
   body: string;
+  from: string;
   ical: string;
   method: string;
   recipients: string[];
@@ -125,8 +126,8 @@ export interface EventResult {
   internalID?: string; // id to ref repeated events
   startAt: string;
   endAt: string;
-  timezoneStart: string | null;
-  timezoneEnd: string | null;
+  timezoneStartAt: string | null;
+  timezoneEndAt: string | null;
   summary: string;
   description: string;
   location: string;
@@ -138,6 +139,7 @@ export interface EventResult {
   type: EVENT_TYPE;
   color: string;
   calendarID: string;
+  props: any;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

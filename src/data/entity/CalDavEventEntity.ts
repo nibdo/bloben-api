@@ -48,6 +48,9 @@ export default class CalDavEventEntity {
   @Column({ nullable: true })
   data: string;
 
+  @Column({ type: 'json', nullable: true })
+  props: object;
+
   @Column({ name: 'etag', nullable: true })
   etag: string;
 
@@ -91,12 +94,14 @@ export default class CalDavEventEntity {
       const calendar = new CalDavCalendarEntity();
       calendar.id = item.calendarID;
 
+      this.props = item.props;
       this.externalID = item.externalID;
       this.startAt = DateTime.fromISO(item.startAt).toUTC().toJSDate();
       this.endAt = DateTime.fromISO(item.endAt).toUTC().toJSDate();
       this.timezoneStart = item.timezone;
       this.timezoneEnd = item.timezone;
       this.etag = item.etag;
+      this.allDay = item.allDay;
       this.location = item.location;
       this.description = item.description;
       this.isRepeated = item.isRepeated;

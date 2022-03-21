@@ -3,5 +3,9 @@ module.exports = {
   require: ['./src/test/hooks.ts'],
   reporter: 'spec',
   timeout: 20000,
-  spec: ['./src/test/app/*/*/*.test.ts', './src/test/app/jobs/*/*.test.ts'],
+  spec: [
+    './src/test/app/*/*/*.test.ts',
+    './src/test/app/jobs/*/*.test.ts',
+    './src/test/app/utils/*/*.test.ts',
+  ],
 };

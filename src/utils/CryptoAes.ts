@@ -9,14 +9,14 @@ import { env } from '../index';
 const encryptData = (dataForEncryption: object) =>
   CryptoJS.AES.encrypt(
     JSON.stringify(dataForEncryption),
-    env.dbEncryptionPassword
+    env.encryptionPassword
   ).toString();
 const encryptStringData = (dataForEncryption: string) =>
-  CryptoJS.AES.encrypt(dataForEncryption, env.dbEncryptionPassword).toString();
+  CryptoJS.AES.encrypt(dataForEncryption, env.encryptionPassword).toString();
 export const CryptoAes = {
   encrypt: (dataForEncryption: object): Promise<string> =>
     new Promise((resolve, reject) => {
-      if (!env.dbEncryptionPassword || env.dbEncryptionPassword.length === 0) {
+      if (!env.encryptionPassword || env.encryptionPassword.length === 0) {
         reject('Missing password');
       }
 
@@ -28,7 +28,7 @@ export const CryptoAes = {
     }),
   encryptString: (stringData: string): Promise<string> =>
     new Promise((resolve, reject) => {
-      if (!env.dbEncryptionPassword || env.dbEncryptionPassword.length === 0) {
+      if (!env.encryptionPassword || env.encryptionPassword.length === 0) {
         reject('Missing password');
       }
 
@@ -44,7 +44,7 @@ export const CryptoAes = {
     }),
   decrypt(encryptedData: string): Promise<object> {
     return new Promise((resolve, reject) => {
-      if (!env.dbEncryptionPassword || env.dbEncryptionPassword.length === 0) {
+      if (!env.encryptionPassword || env.encryptionPassword.length === 0) {
         reject('Missing password');
       }
 
@@ -57,10 +57,7 @@ export const CryptoAes = {
       }
 
       // Decrypt data with Crypto
-      const bytes = CryptoJS.AES.decrypt(
-        encryptedData,
-        env.dbEncryptionPassword
-      );
+      const bytes = CryptoJS.AES.decrypt(encryptedData, env.encryptionPassword);
       const originalText: string = bytes.toString(CryptoJS.enc.Utf8);
       const jsonObj: object = JSON.parse(originalText);
       if (jsonObj) {
@@ -73,10 +70,7 @@ export const CryptoAes = {
   decryptString(encryptedData: string): Promise<string> {
     return new Promise((resolve, reject) => {
       // Decrypt data with Crypto
-      const bytes = CryptoJS.AES.decrypt(
-        encryptedData,
-        env.dbEncryptionPassword
-      );
+      const bytes = CryptoJS.AES.decrypt(encryptedData, env.encryptionPassword);
       const originalText: string = bytes.toString(CryptoJS.enc.Utf8);
       if (originalText) {
         resolve(originalText);

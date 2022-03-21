@@ -39,7 +39,7 @@ export interface Env {
     publicKey: string;
     privateKey: string;
   };
-  dbEncryptionPassword?: string;
+  encryptionPassword?: string;
 }
 
 // Import all required envs
@@ -79,7 +79,7 @@ export const loadEnv = (): Env => {
     host: process.env.APP_DOMAIN,
     port: process.env.PORT,
     appDomain: process.env.APP_DOMAIN,
-    dbEncryptionPassword: '',
+    encryptionPassword: process.env.ENCRYPTION_PASSWORD,
     database: {
       port: process.env.DB_PORT,
       host: process.env.DB_HOST,
@@ -104,12 +104,19 @@ export const loadEnv = (): Env => {
       publicKey: process.env.VAPID_PUBLIC_KEY,
       privateKey: process.env.VAPID_PRIVATE_KEY,
     },
-    email: {
-      smtpHost: process.env.SMTP_HOST,
-      smtpPort: Number(process.env.SMTP_PORT),
-      username: process.env.EMAIL_USERNAME,
-      password: process.env.EMAIL_PASSWORD,
-      identity: process.env.EMAIL_ADDRESS,
-    },
+    email:
+      process.env.SMTP_HOST &&
+      process.env.SMTP_PORT &&
+      process.env.SMTP_USERNAME &&
+      process.env.SMTP_PASSWORD &&
+      process.env.SMTP_EMAIL
+        ? {
+            smtpHost: process.env.SMTP_HOST,
+            smtpPort: Number(process.env.SMTP_PORT),
+            username: process.env.SMTP_USERNAME,
+            password: process.env.SMTP_PASSWORD,
+            identity: process.env.SMTP_EMAIL,
+          }
+        : null,
   };
 };
