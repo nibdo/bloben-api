@@ -52,19 +52,51 @@ export interface CalDavEventObj {
   [key: string]: any;
 }
 
+const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
+  let result;
+
+  isAllDay
+    ? (result = DateTime.fromFormat(event.dtstart.value, 'yyyyMMdd')
+        .toISO()
+        .toString())
+    : (result = event.dtstart.value);
+
+  return result;
+};
+const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
+  let result;
+
+  if (!event.dtend?.value) {
+    result = formatDTStartValue(event, isAllDay);
+  } else {
+    isAllDay
+      ? (result = DateTime.fromFormat(event.dtend.value, 'yyyyMMdd')
+          .minus({ day: 1 })
+          .set({ hour: 0, minute: 0, second: 0 })
+          .toISO()
+          .toString())
+      : (result = event.dtend.value);
+  }
+
+  return result;
+};
+
 export const formatEventJsonToCalDavEvent = (
   event: EventJSON,
   calendarObject: DAVCalendarObject,
   calendar: CalDavCalendarEntity
 ): CalDavEventObj => {
+  const isAllDay = event?.dtstart?.value?.length === '20220318'.length;
+
   return {
     props: removeSupportedProps(event),
     ...{ ...calendarObject, data: null }, // clear ical data prop
     calendarID: calendar.id,
     externalID: event.uid || '',
-    startAt: event.dtstart.value,
-    endAt: event.dtend.value,
-    timezone: event.dtstart.timezone || null,
+    startAt: formatDTStartValue(event, isAllDay),
+    endAt: formatDTEndValue(event, isAllDay),
+    allDay: isAllDay,
+    timezone: isAllDay ? 'floating' : event.dtstart.timezone || null,
     isRepeated: event.rrule !== undefined || false,
     rRule: event.rrule || null,
     summary: event.summary || '',

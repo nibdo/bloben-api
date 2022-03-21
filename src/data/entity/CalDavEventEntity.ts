@@ -101,6 +101,7 @@ export default class CalDavEventEntity {
       this.timezoneStart = item.timezone;
       this.timezoneEnd = item.timezone;
       this.etag = item.etag;
+      this.allDay = item.allDay;
       this.location = item.location;
       this.description = item.description;
       this.isRepeated = item.isRepeated;

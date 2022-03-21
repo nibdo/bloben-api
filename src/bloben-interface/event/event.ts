@@ -126,8 +126,8 @@ export interface EventResult {
   internalID?: string; // id to ref repeated events
   startAt: string;
   endAt: string;
-  timezoneStart: string | null;
-  timezoneEnd: string | null;
+  timezoneStartAt: string | null;
+  timezoneEndAt: string | null;
   summary: string;
   description: string;
   location: string;
