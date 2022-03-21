@@ -13,7 +13,7 @@ export const getUserEmailConfig = async (
   const userEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
 
   return {
-    hasSystemConfig: env.email !== undefined,
+    hasSystemConfig: env.email !== null,
     hasCustomConfig: userEmailConfig !== null && userEmailConfig !== undefined,
   };
 };
