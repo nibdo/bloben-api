@@ -49,3 +49,20 @@ export const adminUpdateUser = async (
     next(error);
   }
 };
+
+export const adminDeleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response: CommonResponse = await AdminUsersService.adminDeleteUser(
+      req,
+      res
+    );
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};
