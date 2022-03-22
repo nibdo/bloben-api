@@ -11,7 +11,7 @@ import UserEntity from './UserEntity';
 
 @Entity('user_email_config')
 export default class UserEmailConfigEntity {
-  @OneToOne(() => UserEntity, { primary: true, cascade: true })
+  @OneToOne(() => UserEntity, { primary: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: UserEntity;
 

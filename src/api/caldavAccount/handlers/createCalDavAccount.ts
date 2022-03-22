@@ -25,11 +25,6 @@ export const createCalDavAccount = async (
   let connection: Connection | null;
   let queryRunner: QueryRunner | null;
 
-  await loginToCalDav(url, {
-    username,
-    password,
-  });
-
   // check if account exists
   const existingAccount = await CalDavAccountRepository.getByUrlAndUsername(
     username,
@@ -40,6 +35,11 @@ export const createCalDavAccount = async (
   if (existingAccount) {
     throw throwError(409, 'Account already exists', req);
   }
+
+  await loginToCalDav(url, {
+    username,
+    password,
+  });
 
   try {
     const responseAccount = await createAccount({

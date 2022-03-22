@@ -4,6 +4,7 @@ import { Router } from 'express';
 import { USER_ROLE } from '../user/UserEnums';
 import { adminTokenMiddleware } from '../../middleware/adminTokenMiddleware';
 import { createUserSchema } from './schemas/createUserSchema';
+import { deleteUserSchema } from './schemas/deleteUserSchema';
 import { emptySchema } from '../../common/schemas/emptySchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
@@ -47,6 +48,18 @@ AdminUsersRoutes.patch(
     validationMiddleware(updateUserSchema),
   ],
   AdminUsersController.adminUpdateUser
+);
+
+AdminUsersRoutes.delete(
+  '/:id',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    adminTokenMiddleware,
+    userMiddleware,
+    roleMiddleware([USER_ROLE.ADMIN]),
+    validationMiddleware(deleteUserSchema),
+  ],
+  AdminUsersController.adminDeleteUser
 );
 
 export default AdminUsersRoutes;
