@@ -49,4 +49,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: bloben/api:${{ steps.tag_version.outputs.VERSION }}
+          tags: bloben/api:${{ steps.tag_version.outputs.VERSION }}, bloben/api:latest
