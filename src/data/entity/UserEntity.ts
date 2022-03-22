@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,6 +14,7 @@ import { GetAccountResponse } from '../../bloben-interface/user/user';
 import { ROLE } from '../../bloben-interface/enums';
 import CalDavAccountEntity from './CalDavAccount';
 import PushSubscriptionEntity from './PushSubscriptionEntity';
+import UserEmailConfigEntity from './UserEmailConfig';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 
 @Entity('users')
@@ -46,6 +48,9 @@ export default class UserEntity {
 
   @OneToMany(() => CalDavAccountEntity, (calDavAccount) => calDavAccount.user)
   calDavAccounts: CalDavAccountEntity[];
+
+  @OneToOne(() => UserEmailConfigEntity)
+  emailConfig: UserEmailConfigEntity;
 
   @OneToMany(
     () => PushSubscriptionEntity,
