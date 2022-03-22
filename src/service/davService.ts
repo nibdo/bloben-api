@@ -1,10 +1,12 @@
 import { CalDavAccount } from '../data/repository/CalDavAccountRepository';
 import { DAVCalendarObject, DAVClient, DAVCredentials } from 'tsdav';
+import { LOG_TAG } from '../utils/enums';
 import { Range } from '../bloben-interface/interface';
 import { createEventsFromCalendarObject } from '../utils/davHelper';
 import { forEach } from 'lodash';
 import { throwError } from '../utils/errorCodes';
 import CalDavCalendarRepository from '../data/repository/CalDavCalendarRepository';
+import logger from '../utils/logger';
 
 export const createDavClient = (
   url: string,
@@ -28,15 +30,20 @@ export const loginToCalDav = async (
   url: string,
   auth: DAVCredentials | undefined
 ) => {
-  const client = createDavClient(url, auth);
-
   try {
-    await client.login();
-  } catch (e) {
-    throw throwError(409, 'Cannot connect to calDav server');
-  }
+    const client = createDavClient(url, auth);
 
-  return client;
+    await client.login();
+
+    return client;
+  } catch (e: any) {
+    logger.error('Cannot login to calDav server', e, [
+      LOG_TAG.REST,
+      LOG_TAG.CALDAV,
+    ]);
+
+    throw throwError(409, 'Cannot login to calDav server');
+  }
 };
 
 export const createAuthHeader = (username: string, password: string) =>
