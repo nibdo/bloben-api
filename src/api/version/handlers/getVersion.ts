@@ -4,6 +4,7 @@ const packageFile: any = require('../../../../package.json');
 
 export const getVersion = async (): Promise<GetVersion> => {
   return {
-    version: packageFile.version,
+    apiVersion: packageFile.version,
+    dockerImageVersion: process.env.DOCKER_IMAGE_VERSION || '',
   };
 };
