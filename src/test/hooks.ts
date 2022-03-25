@@ -1,9 +1,12 @@
 import { closeConnection } from './utils/closeConnection';
 import { initDatabase } from './utils/initDatabase';
+import {mockRedisService} from "./__mocks__/RedisService";
 
 export const mochaHooks = function() {
   return {
     async beforeAll() {
+
+      mockRedisService()
 
       let count = 1;
       let isConnected = false;

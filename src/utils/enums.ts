@@ -29,6 +29,7 @@ export enum REDIS_PREFIX {
   SOCKET = 'socketuserID',
   USER_ID_KEY_2FA = 'userID2FA',
   CHANGE_PASSWORD = 'changePassword',
+  DAV_CLIENT = 'davClient',
 }
 
 export enum WEBSOCKET_PREFIX {

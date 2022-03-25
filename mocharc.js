@@ -6,6 +6,6 @@ module.exports = {
   spec: [
     './src/test/app/*/*/*.test.ts',
     './src/test/app/jobs/*/*.test.ts',
-    './src/test/app/utils/*/*.test.ts',
+    './src/test/app/utils/*.test.ts',
   ],
 };
