@@ -22,6 +22,7 @@ import { loginToCalDav } from '../../../service/davService';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
+import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import logger from '../../../utils/logger';
 
 export const updateCalDavEvent = async (
@@ -35,6 +36,12 @@ export const updateCalDavEvent = async (
 
   const body: UpdateCalDavEventRequest = req.body;
 
+  const event = await CalDavEventRepository.getCalDavEventByID(userID, body.id);
+
+  if (!event) {
+    throw throwError('404', 'Event not found');
+  }
+
   let response: any;
   // get account with calendar
   const calDavAccount = await CalDavAccountRepository.getByUserIDAndCalendarID(
@@ -43,7 +50,7 @@ export const updateCalDavEvent = async (
   );
 
   if (!calDavAccount) {
-    throw throwError('404', 'Not found');
+    throw throwError('404', 'Account not found');
   }
 
   const client = await loginToCalDav(calDavAccount.url, {
@@ -56,10 +63,6 @@ export const updateCalDavEvent = async (
     queryRunner = await connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
-    await queryRunner.manager.delete(CalDavEventEntity, {
-      id: body.id,
-    });
 
     if (body.prevEvent) {
       response = await client.createCalendarObject({
@@ -89,8 +92,15 @@ export const updateCalDavEvent = async (
 
     if (eventTemp) {
       const newEvent = new CalDavEventEntity(eventTemp);
+      newEvent.id = event.id;
 
-      await queryRunner.manager.save(newEvent);
+      await queryRunner.manager.update(
+        CalDavEventEntity,
+        {
+          id: event.id,
+        },
+        newEvent
+      );
     }
 
     if (eventTemp.props?.attendee) {
