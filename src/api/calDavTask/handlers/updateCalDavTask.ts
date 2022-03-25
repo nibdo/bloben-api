@@ -47,10 +47,7 @@ export const updateCalDavTask = async (
     throw throwError('404', 'Task not found');
   }
 
-  const client = await loginToCalDav(calDavAccount.url, {
-    username: calDavAccount.username,
-    password: calDavAccount.password,
-  });
+  const client = await loginToCalDav(calDavAccount);
 
   try {
     connection = await getConnection();

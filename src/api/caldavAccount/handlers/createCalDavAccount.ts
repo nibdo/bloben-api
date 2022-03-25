@@ -6,7 +6,7 @@ import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { CreateCalDavAccountRequest } from '../../../bloben-interface/calDavAccount/calDavAccount';
 import { calDavSyncBullQueue } from '../../../service/BullQueue';
 import { createAccount } from 'tsdav';
-import { createAuthHeader, loginToCalDav } from '../../../service/davService';
+import { createAuthHeader, createDavClient } from '../../../service/davService';
 import { createCommonResponse } from '../../../utils/common';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountEntity from '../../../data/entity/CalDavAccount';
@@ -36,10 +36,20 @@ export const createCalDavAccount = async (
     throw throwError(409, 'Account already exists', req);
   }
 
-  await loginToCalDav(url, {
-    username,
-    password,
-  });
+  try {
+    const client = createDavClient(url, {
+      username,
+      password,
+    });
+    await client.login();
+  } catch (e) {
+    logger.error('Cannot connect to calDav server', e, [
+      LOG_TAG.REST,
+      LOG_TAG.CALDAV,
+    ]);
+
+    throw throwError(409, 'Cannot connect to calDAV server');
+  }
 
   try {
     const responseAccount = await createAccount({

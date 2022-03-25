@@ -40,10 +40,7 @@ export const createCalDavTask = async (
     throw throwError(404, 'Account with calendar not found');
   }
 
-  const client = await loginToCalDav(calDavAccount.url, {
-    username: calDavAccount.username,
-    password: calDavAccount.password,
-  });
+  const client = await loginToCalDav(calDavAccount);
 
   const response: any = await client.createCalendarObject({
     calendar: calDavAccount.calendar,

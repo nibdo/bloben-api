@@ -6,6 +6,7 @@ import { createEventsFromCalendarObject } from '../utils/davHelper';
 import { forEach } from 'lodash';
 import { throwError } from '../utils/errorCodes';
 import CalDavCalendarRepository from '../data/repository/CalDavCalendarRepository';
+import RedisService from './RedisService';
 import logger from '../utils/logger';
 
 export const createDavClient = (
@@ -26,14 +27,25 @@ export const createDavClient = (
   });
 };
 
-export const loginToCalDav = async (
-  url: string,
-  auth: DAVCredentials | undefined
-) => {
+export const loginToCalDav = async (calDavAccount: CalDavAccount) => {
   try {
-    const client = createDavClient(url, auth);
+    const client = createDavClient(calDavAccount.url, {
+      username: calDavAccount.username,
+      password: calDavAccount.password,
+    });
 
-    await client.login();
+    const clientCached = await RedisService.getDavClientCache(calDavAccount.id);
+    if (clientCached) {
+      client.authHeaders = clientCached.authHeaders;
+      client.account = clientCached.account;
+    } else {
+      await client.login();
+
+      await RedisService.setDavClientCache(calDavAccount.id, {
+        authHeaders: client.authHeaders,
+        account: client.account,
+      });
+    }
 
     return client;
   } catch (e: any) {

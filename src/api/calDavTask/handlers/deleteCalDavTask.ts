@@ -32,10 +32,7 @@ export const deleteCalDavTask = async (
     throw throwError('404', 'Not found');
   }
 
-  const client = await loginToCalDav(calDavAccount.url, {
-    username: calDavAccount.username,
-    password: calDavAccount.password,
-  });
+  const client = await loginToCalDav(calDavAccount);
 
   await client.deleteCalendarObject({
     calendarObject: {
