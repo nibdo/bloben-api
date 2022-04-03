@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DateTime } from 'luxon';
-import { EventJSON } from 'ical-js-parser-commonjs';
+import { EventJSON } from 'ical-js-parser';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 import WebcalEventExceptionEntity from './WebcalEventExceptionEntity';
 
@@ -26,11 +26,11 @@ export default class WebcalEventEntity {
   @Column({ type: 'timestamptz', name: 'end_at' })
   endAt: Date;
 
-  @Column({ name: 'timezone_start', nullable: true })
-  timezoneStart: string;
+  @Column({ name: 'timezone_start_at', nullable: true })
+  timezoneStartAt: string;
 
-  @Column({ name: 'timezone_end', nullable: true })
-  timezoneEnd: string;
+  @Column({ name: 'timezone_end_at', nullable: true })
+  timezoneEndAt: string;
 
   @Column({ name: 'all_day' })
   allDay: boolean;
@@ -97,11 +97,11 @@ export default class WebcalEventEntity {
       );
       this.summary = data.summary;
       this.startAt = startDateTime.toUTC().toJSDate();
-      this.timezoneStart = data.dtstart.timezone
+      this.timezoneStartAt = data.dtstart.timezone
         ? data.dtstart.timezone
         : defaultTimezone;
       this.endAt = endDateTime.toUTC().toJSDate();
-      this.timezoneEnd = this.timezoneStart;
+      this.timezoneEndAt = this.timezoneStartAt;
       this.externalID = data.uid;
       this.organizer = data.organizer as any;
       this.attendees = data.attendee as any;

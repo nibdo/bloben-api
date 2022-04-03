@@ -220,7 +220,10 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
     return calDavAccounts;
   };
 
-  public static getCalDavAccounts = async (userID?: string) => {
+  public static getCalDavAccounts = async (
+    userID?: string,
+    skipHiddenCalendars?: boolean
+  ) => {
     const parameters: any = userID ? [userID] : undefined;
 
     const calDavAccountsRaw: AccountRaw[] =
@@ -243,6 +246,7 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         ca.deleted_at IS NULL
         AND cc.deleted_at IS NULL
         ${userID ? 'AND ca.user_id = $1' : ''}
+        ${skipHiddenCalendars ? 'AND cc.is_hidden IS FALSE' : ''}
   `,
         parameters
       );

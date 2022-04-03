@@ -3,13 +3,24 @@ import { Request, Response } from 'express';
 import { map } from 'lodash';
 import WebcalCalendarRepository from '../../../data/repository/WebcalCalendarRepository';
 
+interface WebcalendarRaw {
+  id: string;
+  url: string;
+  syncFrequency: number;
+  name: string;
+  color: string;
+  isHidden: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const getWebcalCalendars = async (
   req: Request,
   res: Response
 ): Promise<GetWebcalCalendarsResponse[]> => {
   const { userID } = res.locals;
 
-  const webcalCalendars: any[] =
+  const webcalCalendars: WebcalendarRaw[] =
     await WebcalCalendarRepository.getRepository().query(
       `
          SELECT 
@@ -18,6 +29,7 @@ export const getWebcalCalendars = async (
             wc.sync_frequency as "syncFrequency", 
             wc.name as "name", 
             wc.color as "color", 
+            wc.is_hidden as "isHidden",
             wc.created_at as "createdAt", 
             wc.updated_at as "updatedAt"
          FROM webcal_calendars wc
@@ -35,6 +47,7 @@ export const getWebcalCalendars = async (
     color: item.color,
     syncFrequency: item.syncFrequency,
     url: item.url,
+    isHidden: item.isHidden,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }));

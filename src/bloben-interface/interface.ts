@@ -1,4 +1,4 @@
-import { Attendee, DateTimeObject, Organizer } from 'ical-js-parser-commonjs';
+import { Attendee, DateTimeObject, Organizer } from 'ical-js-parser';
 import { DAVCalendarObject } from 'tsdav';
 import { EventResult } from './event/event';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from './enums';

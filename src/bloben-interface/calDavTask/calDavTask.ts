@@ -2,7 +2,7 @@ export interface CalDavTask {
   id: string;
   startAt: string | null;
   endAt: string | null;
-  timezoneStart: string | null;
+  timezoneStartAt: string | null;
   summary: string;
   location: string;
   description: string;

@@ -1,8 +1,8 @@
-import ICalParser from 'ical-js-parser-commonjs';
+import ICalParser from 'ical-js-parser';
 
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
-import { DateTimeObject } from 'ical-js-parser-commonjs';
+import { DateTimeObject } from 'ical-js-parser';
 import { forEach } from 'lodash';
 
 export type CalendarMethod = 'REQUEST' | 'REPLY';
@@ -42,23 +42,23 @@ class ICalHelper {
       location,
       isRepeated,
       rRule,
-      timezoneStart,
+      timezoneStartAt,
       props,
       externalID,
     } = event;
 
-    this.dtstart = timezoneStart
+    this.dtstart = timezoneStartAt
       ? {
           value: startAt,
-          timezone: timezoneStart,
+          timezone: timezoneStartAt,
         }
       : {
           value: startAt,
         };
-    this.dtend = timezoneStart
+    this.dtend = timezoneStartAt
       ? {
           value: endAt,
-          timezone: timezoneStart,
+          timezone: timezoneStartAt,
         }
       : {
           value: endAt,

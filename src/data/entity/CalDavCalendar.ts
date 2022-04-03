@@ -43,6 +43,9 @@ export default class CalDavCalendarEntity {
   @Column({ name: 'ctag_tasks', nullable: true })
   ctagTasks: string;
 
+  @Column({ name: 'is_hidden', default: false })
+  isHidden: boolean;
+
   @Column({ type: 'timestamptz', name: 'last_update_at', nullable: true })
   lastUpdateAt: Date;
 

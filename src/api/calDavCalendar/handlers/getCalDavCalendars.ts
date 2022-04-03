@@ -5,13 +5,14 @@ import { map } from 'lodash';
 import CalDavCalendarRepository from '../../../data/repository/CalDavCalendarRepository';
 
 export const formatCalendarResponse = (
-  calendar: any,
+  calendar: CalendarRaw,
   calDavAccount?: any
 ): GetCalDavCalendar => {
   return {
     id: calendar.id,
     displayName: calendar.displayName,
     url: calendar.url,
+    isHidden: calendar.isHidden,
     components: calendar.components,
     color: calendar.color || null,
     timezone: calendar.timezone || null,
@@ -20,6 +21,17 @@ export const formatCalendarResponse = (
       : calendar.calDavAccountID,
   };
 };
+
+interface CalendarRaw {
+  id: string;
+  displayName: string;
+  color: string;
+  url: string;
+  components: string[];
+  calDavAccountID: string;
+  timezone: string;
+  isHidden: boolean;
+}
 
 export const getCalDavCalendars = async (
   req: Request,
@@ -30,7 +42,7 @@ export const getCalDavCalendars = async (
 
   const parameters = component ? [userID, component] : [userID];
 
-  const calendarsRaw: any =
+  const calendarsRaw: CalendarRaw[] =
     await CalDavCalendarRepository.getRepository().query(
       `
       SELECT 
@@ -40,7 +52,8 @@ export const getCalDavCalendars = async (
         c.url as url,
         c.components as components,
         c.caldav_account_id as "calDavAccountID",
-        c.timezone as timezone
+        c.timezone as timezone,
+        c.is_hidden as "isHidden"
       FROM 
         caldav_calendars c
         JOIN caldav_accounts ca ON ca.id = c.caldav_account_id AND ca.deleted_at IS NULL

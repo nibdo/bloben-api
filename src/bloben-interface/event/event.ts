@@ -35,8 +35,8 @@ export interface GetEventResponse {
   calendarID: string;
   startAt: string;
   endAt: string;
-  timezoneStart: string;
-  timezoneEnd: string;
+  timezoneStartAt: string;
+  timezoneEndAt: string;
   allDay: boolean;
   isRepeated: boolean;
   rRule: string;
@@ -83,8 +83,8 @@ export interface EventBody {
   calendarID: string;
   startAt: string;
   endAt: string;
-  timezoneStart: string;
-  timezoneEnd: string;
+  timezoneStartAt: string;
+  timezoneEndAt: string;
   allDay: boolean;
   isRepeated: boolean;
   rRule: string | null;
@@ -103,8 +103,8 @@ export interface EventDecrypted {
   summary: string;
   startAt: string;
   endAt: string;
-  timezoneStart: string;
-  timezoneEnd: string;
+  timezoneStartAt: string;
+  timezoneEndAt: string;
   allDay: boolean;
   color: string | null;
   description: string;

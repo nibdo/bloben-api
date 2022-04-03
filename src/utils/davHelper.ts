@@ -29,7 +29,7 @@ import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../data/repository/CalDavEventRepository';
-import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
+import ICalParser, { EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 import logger from './logger';
@@ -662,12 +662,12 @@ export const formatInviteData = (
       subject: formatEventInviteSubject(
         event.summary,
         event.startAt,
-        event.timezoneStart
+        event.timezoneStartAt
       ),
       body: formatEventInviteSubject(
         event.summary,
         event.startAt,
-        event.timezoneStart
+        event.timezoneStartAt
       ),
       ical: injectMethod(iCalString, method),
       method: method,

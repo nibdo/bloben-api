@@ -18,7 +18,7 @@ import { getUserIDFromWsRoom } from '../../utils/common';
 import { io } from '../../app';
 import { webcalSyncBullQueue } from '../../service/BullQueue';
 import AxiosService from '../../service/AxiosService';
-import ICalParser, { ICalJSON } from 'ical-js-parser-commonjs';
+import ICalParser, { ICalJSON } from 'ical-js-parser';
 import WebcalCalendarEntity from '../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../data/repository/WebcalCalendarRepository';
 import WebcalEventEntity from '../../data/entity/WebcalEventEntity';
