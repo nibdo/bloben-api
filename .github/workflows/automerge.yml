@@ -22,3 +22,19 @@ jobs:
           git pull origin production
           git merge --no-ff production -m "Auto merge production to development"
           git push origin development
+  merge-production-to-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Config
+        run: |
+          git config --local user.email "actions@bloben.com"
+          git config --local user.name "Github Actions"
+          git config pull.rebase false
+      - name: Merge production to staging
+        run: |
+          git fetch --unshallow
+          git checkout staging
+          git pull origin production
+          git merge --no-ff production -m "Auto merge production to staging"
+          git push origin staging
