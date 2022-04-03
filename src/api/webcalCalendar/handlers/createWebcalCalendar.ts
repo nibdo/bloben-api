@@ -51,7 +51,7 @@ export const createWebcalCalendar = async (
 
   await WebcalCalendarRepository.getRepository().save(webcalCalendar);
 
-  await webcalSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID: user.id });
+  await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID: user.id });
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
     SOCKET_CHANNEL.SYNC,

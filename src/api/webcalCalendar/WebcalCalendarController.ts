@@ -70,8 +70,7 @@ export const patchWebcalCalendar = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response: CommonResponse =
-      await WebcalCalendarService.patchCalDavCalendar(req, res);
+    const response = await WebcalCalendarService.patchWebcalCalendar(req, res);
 
     res.status(200).send(response);
   } catch (error) {
