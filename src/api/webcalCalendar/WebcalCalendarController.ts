@@ -63,3 +63,18 @@ export const deleteWebcalCalendar = async (
     next(error);
   }
 };
+
+export const patchWebcalCalendar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response: CommonResponse =
+      await WebcalCalendarService.patchCalDavCalendar(req, res);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};

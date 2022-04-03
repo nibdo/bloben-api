@@ -11,7 +11,11 @@ import {
   SOCKET_APP_TYPE,
   SOCKET_CRUD_ACTION,
 } from '../../../bloben-interface/enums';
-import { SOCKET_CHANNEL, SOCKET_ROOM_NAMESPACE } from '../../../utils/enums';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { io } from '../../../app';
 import { throwError } from '../../../utils/errorCodes';
 import WebcalCalendarEntity from '../../../data/entity/WebcalCalendarEntity';
@@ -44,6 +48,11 @@ export const updateWebcalCalendar = async (
       SOCKET_CRUD_ACTION.UPDATE,
       SOCKET_APP_TYPE.WEBCAL_CALENDAR
     )
+  );
+
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
   );
 
   return createCommonResponse();

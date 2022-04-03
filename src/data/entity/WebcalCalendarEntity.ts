@@ -35,6 +35,9 @@ export default class WebcalCalendarEntity {
   @Column({ type: 'timestamptz', name: 'last_sync_at', nullable: true }) // prevent spamming sync
   lastSyncAt: Date;
 
+  @Column({ name: 'is_hidden', default: false })
+  isHidden: boolean;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

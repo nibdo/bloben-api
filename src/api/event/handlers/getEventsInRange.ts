@@ -23,7 +23,8 @@ export const getEventsInRange = async (
 
   // get calDav accounts
   const calDavAccounts: any = await CalDavAccountRepository.getCalDavAccounts(
-    userID
+    userID,
+    true
   );
 
   let resultCalDavEvents: EventResult[] = [];

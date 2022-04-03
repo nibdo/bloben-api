@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DateTime } from 'luxon';
-import { EventJSON } from 'ical-js-parser-commonjs';
+import { EventJSON } from 'ical-js-parser';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 
 @Entity('webcal_event_exceptions')

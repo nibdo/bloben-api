@@ -11,6 +11,7 @@ import * as WebcalCalendarController from './WebcalCalendarController';
 import { createWebcalCalendarSchema } from './schemas/createWebcalCalendarSchema';
 import { deleteWebcalCalendarSchema } from './schemas/deleteWebcalCalendarSchema';
 import { getWebcalCalendarSchema } from './schemas/getWebcalCalendarSchema';
+import { patchWebcalCalendarSchema } from './schemas/patchWebcalCalendarSchema';
 import { updateWebcalCalendarSchema } from './schemas/updateWebcalCalendarSchema';
 
 const WebcalCalendarRouter: Router = Router();
@@ -55,6 +56,16 @@ WebcalCalendarRouter.delete(
     validationMiddleware(deleteWebcalCalendarSchema),
   ],
   WebcalCalendarController.deleteWebcalCalendar
+);
+WebcalCalendarRouter.patch(
+  '/:id',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+    validationMiddleware(patchWebcalCalendarSchema),
+  ],
+  WebcalCalendarController.patchWebcalCalendar
 );
 
 export default WebcalCalendarRouter;

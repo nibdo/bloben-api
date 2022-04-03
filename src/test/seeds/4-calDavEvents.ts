@@ -6,7 +6,7 @@ import UserEntity from '../../data/entity/UserEntity';
 import { CreateCalDavEventRequest } from '../../bloben-interface/event/event';
 import CalDavCalendarEntity from '../../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../../data/entity/CalDavEventEntity';
-import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
+import ICalParser, { EventJSON } from 'ical-js-parser';
 import { formatEventJsonToCalDavEvent } from '../../utils/davHelper';
 import { DAVCalendarObject } from 'tsdav';
 import { v4 } from 'uuid';

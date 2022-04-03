@@ -9,7 +9,7 @@ export interface CalDavEventsRaw {
   internalID?: string;
   startAt: string;
   endAt: string;
-  timezoneStart: string | null;
+  timezoneStartAt: string | null;
   summary: string;
   props: any;
   description: string;
@@ -32,7 +32,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         e.id as "id",
         e.start_at as "startAt",
         e.end_at as "endAt",
-        e.timezone_start as "timezoneStart",
+        e.timezone_start_at as "timezoneStartAt",
         e.summary as "summary",
         e.location as "location",
         e.description as "description",
@@ -67,6 +67,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       WHERE 
         a.user_id = $1
         AND e.deleted_at IS NULL
+        AND c.is_hidden IS FALSE
   `,
         [userID]
       );

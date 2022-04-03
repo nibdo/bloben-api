@@ -16,6 +16,11 @@ export interface GetWebcalCalendarsResponse {
   color: string;
   syncFrequency: number;
   url: string;
+  isHidden: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PatchWebcalCalendarRequest {
+  isHidden: boolean;
 }
