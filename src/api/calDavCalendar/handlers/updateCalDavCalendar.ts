@@ -1,15 +1,16 @@
 import { Request, Response } from 'express';
 
-import { BULL_QUEUE, LOG_TAG } from '../../../utils/enums';
 import { CommonResponse } from '../../../bloben-interface/interface';
-import { DAVNamespaceShort } from 'tsdav';
+import {
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { UpdateCalDavCalendarRequest } from '../../../bloben-interface/calDavCalendar/calDavCalendar';
-import { calDavSyncBullQueue } from '../../../service/BullQueue';
 import { createCommonResponse } from '../../../utils/common';
-import { createDavClient } from '../../../service/davService';
+import { io } from '../../../app';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavCalendarRepository from '../../../data/repository/CalDavCalendarRepository';
-import logger from '../../../utils/logger';
 
 export const updateCalDavCalendar = async (
   req: Request,
@@ -28,31 +29,24 @@ export const updateCalDavCalendar = async (
     throw throwError(404, 'CalDav calendar not found');
   }
 
-  const client = createDavClient(calDavCalendar.account.url, {
-    username: calDavCalendar.account.username,
-    password: calDavCalendar.account.password,
-  });
+  await CalDavCalendarRepository.getRepository().update(
+    {
+      id,
+    },
+    {
+      customColor: body.color,
+      customDisplayName: body.name,
+    }
+  );
 
-  await client.login();
-
-  const response = await client.updateObject({
-    url: calDavCalendar.url,
-    data: JSON.stringify({
-      [`${DAVNamespaceShort.DAV}:displayname`]: body.name,
-      [`${DAVNamespaceShort.CALDAV}:supported-calendar-component-set`]:
-        body.components,
-      [`${DAVNamespaceShort.CALDAV_APPLE}:calendar-color`]: body.color,
-    }),
-  });
-
-  if (response.status >= 300) {
-    logger.error('Update caldav calendar error', response?.[0], [
-      LOG_TAG.CALDAV,
-    ]);
-    throw throwError(409, 'Cannot update caldav calendar');
-  }
-
-  await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+  );
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+  );
 
   return createCommonResponse('CalDav calendar updated');
 };
