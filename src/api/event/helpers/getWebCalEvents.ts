@@ -54,32 +54,6 @@ export const getWebcalEvents = async (
       .andWhere('wc.isHidden IS FALSE')
       .getMany();
 
-  // get recurrence events
-  // const repeatedEvents: WebcalEventEntity[] = await WebcalEventRepository.getRepository()
-  //   .createQueryBuilder('we')
-  //   .leftJoinAndSelect('we.webcalCalendar', 'wc')
-  //   // .leftJoinAndSelect('exceptions', 'e', 'e.external_id')
-  //   .addSelect([
-  //     'we.id',
-  //     'we.summary',
-  //     'we.description',
-  //     'we.location',
-  //     'we.sequence',
-  //     'we.organizer',
-  //     'we.attendees',
-  //     'we.allDay',
-  //     'we.isRepeated',
-  //     'we.rRule',
-  //     'we.createdAt',
-  //     'we.updatedAt',
-  //     'we.deletedAt',
-  //     'we.externalID'
-  //   ])
-  //   .where('wc.user_id = :userID', { userID })
-  //   .andWhere('we.isRepeated = true')
-  //   .andWhere('we.deletedAt IS NULL')
-  //   .getMany();
-
   const repeatedEventsRaw: any =
     await WebcalEventRepository.getRepository().query(
       `SELECT

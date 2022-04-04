@@ -221,11 +221,7 @@ export const getCurrentRangeForSync = () => {
     undefined,
     WEEKDAY_START.MONDAY
   );
-  // const calendarDaysNext = getMonthDays(
-  //   calendarDays[calendarDays.length - 3],
-  //   undefined,
-  //   WEEKDAY_START.MONDAY
-  // );
+
   return {
     rangeFrom: calendarDays[0].toUTC().toString(),
     rangeTo: normalizeDateEnd(

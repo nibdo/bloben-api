@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 
-import { CalDavCacheService } from '../../../service/CalDavCacheService';
-import { DAVCalendarObject } from 'tsdav';
+import { DateTime } from 'luxon';
 import { EventResult } from '../../../bloben-interface/event/event';
-import { createEventsFromCalendarObject } from '../../../utils/davHelper';
-import { forEach } from 'lodash';
+import { forEach, map } from 'lodash';
+import { formatEventRawToResult } from '../../../utils/format';
+import { getRepeatedEvents } from '../../calDavEvent/helpers/repeatHelper';
 import { getWebcalEvents } from '../helpers/getWebCalEvents';
-import { loginToCalDav } from '../../../service/davService';
-import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
+import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
+import LuxonHelper from '../../../utils/luxonHelper';
 
 /**
  * Get events outside base range
@@ -21,66 +21,55 @@ export const getEventsInRange = async (
   const { userID } = res.locals;
   const { rangeFrom, rangeTo } = req.query as any;
 
-  // get calDav accounts
-  const calDavAccounts: any = await CalDavAccountRepository.getCalDavAccounts(
-    userID,
-    true
-  );
-
-  let resultCalDavEvents: EventResult[] = [];
+  let result: EventResult[] = [];
 
   // try to get events from cache
-  const cacheResult = await CalDavCacheService.get(userID, {
+  // const cacheResult = await CalDavCacheService.get(userID, {
+  //   rangeFrom,
+  //   rangeTo,
+  // });
+
+  // if (cacheResult) {
+  //   return cacheResult;
+  // } else {
+  const rangeFromDateTime: DateTime = LuxonHelper.parseToDateTime(
+    rangeFrom as string
+  );
+  const rangeToDateTime: DateTime = LuxonHelper.parseToDateTime(
+    rangeTo as string
+  );
+
+  const normalEvents = await CalDavEventRepository.getEventsInRange(
+    userID,
     rangeFrom,
-    rangeTo,
-  });
+    rangeTo
+  );
 
-  if (cacheResult) {
-    return cacheResult;
-  } else {
-    // check every calendar
-    for (const calDavAccount of calDavAccounts) {
-      const calDavCalendars = calDavAccount.calendars;
+  const repeatedEvents = await CalDavEventRepository.getRepeatedEvents(userID);
+  let repeatedEventsResult = [];
 
-      const client = await loginToCalDav(calDavAccount);
-
-      for (const calDavCalendar of calDavCalendars) {
-        const params: any = {
-          calendar: calDavCalendar,
-          timeRange: {
-            start: rangeFrom,
-            end: rangeTo,
-          },
-        };
-
-        const response: DAVCalendarObject[] = await client.fetchCalendarObjects(
-          params
-        );
-
-        forEach(response, (item) => {
-          if (item.data) {
-            resultCalDavEvents = [
-              ...resultCalDavEvents,
-              ...createEventsFromCalendarObject(item, calDavCalendar, {
-                rangeFrom,
-                rangeTo,
-              }),
-            ];
-          }
-        });
-      }
-    }
-
-    const webCalEvents = await getWebcalEvents(userID, rangeFrom, rangeTo);
-
-    resultCalDavEvents = [...resultCalDavEvents, ...webCalEvents];
-
-    await CalDavCacheService.set(
-      userID,
-      { rangeFrom, rangeTo },
-      resultCalDavEvents
+  forEach(repeatedEvents, (event) => {
+    const repeatedEvents = getRepeatedEvents(
+      event,
+      rangeFromDateTime,
+      rangeToDateTime
     );
-  }
 
-  return resultCalDavEvents;
+    repeatedEventsResult = [...repeatedEventsResult, ...repeatedEvents];
+  });
+  const calDavEventsNormal = map(normalEvents, (event) =>
+    formatEventRawToResult(event)
+  );
+  const calDavEventsRepeated = map(repeatedEventsResult, (event) =>
+    formatEventRawToResult(event)
+  );
+
+  const webCalEvents = await getWebcalEvents(userID, rangeFrom, rangeTo);
+
+  result = [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
+
+  // await CalDavCacheService.set(userID, { rangeFrom, rangeTo }, result);
+  // }
+
+  return result;
 };
