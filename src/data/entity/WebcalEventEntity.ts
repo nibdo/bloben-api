@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { DateTime } from 'luxon';
 import { EventJSON } from 'ical-js-parser';
+import { formatDTEndValue, formatDTStartValue } from '../../utils/davHelper';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 import WebcalEventExceptionEntity from './WebcalEventExceptionEntity';
 
@@ -91,16 +92,16 @@ export default class WebcalEventEntity {
     webcalCalendar?: WebcalCalendarEntity
   ) => {
     if (data !== null && webcalCalendar !== null && data?.dtstart) {
-      const startDateTime: DateTime = DateTime.fromISO(data.dtstart.value);
-      const endDateTime: DateTime = DateTime.fromISO(
-        data.dtend?.value ? data.dtend.value : data.dtstart.value
-      );
+      const isAllDay = data?.dtstart?.value?.length === '20220318'.length;
+
       this.summary = data.summary;
-      this.startAt = startDateTime.toUTC().toJSDate();
-      this.timezoneStartAt = data.dtstart.timezone
+      this.startAt = formatDTStartValue(data, isAllDay);
+      this.timezoneStartAt = isAllDay
+        ? 'floating'
+        : data.dtstart.timezone
         ? data.dtstart.timezone
         : defaultTimezone;
-      this.endAt = endDateTime.toUTC().toJSDate();
+      this.endAt = formatDTEndValue(data, isAllDay);
       this.timezoneEndAt = this.timezoneStartAt;
       this.externalID = data.uid;
       this.organizer = data.organizer as any;
