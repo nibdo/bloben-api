@@ -301,17 +301,11 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 
 export const updateCalDavEvents = async (
   calDavCalendar: any,
-  // range: any,
   client: any,
   queryRunner: QueryRunner,
   userID: string
 ) => {
-  // get etags for events in range
-  const calDavServerResult: any = await queryClient(
-    client,
-    calDavCalendar
-    // range
-  );
+  const calDavServerResult: any = await queryClient(client, calDavCalendar);
 
   // get existing events
   const existingEvents: {
