@@ -52,7 +52,7 @@ export interface CalDavEventObj {
   [key: string]: any;
 }
 
-const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
+export const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
   let result;
 
   isAllDay
@@ -63,7 +63,7 @@ const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
 
   return result;
 };
-const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
+export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
   let result;
 
   if (!event.dtend?.value) {
