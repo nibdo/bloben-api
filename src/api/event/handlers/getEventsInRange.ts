@@ -3,10 +3,10 @@ import { Request, Response } from 'express';
 import { CalDavCacheService } from '../../../service/CalDavCacheService';
 import { DAVCalendarObject } from 'tsdav';
 import { EventResult } from '../../../bloben-interface/event/event';
-import { createDavClient } from '../../../service/davService';
 import { createEventsFromCalendarObject } from '../../../utils/davHelper';
 import { forEach } from 'lodash';
 import { getWebcalEvents } from '../helpers/getWebCalEvents';
+import { loginToCalDav } from '../../../service/davService';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 
 /**
@@ -42,11 +42,7 @@ export const getEventsInRange = async (
     for (const calDavAccount of calDavAccounts) {
       const calDavCalendars = calDavAccount.calendars;
 
-      const client = createDavClient(calDavAccount.url, {
-        username: calDavAccount.username,
-        password: calDavAccount.password,
-      });
-      await client.login();
+      const client = await loginToCalDav(calDavAccount);
 
       for (const calDavCalendar of calDavCalendars) {
         const params: any = {
