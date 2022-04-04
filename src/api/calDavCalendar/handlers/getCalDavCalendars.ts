@@ -10,11 +10,11 @@ export const formatCalendarResponse = (
 ): GetCalDavCalendar => {
   return {
     id: calendar.id,
-    displayName: calendar.displayName,
+    displayName: calendar.customDisplayName || calendar.displayName,
     url: calendar.url,
     isHidden: calendar.isHidden,
     components: calendar.components,
-    color: calendar.color || null,
+    color: calendar.customColor || calendar.color || null,
     timezone: calendar.timezone || null,
     calDavAccountID: calDavAccount
       ? calDavAccount.id
@@ -25,7 +25,9 @@ export const formatCalendarResponse = (
 interface CalendarRaw {
   id: string;
   displayName: string;
+  customDisplayName: string | null;
   color: string;
+  customColor: string | null;
   url: string;
   components: string[];
   calDavAccountID: string;
@@ -48,7 +50,9 @@ export const getCalDavCalendars = async (
       SELECT 
         c.id as id, 
         c.display_name as "displayName", 
+        c.custom_display_name as "customDisplayName", 
         c.color as color,
+        c.custom_color as "customColor",
         c.url as url,
         c.components as components,
         c.caldav_account_id as "calDavAccountID",

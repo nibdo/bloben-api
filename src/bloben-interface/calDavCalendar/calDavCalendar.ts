@@ -19,7 +19,6 @@ export interface CreateCalDavCalendarRequest {
 export interface UpdateCalDavCalendarRequest {
   name: string;
   color: string;
-  components: string[];
 }
 
 export interface PatchCalDavCalendarRequest {

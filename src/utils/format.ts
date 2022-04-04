@@ -44,7 +44,7 @@ export const formatEventRawToResult = (
   // alarms: alarms[event.id] ? alarms[event.id] : [],
   allDay: event.allDay,
   calendarID: event.calendarID,
-  color: event.color,
+  color: event.eventColor || event.customColor || event.color,
   // data: event.data,
   startAt: event.startAt,
   endAt: event.endAt,

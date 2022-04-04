@@ -20,6 +20,8 @@ export interface CalDavEventsRaw {
   etag: string;
   href: string;
   color: string;
+  eventColor: string;
+  customColor: string | null;
   calendarID: string;
   createdAt: string;
   updatedAt: string;
@@ -43,10 +45,12 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         e.external_id as "externalID",
         e.etag as "etag",
         e.href as "href",
+        e.color as "eventColor",
         e.created_at as "createdAt",
         e.updated_at as "updatedAt",
         e.deleted_at as "deletedAt",
         c.color as "color",
+        c.custom_color as "customColor",
         c.id as "calendarID"
   `;
 
@@ -73,6 +77,55 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       );
 
     return resultCalDavEvents;
+  };
+
+  public static getEventsInRange = async (
+    userID: string,
+    rangeFrom: string,
+    rangeTo: string
+  ) => {
+    const resultCalDavEvents: CalDavEventsRaw[] =
+      await CalDavEventRepository.getRepository().query(
+        `
+      SELECT 
+        ${CalDavEventRepository.calDavEventRawProps}
+      FROM 
+        caldav_events e
+        INNER JOIN caldav_calendars c on c.id = e.caldav_calendar_id
+        INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
+      WHERE 
+        a.user_id = $1
+        AND e.deleted_at IS NULL
+        AND c.is_hidden IS FALSE
+        AND e.is_repeated = FALSE
+        AND (e.start_at, e.end_at) OVERLAPS (CAST($2 AS timestamp), CAST($3 AS timestamp))
+  `,
+        [userID, rangeFrom, rangeTo]
+      );
+
+    return resultCalDavEvents;
+  };
+
+  public static getRepeatedEvents = async (userID: string) => {
+    const repeatedEvents: CalDavEventsRaw[] =
+      await CalDavEventRepository.getRepository().query(
+        `
+      SELECT 
+        ${CalDavEventRepository.calDavEventRawProps}
+      FROM 
+        caldav_events e
+        INNER JOIN caldav_calendars c on c.id = e.caldav_calendar_id
+        INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
+      WHERE 
+        a.user_id = $1
+        AND e.deleted_at IS NULL
+        AND c.is_hidden IS FALSE
+        AND e.is_repeated = TRUE
+  `,
+        [userID]
+      );
+
+    return repeatedEvents;
   };
 
   public static getCalDavEventByID = async (

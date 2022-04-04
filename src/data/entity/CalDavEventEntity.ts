@@ -21,6 +21,9 @@ export default class CalDavEventEntity {
   @Column({ name: 'href' })
   href: string;
 
+  @Column({ nullable: true })
+  color: string;
+
   @Column({ type: 'timestamptz', name: 'start_at' })
   startAt: Date;
 
@@ -102,6 +105,7 @@ export default class CalDavEventEntity {
       this.timezoneEndAt = item.timezone;
       this.etag = item.etag;
       this.allDay = item.allDay;
+      this.color = item.color || null;
       this.location = item.location;
       this.description = item.description;
       this.isRepeated = item.isRepeated;
