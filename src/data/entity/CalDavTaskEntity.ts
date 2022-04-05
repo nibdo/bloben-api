@@ -25,14 +25,14 @@ export default class CalDavTaskEntity {
   @Column({ type: 'timestamptz', name: 'start_at', nullable: true })
   startAt: Date;
 
-  @Column({ name: 'timezone_start', nullable: true })
-  timezoneStart: string;
+  @Column({ name: 'timezone_start_at', nullable: true })
+  timezoneStartAt: string;
 
   @Column({ type: 'timestamptz', name: 'end_at', nullable: true })
   endAt: Date;
 
-  @Column({ name: 'timezone_end', nullable: true })
-  timezoneEnd: string;
+  @Column({ name: 'timezone_end_at', nullable: true })
+  timezoneEndAt: string;
 
   @Column({ name: 'all_day', default: false })
   allDay: boolean;
@@ -102,8 +102,8 @@ export default class CalDavTaskEntity {
       this.endAt = item.endAt
         ? DateTime.fromISO(item.endAt).toUTC().toJSDate()
         : null;
-      this.timezoneStart = item.timezone;
-      this.timezoneEnd = item.timezone;
+      this.timezoneStartAt = item.timezone;
+      this.timezoneEndAt = item.timezone;
       this.etag = item.etag;
       this.location = item.location;
       this.description = item.description;

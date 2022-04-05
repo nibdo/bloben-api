@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
 
-import { BULL_QUEUE, LOG_TAG } from '../../../utils/enums';
+import {
+  BULL_QUEUE,
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { CreateCalDavCalendarRequest } from '../../../bloben-interface/calDavCalendar/calDavCalendar';
 import { DAVNamespaceShort } from 'tsdav';
@@ -8,6 +14,7 @@ import { calDavSyncBullQueue } from '../../../service/BullQueue';
 import { createCommonResponse } from '../../../utils/common';
 import { createDavClient } from '../../../service/davService';
 import { forEach } from 'lodash';
+import { io } from '../../../app';
 import { throwError } from '../../../utils/errorCodes';
 import { v4 } from 'uuid';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
@@ -55,6 +62,11 @@ export const createCalDavCalendar = async (
     logger.error('Create caldav calendar error', result?.[0], [LOG_TAG.CALDAV]);
     throw throwError(409, 'Cannot create caldav calendar');
   }
+
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+  );
 
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
 

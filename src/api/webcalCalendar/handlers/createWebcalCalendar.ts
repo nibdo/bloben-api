@@ -2,10 +2,16 @@ import { Request, Response } from 'express';
 
 import { createCommonResponse } from '../../../utils/common';
 
-import { BULL_QUEUE } from '../../../utils/enums';
+import {
+  BULL_QUEUE,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { CreateWebcalCalendarRequest } from '../../../bloben-interface/webcalCalendar/webcalCalendar';
 
+import { io } from '../../../app';
 import { throwError } from '../../../utils/errorCodes';
 import { webcalSyncBullQueue } from '../../../service/BullQueue';
 import WebcalCalendarEntity from '../../../data/entity/WebcalCalendarEntity';
@@ -45,8 +51,12 @@ export const createWebcalCalendar = async (
 
   await WebcalCalendarRepository.getRepository().save(webcalCalendar);
 
-  await webcalSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID: user.id });
+  await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID: user.id });
 
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
+  );
   // io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
   //   SOCKET_CHANNEL.CALENDAR,
   //   createSocketCrudMsg(

@@ -21,17 +21,20 @@ export default class CalDavEventEntity {
   @Column({ name: 'href' })
   href: string;
 
+  @Column({ nullable: true })
+  color: string;
+
   @Column({ type: 'timestamptz', name: 'start_at' })
   startAt: Date;
 
-  @Column({ name: 'timezone_start', nullable: true })
-  timezoneStart: string;
+  @Column({ name: 'timezone_start_at', nullable: true })
+  timezoneStartAt: string;
 
   @Column({ type: 'timestamptz', name: 'end_at' })
   endAt: Date;
 
-  @Column({ name: 'timezone_end', nullable: true })
-  timezoneEnd: string;
+  @Column({ name: 'timezone_end_at', nullable: true })
+  timezoneEndAt: string;
 
   @Column({ name: 'all_day', default: false })
   allDay: boolean;
@@ -98,10 +101,11 @@ export default class CalDavEventEntity {
       this.externalID = item.externalID;
       this.startAt = DateTime.fromISO(item.startAt).toUTC().toJSDate();
       this.endAt = DateTime.fromISO(item.endAt).toUTC().toJSDate();
-      this.timezoneStart = item.timezone;
-      this.timezoneEnd = item.timezone;
+      this.timezoneStartAt = item.timezone;
+      this.timezoneEndAt = item.timezone;
       this.etag = item.etag;
       this.allDay = item.allDay;
+      this.color = item.color || null;
       this.location = item.location;
       this.description = item.description;
       this.isRepeated = item.isRepeated;

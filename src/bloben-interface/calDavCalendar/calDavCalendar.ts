@@ -6,6 +6,7 @@ export interface GetCalDavCalendar {
   components: string[];
   timezone: string;
   url: string;
+  isHidden?: boolean;
 }
 
 export interface CreateCalDavCalendarRequest {
@@ -18,5 +19,8 @@ export interface CreateCalDavCalendarRequest {
 export interface UpdateCalDavCalendarRequest {
   name: string;
   color: string;
-  components: string[];
+}
+
+export interface PatchCalDavCalendarRequest {
+  isHidden: boolean;
 }

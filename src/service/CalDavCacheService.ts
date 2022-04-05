@@ -16,7 +16,7 @@ export class CalDavCacheService {
   static async set(userID: string, range: Range, data: any) {
     const key = `${userID}_${this.createRangeKey(range)}`;
 
-    await redisClient.set(key, JSON.stringify(data), 'PX', 500000);
+    await redisClient.set(key, JSON.stringify(data), 'EX', 60 * 60 * 2);
 
     // get all user keys
     const userKeys = await redisClient.get(userID);
@@ -28,7 +28,7 @@ export class CalDavCacheService {
     // add current key
     userParsedKeys.push(key);
 
-    await redisClient.set(userID, JSON.stringify(userParsedKeys), 'PX', 500000);
+    await redisClient.set(userID, JSON.stringify(userParsedKeys), 'EX', 500000);
   }
 
   static async deleteByUserID(userID: string) {

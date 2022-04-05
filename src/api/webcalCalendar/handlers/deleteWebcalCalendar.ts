@@ -42,6 +42,10 @@ export const deleteWebcalCalendar = async (
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
     SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
+  );
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+    SOCKET_CHANNEL.SYNC,
     JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
   );
 

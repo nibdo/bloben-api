@@ -12,10 +12,6 @@ export default (
   next: NextFunction
 ): any => {
   try {
-    return res
-      .status(error.code)
-      .json({ code: error.code, message: error.message })
-      .send();
     if (error.appError) {
       return res
         .status(error.code)

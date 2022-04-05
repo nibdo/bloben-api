@@ -72,3 +72,17 @@ export const deleteCalDavCalendar = async (
     next(error);
   }
 };
+
+export const patchCalDavCalendar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavCalendarService.patchCalDavCalendar(req, res);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};

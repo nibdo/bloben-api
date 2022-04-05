@@ -29,7 +29,7 @@ import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../data/repository/CalDavEventRepository';
-import ICalParser, { EventJSON } from 'ical-js-parser-commonjs';
+import ICalParser, { EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 import logger from './logger';
@@ -52,7 +52,7 @@ export interface CalDavEventObj {
   [key: string]: any;
 }
 
-const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
+export const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
   let result;
 
   isAllDay
@@ -63,7 +63,7 @@ const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
 
   return result;
 };
-const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
+export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
   let result;
 
   if (!event.dtend?.value) {
@@ -103,7 +103,7 @@ export const formatEventJsonToCalDavEvent = (
     location: event.location || null,
     description: event.description || null,
     etag: calendarObject.etag,
-    color: calendar.color || 'indigo',
+    color: event.color || null,
     alarms: event.alarms,
     href: calendarObject.url,
   };
@@ -301,17 +301,11 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
 
 export const updateCalDavEvents = async (
   calDavCalendar: any,
-  // range: any,
   client: any,
   queryRunner: QueryRunner,
   userID: string
 ) => {
-  // get etags for events in range
-  const calDavServerResult: any = await queryClient(
-    client,
-    calDavCalendar
-    // range
-  );
+  const calDavServerResult: any = await queryClient(client, calDavCalendar);
 
   // get existing events
   const existingEvents: {
@@ -662,12 +656,12 @@ export const formatInviteData = (
       subject: formatEventInviteSubject(
         event.summary,
         event.startAt,
-        event.timezoneStart
+        event.timezoneStartAt
       ),
       body: formatEventInviteSubject(
         event.summary,
         event.startAt,
-        event.timezoneStart
+        event.timezoneStartAt
       ),
       ical: injectMethod(iCalString, method),
       method: method,

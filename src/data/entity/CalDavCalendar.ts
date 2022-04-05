@@ -22,8 +22,8 @@ export default class CalDavCalendarEntity {
   @Column({ name: 'display_name', nullable: false })
   displayName: string;
 
-  // @Column({ name: 'principal_url', nullable: false })
-  // principalUrl: string;
+  @Column({ name: 'custom_display_name', nullable: true })
+  customDisplayName: string;
 
   @Column({ name: 'data', nullable: true })
   data: string;
@@ -37,11 +37,17 @@ export default class CalDavCalendarEntity {
   @Column({ name: 'color', nullable: true })
   color: string;
 
+  @Column({ name: 'custom_color', nullable: true })
+  customColor: string;
+
   @Column({ name: 'ctag', nullable: true })
   ctag: string;
 
   @Column({ name: 'ctag_tasks', nullable: true })
   ctagTasks: string;
+
+  @Column({ name: 'is_hidden', default: false })
+  isHidden: boolean;
 
   @Column({ type: 'timestamptz', name: 'last_update_at', nullable: true })
   lastUpdateAt: Date;

@@ -45,7 +45,7 @@ export const getRepeatedEvents = (
 
   // check if event starts in DST
   const eventStartsInDST: boolean = DateTime.fromISO(startAtDate).setZone(
-    event.timezoneStart
+    event.timezoneStartAt
   ).isInDST;
 
   const rRuleResults: Date[] = rRule.between(
@@ -72,7 +72,7 @@ export const getRepeatedEvents = (
 
     // check if start of repeated event is in DST
     const repeatedEventStartsInDST: boolean = startAtDateTime.setZone(
-      event.timezoneStart
+      event.timezoneStartAt
     ).isInDST;
 
     // set proper "wall" time for repeated dates across DST changes

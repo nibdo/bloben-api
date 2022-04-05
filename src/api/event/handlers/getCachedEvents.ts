@@ -1,11 +1,13 @@
+import { DateTime } from 'luxon';
 import { EventResult } from '../../../bloben-interface/event/event';
 import { Request, Response } from 'express';
-import { addRepeatedEvents } from '../../../utils/eventRepeatHelper';
+import { forEach, map } from 'lodash';
 import { formatEventRawToResult } from '../../../utils/format';
 import { getCurrentRangeForSync } from '../../../utils/common';
+import { getRepeatedEvents } from '../../calDavEvent/helpers/repeatHelper';
 import { getWebcalEvents } from '../helpers/getWebCalEvents';
-import { map } from 'lodash';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
+import LuxonHelper from '../../../utils/luxonHelper';
 
 /**
  * Get events for initial view
@@ -18,23 +20,41 @@ export const getCachedEvents = async (
 ): Promise<EventResult[]> => {
   const { userID } = res.locals;
 
-  const resultCalDavEvents = await CalDavEventRepository.getCalDavEventsByID(
-    userID
+  const { rangeFrom, rangeTo } = getCurrentRangeForSync();
+
+  const rangeFromDateTime: DateTime = LuxonHelper.parseToDateTime(
+    rangeFrom as string
+  );
+  const rangeToDateTime: DateTime = LuxonHelper.parseToDateTime(
+    rangeTo as string
   );
 
-  let result = [];
-
-  const range = getCurrentRangeForSync();
-
-  result = addRepeatedEvents(resultCalDavEvents, range);
-
-  const calDavEvents = map(result, (event) => formatEventRawToResult(event));
-
-  const webCalEvents = await getWebcalEvents(
+  const normalEvents = await CalDavEventRepository.getEventsInRange(
     userID,
-    range.rangeFrom,
-    range.rangeTo
+    rangeFrom,
+    rangeTo
   );
 
-  return [...calDavEvents, ...webCalEvents];
+  const repeatedEvents = await CalDavEventRepository.getRepeatedEvents(userID);
+  let repeatedEventsResult = [];
+
+  forEach(repeatedEvents, (event) => {
+    const repeatedEvents = getRepeatedEvents(
+      event,
+      rangeFromDateTime,
+      rangeToDateTime
+    );
+
+    repeatedEventsResult = [...repeatedEventsResult, ...repeatedEvents];
+  });
+  const calDavEventsNormal = map(normalEvents, (event) =>
+    formatEventRawToResult(event)
+  );
+  const calDavEventsRepeated = map(repeatedEventsResult, (event) =>
+    formatEventRawToResult(event)
+  );
+
+  const webCalEvents = await getWebcalEvents(userID, rangeFrom, rangeTo);
+
+  return [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
 };

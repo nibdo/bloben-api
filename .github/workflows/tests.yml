@@ -2,7 +2,7 @@ name: Tests
 
 on:
   pull_request:
-    branches: [ development, staging, production ]
+    branches: [ development, production ]
 
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: 16.14.0
+          node-version: 16.14.2
           registry-url: https://registry.npmjs.org/
       - uses: actions/checkout@v2
       - name: Start containers

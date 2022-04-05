@@ -51,33 +51,8 @@ export const getWebcalEvents = async (
       .andWhere('we.isRepeated = false')
       .andWhere(overlapCondition, { rangeFrom, rangeTo })
       .andWhere('we.deletedAt IS NULL')
+      .andWhere('wc.isHidden IS FALSE')
       .getMany();
-
-  // get recurrence events
-  // const repeatedEvents: WebcalEventEntity[] = await WebcalEventRepository.getRepository()
-  //   .createQueryBuilder('we')
-  //   .leftJoinAndSelect('we.webcalCalendar', 'wc')
-  //   // .leftJoinAndSelect('exceptions', 'e', 'e.external_id')
-  //   .addSelect([
-  //     'we.id',
-  //     'we.summary',
-  //     'we.description',
-  //     'we.location',
-  //     'we.sequence',
-  //     'we.organizer',
-  //     'we.attendees',
-  //     'we.allDay',
-  //     'we.isRepeated',
-  //     'we.rRule',
-  //     'we.createdAt',
-  //     'we.updatedAt',
-  //     'we.deletedAt',
-  //     'we.externalID'
-  //   ])
-  //   .where('wc.user_id = :userID', { userID })
-  //   .andWhere('we.isRepeated = true')
-  //   .andWhere('we.deletedAt IS NULL')
-  //   .getMany();
 
   const repeatedEventsRaw: any =
     await WebcalEventRepository.getRepository().query(
@@ -86,7 +61,7 @@ export const getWebcalEvents = async (
                 we.summary as summary,
                 we.start_at as "startAt",
                 we.end_at as "endAt",
-                we.timezone_start as "timezoneStart",
+                we.timezone_start_at as "timezoneStartAt",
                 we.description as description,
                 we.location as location,
                 we.sequence as sequence,
@@ -113,6 +88,7 @@ export const getWebcalEvents = async (
                 wc.user_id = $1 AND 
                 we.is_repeated = TRUE AND 
                 we.deleted_at IS NULL
+                AND wc.is_hidden IS FALSE
                 `,
       [userID]
     );
@@ -144,8 +120,8 @@ export const getWebcalEvents = async (
           (event.externalID = item.externalID),
           (event.startAt = item.startAt),
           (event.endAt = item.endAt),
-          (event.timezoneEnd = item.timezoneStart),
-          (event.timezoneStart = item.timezoneStart),
+          (event.timezoneEndAt = item.timezoneStartAt),
+          (event.timezoneStartAt = item.timezoneStartAt),
           (event.webcalCalendar = {
             id: item.calendarID,
             color: item.color,
@@ -267,8 +243,8 @@ export const getWebcalEvents = async (
     color: event.webcalCalendar.color,
     startAt: event.startAt.toISOString(),
     endAt: event.endAt.toISOString(),
-    timezoneEndAt: event.timezoneStart,
-    timezoneStartAt: event.timezoneStart,
+    timezoneEndAt: event.timezoneStartAt,
+    timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
     type: EVENT_TYPE.WEBCAL,

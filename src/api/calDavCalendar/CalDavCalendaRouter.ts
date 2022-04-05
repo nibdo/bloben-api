@@ -8,8 +8,10 @@ import { createCalDavCalendarSchema } from './schemas/createCalDavCalendarSchema
 import { deleteCalDavCalendarSchema } from './schemas/deleteCalDavCalendarSchema';
 import { emptySchema } from '../../common/schemas/emptySchema';
 import { getCalDavCalendarSchema } from './schemas/getCalDavCalendarSchema';
+import { patchCalDavCalendarSchema } from './schemas/patchCalDavCalendarSchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
+import { updateCalDavCalendarSchema } from './schemas/updateCalDavCalendarSchema';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
 
 const CalDavACalendarRouter: Router = Router();
@@ -47,16 +49,27 @@ CalDavACalendarRouter.post(
   CalDavCalendarController.createCalDavCalendar
 );
 
-// CalDavACalendarRouter.put(
-//   '/:id',
-//   [
-//     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-//     authMiddleware,
-//     roleMiddleware([USER_ROLE.USER]),
-//     validationMiddleware(updateCalDavCalendarSchema),
-//   ],
-//   CalDavCalendarController.updateCalDavCalendar
-// );
+CalDavACalendarRouter.put(
+  '/:id',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+    validationMiddleware(updateCalDavCalendarSchema),
+  ],
+  CalDavCalendarController.updateCalDavCalendar
+);
+
+CalDavACalendarRouter.patch(
+  '/:id',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+    validationMiddleware(patchCalDavCalendarSchema),
+  ],
+  CalDavCalendarController.patchCalDavCalendar
+);
 
 CalDavACalendarRouter.delete(
   '/:id',
