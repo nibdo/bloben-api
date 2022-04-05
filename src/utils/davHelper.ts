@@ -103,7 +103,7 @@ export const formatEventJsonToCalDavEvent = (
     location: event.location || null,
     description: event.description || null,
     etag: calendarObject.etag,
-    color: event.color || calendar.color || 'indigo',
+    color: event.color || null,
     alarms: event.alarms,
     href: calendarObject.url,
   };
