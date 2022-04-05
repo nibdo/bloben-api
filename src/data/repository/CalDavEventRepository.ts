@@ -20,8 +20,8 @@ export interface CalDavEventsRaw {
   etag: string;
   href: string;
   color: string;
-  eventColor: string;
-  customColor: string | null;
+  eventCustomColor: string;
+  customCalendarColor: string | null;
   calendarID: string;
   createdAt: string;
   updatedAt: string;
@@ -45,12 +45,12 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         e.external_id as "externalID",
         e.etag as "etag",
         e.href as "href",
-        e.color as "eventColor",
+        e.color as "eventCustomColor",
         e.created_at as "createdAt",
         e.updated_at as "updatedAt",
         e.deleted_at as "deletedAt",
         c.color as "color",
-        c.custom_color as "customColor",
+        c.custom_color as "customCalendarColor",
         c.id as "calendarID"
   `;
 
