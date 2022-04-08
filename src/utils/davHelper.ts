@@ -226,10 +226,18 @@ const getRepeatedEvent = (events: EventJSON[]): EventJSON => {
 export const createEventFromCalendarObject = (
   calendarObject: DAVCalendarObject,
   calendar: any
-  // range?: Range
 ) => {
   const icalJS = ICalParser.toJSON(calendarObject.data);
   const event: EventJSON = icalJS.events[0];
+
+  if (icalJS.errors?.length) {
+    logger.warn(
+      `Parsing event from caldav event string error ${JSON.stringify(
+        icalJS.errors
+      )}`,
+      [LOG_TAG.CRON, LOG_TAG.CALDAV]
+    );
+  }
 
   if (event) {
     return formatEventJsonToCalDavEvent(event, calendarObject, calendar);
@@ -414,12 +422,20 @@ export const updateCalDavEvents = async (
     const promises: any = [];
     forEach(toInsertResponse, (item: any) => {
       if (item.data) {
-        const eventTemp = createEventFromCalendarObject(item, calDavCalendar);
+        try {
+          const eventTemp = createEventFromCalendarObject(item, calDavCalendar);
 
-        if (eventTemp) {
-          const newEvent = new CalDavEventEntity(eventTemp);
-          eventsToSync.push(formatEventEntityToResult(newEvent));
-          promises.push(queryRunner.manager.save(newEvent));
+          if (eventTemp) {
+            const newEvent = new CalDavEventEntity(eventTemp);
+            eventsToSync.push(formatEventEntityToResult(newEvent));
+            promises.push(queryRunner.manager.save(newEvent));
+          }
+        } catch (e) {
+          logger.error(
+            `Creating event from caldav event string error with event ${item.data}`,
+            e,
+            [LOG_TAG.CRON, LOG_TAG.CALDAV]
+          );
         }
       }
     });
