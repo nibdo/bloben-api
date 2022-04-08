@@ -1,18 +1,12 @@
-import { BULL_QUEUE, LOG_TAG } from '../../utils/enums';
+import { BULL_QUEUE } from '../../utils/enums';
 import { calDavSyncBullQueue } from '../../service/BullQueue';
 import { getUserIDFromWsRoom } from '../../utils/common';
 import { io } from '../../app';
-import logger from '../../utils/logger';
 
 /**
  * Get users connected with ws for more frequent sync
  */
 export const syncCalDavTaskCronJobConnectedUsers = async (): Promise<void> => {
-  logger.info('syncCalDavTaskCronJobConnectedUsers start', [
-    LOG_TAG.CRON,
-    LOG_TAG.CALDAV_TASK,
-  ]);
-
   const socketClients = io.sockets.adapter.rooms;
 
   const activeUserIDs: string[] = [];
