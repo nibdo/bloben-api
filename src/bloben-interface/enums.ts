@@ -9,6 +9,13 @@ export enum ALARM_TYPE {
   EMAIL = 'EMAIL',
 }
 
+export enum ALARM_UNIT {
+  MINUTES = 'minutes',
+  HOURS = 'hours',
+  DAYS = 'days',
+  WEEKS = 'weeks',
+}
+
 export enum SOCKET_APP_TYPE {
   CALENDAR = 'CALENDAR',
   WEBCAL_CALENDAR = 'WEBCAL_CALENDAR',

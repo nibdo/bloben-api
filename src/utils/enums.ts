@@ -67,6 +67,7 @@ export enum RATE_LIMIT {
   ADMIN_LOGIN = 20 * 1000, // 20 seconds
   CHALLENGE = 10 * 1000, // 10 seconds
   DEFAULT = 500,
+  UPDATE_SETTINGS = 20,
   GET_EVENTS = 50,
   SYNC = 60 * 1000,
   TIMEZONE = 20 * 1000,
@@ -138,6 +139,7 @@ export enum LOG_TAG {
   CRON = 'CRON',
   QUEUE = 'QUEUE',
   REST = 'REST',
+  ADMIN = 'ADMIN',
   SECURITY = 'SECURITY',
   WEBSOCKET = 'WEBSOCKET',
   WEBCAL = 'WEBCAL',
