@@ -105,6 +105,13 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           // parse to JSON
           const parsedIcal: ICalJSON = ICalParser.toJSON(response.data);
 
+          if (parsedIcal.errors.length) {
+            logger.warn(
+              `Webcalendar errors ${JSON.stringify(parsedIcal.errors)}`,
+              [LOG_TAG.CRON, LOG_TAG.WEBCAL]
+            );
+          }
+
           await groupLogs(
             GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
             `Deleting previous records for webcal calendar ${webcalCalendar.id}`
@@ -125,25 +132,35 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           // recreate records
           if (parsedIcal.events && parsedIcal.events.length > 0) {
             for (const event of parsedIcal.events) {
-              // handle exceptions for recurring event
-              if (event.recurrenceId) {
-                const eventException: WebcalEventExceptionEntity =
-                  new WebcalEventExceptionEntity(
-                    webcalCalendar.userID,
-                    webcalCalendar.id,
-                    event
-                  );
-                await queryRunner.manager.save(eventException);
-              }
+              try {
+                // handle exceptions for recurring event
+                if (event.recurrenceId) {
+                  const eventException: WebcalEventExceptionEntity =
+                    new WebcalEventExceptionEntity(
+                      webcalCalendar.userID,
+                      webcalCalendar.id,
+                      event
+                    );
+                  await queryRunner.manager.save(eventException);
+                }
 
-              // create new event
-              const newEvent: WebcalEventEntity =
-                new WebcalEventEntity().setData(
-                  event,
-                  null,
-                  webcalCalendarEntity
+                // create new event
+                const newEvent: WebcalEventEntity =
+                  new WebcalEventEntity().setData(
+                    event,
+                    null,
+                    webcalCalendarEntity
+                  );
+                await queryRunner.manager.save(newEvent);
+              } catch (e) {
+                logger.error(
+                  `Creating event from webcalendar error with event ${JSON.stringify(
+                    event
+                  )}`,
+                  e,
+                  [LOG_TAG.CRON, LOG_TAG.WEBCAL]
                 );
-              await queryRunner.manager.save(newEvent);
+              }
             }
           }
 

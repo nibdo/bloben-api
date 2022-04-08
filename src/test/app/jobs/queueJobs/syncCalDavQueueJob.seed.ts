@@ -14,6 +14,7 @@ import { formatEventJsonToCalDavEvent } from '../../../../utils/davHelper';
 import { generateRandomString } from '../../../../utils/common';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 import { io } from '../../../../app';
+import { testIcalStringWrongDate } from '../../../seeds/4-calDavEvents';
 const tsdav = require('tsdav');
 
 const createTestIcalString = (id: string, summary?: string) =>
@@ -163,7 +164,7 @@ const prepareMock = (accountUrl: string) => {
   mockManager.set('fetchCalendarObjects', () => {
     const eventIDS = [eventToInsertID, eventToUpdateID, eventToKeepID];
 
-    return eventIDS.map((id) => ({
+    const events = eventIDS.map((id) => ({
       data: createTestIcalString(
         id,
         id === eventToKeepID ? undefined : 'New value'
@@ -171,6 +172,14 @@ const prepareMock = (accountUrl: string) => {
       etag: id === eventToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
       url: `${accountUrl}/${calendarToUpdateID}/${id}`,
     }));
+
+    events.push({
+        data: testIcalStringWrongDate,
+        etag: '221xv1v87sd4v7sd8v1sd7v',
+        url: `${accountUrl}/asfasf/asfasfasf242`,
+      })
+
+    return events
   });
 
   return mockManager;

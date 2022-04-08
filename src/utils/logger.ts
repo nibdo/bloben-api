@@ -61,6 +61,9 @@ const logger = {
 };
 
 export const groupLogs = async (key: string, msg: string) => {
+  if (env.nodeEnv === NODE_ENV.TEST) {
+    return;
+  }
   const resultRaw = await redisClient.get(key);
   const result = resultRaw ? JSON.parse(resultRaw) : [];
 
