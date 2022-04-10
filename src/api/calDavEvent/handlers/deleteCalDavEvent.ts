@@ -10,7 +10,7 @@ import { CommonResponse } from '../../../bloben-interface/interface';
 import { DeleteCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse } from '../../../utils/common';
 import { emailBullQueue } from '../../../service/BullQueue';
-import { formatInviteData } from '../../../utils/davHelper';
+import { formatCancelInviteData } from '../../../utils/davHelper';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
 import { throwError } from '../../../utils/errorCodes';
@@ -52,11 +52,11 @@ export const deleteCalDavEvent = async (
   }
 
   if (event.props?.attendee) {
-    const icalString = new ICalHelper(event).parseTo();
+    const icalString = new ICalHelper(event).parseTo(CALENDAR_METHOD.CANCEL);
 
     await emailBullQueue.add(
       BULL_QUEUE.EMAIL,
-      formatInviteData(
+      formatCancelInviteData(
         userID,
         event,
         icalString,
@@ -75,12 +75,6 @@ export const deleteCalDavEvent = async (
     SOCKET_CHANNEL.SYNC,
     JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
   );
-
-  // delete cache
-  // await CalDavCacheService.deleteByUserID(userID);
-
-  // trigger resync for cached events
-  // await CalDavCacheService.syncEventsForAccount(calDavAccount);
 
   return createCommonResponse('Event deleted');
 };

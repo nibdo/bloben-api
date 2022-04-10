@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DateTime } from 'luxon';
-import { EventJSON } from 'ical-js-parser';
+import { EventJSON } from 'ical-js-parser-dev';
 import { formatDTEndValue, formatDTStartValue } from '../../utils/davHelper';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 import WebcalEventExceptionEntity from './WebcalEventExceptionEntity';

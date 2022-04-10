@@ -3,12 +3,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { CalDavEventObj } from '../../utils/davHelper';
 import { DateTime } from 'luxon';
 import CalDavCalendarEntity from './CalDavCalendar';
+import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
 
 @Entity('caldav_events')
 export default class CalDavEventEntity {
@@ -80,6 +82,9 @@ export default class CalDavEventEntity {
   })
   @JoinColumn({ name: 'caldav_calendar_id', referencedColumnName: 'id' })
   calendar: CalDavCalendarEntity;
+
+  @OneToMany(() => CalDavEventAlarmEntity, (alarm) => alarm.event)
+  alarms: CalDavEventAlarmEntity[];
 
   parseRRule(rRule: string | null) {
     if (rRule) {

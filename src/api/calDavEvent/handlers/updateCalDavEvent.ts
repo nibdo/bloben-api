@@ -17,13 +17,47 @@ import {
   formatInviteData,
 } from '../../../utils/davHelper';
 import { emailBullQueue } from '../../../service/BullQueue';
+import { forEach } from 'lodash';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
+import { parseAlarmDuration } from '../../../utils/caldavAlarmHelper';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
+import CalDavEventAlarmEntity from '../../../data/entity/CalDavEventAlarmEntity';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import logger from '../../../utils/logger';
+
+export const processCaldavAlarms = async (
+  queryRunner: QueryRunner,
+  alarms: any,
+  event: CalDavEventEntity
+) => {
+  const promises: any = [];
+
+  forEach(alarms, (alarm) => {
+    const isBefore: boolean = alarm?.trigger?.slice(0, 1) === '-';
+
+    const duration = parseAlarmDuration(alarm.trigger);
+
+    if (duration && alarm?.trigger) {
+      const entries = Object.entries(duration);
+      const newAlarm = new CalDavEventAlarmEntity(event);
+
+      newAlarm.amount = Number(entries[0][1]);
+      newAlarm.timeUnit = entries[0][0];
+      newAlarm.beforeStart = isBefore;
+
+      if (alarm.xBlobenAlarmType) {
+        newAlarm.alarmType = alarm.xBlobenAlarmType;
+      }
+
+      promises.push(queryRunner.manager.save(newAlarm));
+    }
+  });
+
+  await Promise.all(promises);
+};
 
 export const updateCalDavEvent = async (
   req: Request,
@@ -55,39 +89,51 @@ export const updateCalDavEvent = async (
 
   const client = await loginToCalDav(calDavAccount);
 
+  if (body.prevEvent) {
+    response = await client.createCalendarObject({
+      calendar: calDavAccount.calendar,
+      filename: `${body.externalID}.ics`,
+      iCalString: body.iCalString,
+    });
+  } else {
+    response = await client.updateCalendarObject({
+      calendarObject: {
+        url: body.url,
+        data: body.iCalString,
+        etag: body.etag,
+      },
+    });
+  }
+
+  if (response.status >= 300) {
+    logger.error('Update calDav event error', response.statusText, [
+      LOG_TAG.REST,
+      LOG_TAG.CALDAV,
+    ]);
+
+    throw throwError(409, `Cannot update event: ${response.statusText}`);
+  }
+
+  const fetchedEvents = await client.fetchCalendarObjects({
+    calendar: calDavAccount.calendar,
+    objectUrls: [response.url],
+  });
+
+  const eventTemp = createEventFromCalendarObject(
+    fetchedEvents[0],
+    calDavAccount.calendar
+  );
+
   try {
     connection = await getConnection();
     queryRunner = await connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
-    if (body.prevEvent) {
-      response = await client.createCalendarObject({
-        calendar: calDavAccount.calendar,
-        filename: `${body.externalID}.ics`,
-        iCalString: body.iCalString,
-      });
-    } else {
-      response = await client.updateCalendarObject({
-        calendarObject: {
-          url: body.url,
-          data: body.iCalString,
-          etag: body.etag,
-        },
-      });
-    }
-
-    const fetchedEvents = await client.fetchCalendarObjects({
-      calendar: calDavAccount.calendar,
-      objectUrls: [response.url],
-    });
-
-    const eventTemp = createEventFromCalendarObject(
-      fetchedEvents[0],
-      calDavAccount.calendar
-    );
-
     if (eventTemp) {
+      await queryRunner.manager.delete(CalDavEventAlarmEntity, {
+        event,
+      });
+
       const newEvent = new CalDavEventEntity(eventTemp);
       newEvent.id = event.id;
 
@@ -98,6 +144,10 @@ export const updateCalDavEvent = async (
         },
         newEvent
       );
+
+      if (eventTemp.alarms) {
+        await processCaldavAlarms(queryRunner, eventTemp.alarms, newEvent);
+      }
     }
 
     if (eventTemp.props?.attendee) {
@@ -122,12 +172,6 @@ export const updateCalDavEvent = async (
         },
       });
     }
-
-    // delete cache
-    // await CalDavCacheService.deleteByUserID(userID);
-
-    // trigger resync for cached events
-    // await CalDavCacheService.syncEventsForAccount(calDavAccount);
 
     await queryRunner.commitTransaction();
     await queryRunner.release();

@@ -19,7 +19,7 @@ import { io } from '../app';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavTaskEntity from '../data/entity/CalDavTaskEntity';
 import CalDavTaskRepository from '../data/repository/CalDavTaskRepository';
-import ICalParser, { TodoJSON } from 'ical-js-parser';
+import ICalParser, { TodoJSON } from 'ical-js-parser-dev';
 import logger from './logger';
 
 export interface CalDavEventObj {

@@ -71,6 +71,16 @@ export const formatInviteStartDate = (startDate: string, timezone?: string) => {
   }
 };
 
+export const formatCancelStartDate = (startDate: string, timezone?: string) => {
+  if (timezone) {
+    return DateTime.fromISO(startDate)
+      .setZone(timezone)
+      .toFormat('ccc d LLL yyyy hh:mm');
+  } else {
+    return DateTime.fromISO(startDate).toFormat('ccc d LLL yyyy hh:mm');
+  }
+};
+
 export const formatEventInviteSubject = (
   summary: string,
   startDate: string,
@@ -80,4 +90,12 @@ export const formatEventInviteSubject = (
     startDate,
     timezone
   )}`;
+};
+
+export const formatEventCancelSubject = (
+  summary: string,
+  startDate: string,
+  timezone?: string
+) => {
+  return `Canceled: ${summary} - ${formatCancelStartDate(startDate, timezone)}`;
 };
