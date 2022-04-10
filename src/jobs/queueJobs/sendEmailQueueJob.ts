@@ -27,17 +27,9 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
       userID
     );
 
-    if (!userEmailConfig) {
-      return;
-    }
-
     const userEmailConfigData: UserEmailConfigData | null = userEmailConfig
       ? ((await CryptoAes.decrypt(userEmailConfig.data)) as UserEmailConfigData)
       : null;
-
-    if (!userEmailConfigData) {
-      return;
-    }
 
     const emailConfigData = {
       smtpEmail: userEmailConfigData?.smtpEmail || env.email.identity,
@@ -48,6 +40,10 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
     };
 
     email.from = emailConfigData.smtpEmail;
+
+    if (!userEmailConfigData?.smtpPassword && !env.email.password) {
+      return;
+    }
 
     logger.info(`Sending event invite to ${email.recipients.toString()}`, [
       LOG_TAG.QUEUE,
