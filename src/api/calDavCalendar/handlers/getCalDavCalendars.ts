@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 
+import { CalendarAlarms } from '../../../bloben-interface/interface';
 import { GetCalDavCalendar } from '../../../bloben-interface/calDavCalendar/calDavCalendar';
 import { map } from 'lodash';
 import CalDavCalendarRepository from '../../../data/repository/CalDavCalendarRepository';
@@ -16,6 +17,7 @@ export const formatCalendarResponse = (
     components: calendar.components,
     color: calendar.customColor || calendar.color || null,
     timezone: calendar.timezone || null,
+    alarms: calendar.alarms || [],
     calDavAccountID: calDavAccount
       ? calDavAccount.id
       : calendar.calDavAccountID,
@@ -33,6 +35,7 @@ interface CalendarRaw {
   calDavAccountID: string;
   timezone: string;
   isHidden: boolean;
+  alarms: CalendarAlarms[];
 }
 
 export const getCalDavCalendars = async (
@@ -57,7 +60,8 @@ export const getCalDavCalendars = async (
         c.components as components,
         c.caldav_account_id as "calDavAccountID",
         c.timezone as timezone,
-        c.is_hidden as "isHidden"
+        c.is_hidden as "isHidden",
+        c.alarms as "alarms"
       FROM 
         caldav_calendars c
         JOIN caldav_accounts ca ON ca.id = c.caldav_account_id AND ca.deleted_at IS NULL

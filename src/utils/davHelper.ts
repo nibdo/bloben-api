@@ -34,7 +34,7 @@ import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../data/repository/CalDavEventRepository';
-import ICalParser, { EventJSON } from 'ical-js-parser-dev';
+import ICalParser, { EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 import logger from './logger';
@@ -336,14 +336,12 @@ export const updateCalDavEvents = async (
             caldav_events e
         WHERE
             e.caldav_calendar_id = $1
-            AND e.deleted_at IS NULL
       `,
     [calDavCalendar.id]
   );
 
   const toInsert: string[] = [];
   const toDelete: string[] = [];
-  const toSoftDelete: string[] = [];
   const softDeleteExternalID: string[] = [];
 
   // filter events to insert, update or delete
@@ -379,26 +377,12 @@ export const updateCalDavEvents = async (
     });
 
     if (!foundItem) {
-      toSoftDelete.push(existingEvent.id);
+      toDelete.push(existingEvent.id);
       softDeleteExternalID.push(existingEvent.externalID);
     }
   });
 
   // delete events
-  if (toSoftDelete.length > 0) {
-    await queryRunner.manager.query(
-      `
-    UPDATE
-      caldav_events 
-    SET
-       deleted_at = now()
-    WHERE
-        id = ANY($1)
-  `,
-      [toSoftDelete]
-    );
-  }
-
   if (toDelete.length > 0) {
     await queryRunner.manager.query(
       `
@@ -413,7 +397,7 @@ export const updateCalDavEvents = async (
 
   const eventsToSync: any = [];
 
-  if (toInsert.length > 0 || toDelete.length > 0 || toSoftDelete.length > 0) {
+  if (toInsert.length > 0 || toDelete.length > 0) {
     await CalDavCacheService.deleteByUserID(userID);
   }
 
@@ -437,7 +421,12 @@ export const updateCalDavEvents = async (
 
             if (eventTemp.alarms) {
               promises.push(
-                processCaldavAlarms(queryRunner, eventTemp.alarms, newEvent)
+                processCaldavAlarms(
+                  queryRunner,
+                  eventTemp.alarms,
+                  newEvent,
+                  userID
+                )
               );
             }
           }
@@ -710,12 +699,12 @@ export const formatCancelInviteData = (
     email: {
       subject: `${formatEventCancelSubject(
         event.summary,
-        event.startAt,
+        (event.startAt as unknown as Date).toISOString(),
         event.timezoneStartAt
       )}`,
       body: formatEventInviteSubject(
         event.summary,
-        event.startAt,
+        (event.startAt as unknown as Date).toISOString(),
         event.timezoneStartAt
       ),
       ical: iCalString,

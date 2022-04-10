@@ -8,5 +8,13 @@ export const createWebcalCalendarSchema = Joi.object({
     name: Joi.string().required(),
     color: Joi.string().required(),
     syncFrequency: Joi.number().integer().min(30).required(),
+    alarms: Joi.array()
+      .items(
+        Joi.object().keys({
+          amount: Joi.number().min(0).required(),
+          timeUnit: Joi.string().allow('minutes', 'hours', 'days').required(),
+        })
+      )
+      .min(0),
   }),
 });

@@ -11,6 +11,8 @@ const encryptData = (dataForEncryption: object) =>
     JSON.stringify(dataForEncryption),
     env.encryptionPassword
   ).toString();
+const encryptDataWithPassword = (password: string, dataForEncryption: object) =>
+  CryptoJS.AES.encrypt(JSON.stringify(dataForEncryption), password).toString();
 const encryptStringData = (dataForEncryption: string) =>
   CryptoJS.AES.encrypt(dataForEncryption, env.encryptionPassword).toString();
 export const CryptoAes = {
@@ -25,6 +27,21 @@ export const CryptoAes = {
       }
 
       resolve(encryptData(dataForEncryption));
+    }),
+  encryptWithPassword: (
+    password: string,
+    dataForEncryption: object
+  ): Promise<string> =>
+    new Promise((resolve, reject) => {
+      if (!password) {
+        reject('Missing password');
+      }
+
+      if (!dataForEncryption) {
+        reject('Missing data');
+      }
+
+      resolve(encryptDataWithPassword(password, dataForEncryption));
     }),
   encryptString: (stringData: string): Promise<string> =>
     new Promise((resolve, reject) => {

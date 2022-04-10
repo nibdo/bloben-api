@@ -7,8 +7,6 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../utils/initTestServer';
-import { userEmailConfigData } from '../../../seeds/9-userEmailConfig';
-import { mockNodemailer } from '../../../__mocks__/nodemailer';
 import {invalidUUID} from "../adminUsers/adminDeleteUser.test";
 
 const PATH = '/api/v1/calendar-settings';

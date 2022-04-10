@@ -6,7 +6,6 @@ export enum ROLE {
 
 export enum ALARM_TYPE {
   PUSH = 'PUSH',
-  EMAIL = 'EMAIL',
   UNKNOWN = 'UNKNOWN',
 }
 

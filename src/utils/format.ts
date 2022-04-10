@@ -30,7 +30,6 @@ export const formatEventEntityToResult = (
   type: EVENT_TYPE.CALDAV,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
-  deletedAt: event.deletedAt ? event.deletedAt.toISOString() : null,
 });
 export const formatEventRawToResult = (
   event: CalDavEventsRaw
@@ -58,7 +57,6 @@ export const formatEventRawToResult = (
   props: event.props || null,
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
-  deletedAt: event.deletedAt || null,
 });
 
 export const formatInviteStartDate = (startDate: string, timezone?: string) => {

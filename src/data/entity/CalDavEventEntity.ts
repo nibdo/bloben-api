@@ -74,9 +74,6 @@ export default class CalDavEventEntity {
   @Column({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
-  deletedAt: Date;
-
   @ManyToOne(() => CalDavCalendarEntity, (calendar) => calendar.events, {
     onDelete: 'CASCADE',
   })
@@ -97,7 +94,7 @@ export default class CalDavEventEntity {
     }
   }
 
-  constructor(item: CalDavEventObj) {
+  constructor(item?: CalDavEventObj) {
     if (item) {
       const calendar = new CalDavCalendarEntity();
       calendar.id = item.calendarID;

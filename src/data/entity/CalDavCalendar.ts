@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { CalendarAlarms } from '../../bloben-interface/interface';
 import CalDavAccountEntity from './CalDavAccount';
 import CalDavEventEntity from './CalDavEventEntity';
 import CalDavTaskEntity from './CalDavTaskEntity';
@@ -54,6 +55,9 @@ export default class CalDavCalendarEntity {
 
   @Column({ type: 'text', name: 'components', nullable: true, array: true })
   components: string[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  alarms: CalendarAlarms[];
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

@@ -1,8 +1,8 @@
-import ICalParser from 'ical-js-parser-dev';
+import ICalParser from 'ical-js-parser';
 
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
-import { DateTimeObject } from 'ical-js-parser-dev';
+import { DateTimeObject } from 'ical-js-parser';
 import { forEach } from 'lodash';
 
 export type CalendarMethod = 'REQUEST' | 'REPLY';

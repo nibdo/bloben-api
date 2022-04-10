@@ -13,6 +13,12 @@ const data: any = {
   color: 'indigo',
   url: 'http://localhost:3001',
   syncFrequency: 180,
+  alarms: [
+    {
+      amount: 10,
+      timeUnit: 'minutes',
+    },
+  ],
 };
 
 describe(`Create webcal calendar [POST] ${PATH}`, async function () {

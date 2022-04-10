@@ -14,7 +14,7 @@ export const initSeeds = async () => {
     const user = await new userSeed().up();
     await new deletedUser().up();
     const { calDavAccount, calDavCalendar } = await new calDavCalendars().up();
-    const { event } = await new calDavEvents().up();
+    const { event, repeatedEvent } = await new calDavEvents().up();
     await new webcal().up();
     const { task } = await new calDavTasks().up();
     const { taskSettings } = await new calDavTaskSettings().up();
@@ -26,6 +26,7 @@ export const initSeeds = async () => {
       calDavAccount,
       calDavCalendar,
       event,
+      repeatedEvent,
       task,
       taskSettings
     };

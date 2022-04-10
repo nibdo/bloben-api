@@ -127,6 +127,18 @@ export const generateRandomString = (length = 256) => {
   return result;
 };
 
+export const generateRandomSimpleString = (length = 256) => {
+  const charset = '0123456789abcdefghijklmnopqrstuvwxyz';
+  let i = 0;
+  let result = '';
+  while (i < length) {
+    result += charset.charAt(Math.random() * charset.length);
+    i += 1;
+  }
+
+  return result;
+};
+
 export const getOneResult = (data: any) => {
   if (data.length > 0) {
     return data[0];

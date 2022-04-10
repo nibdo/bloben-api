@@ -84,7 +84,12 @@ export const createCalDavEvent = async (
       await CalDavEventRepository.getRepository().save(newEvent);
 
       if (eventTemp.alarms) {
-        await processCaldavAlarms(queryRunner, eventTemp.alarms, newEvent);
+        await processCaldavAlarms(
+          queryRunner,
+          eventTemp.alarms,
+          newEvent,
+          userID
+        );
       }
 
       await queryRunner.commitTransaction();

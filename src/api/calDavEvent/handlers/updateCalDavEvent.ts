@@ -6,12 +6,14 @@ import {
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
+  TIMEZONE,
 } from '../../../utils/enums';
 import { CALENDAR_METHOD } from '../../../utils/ICalHelper';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
+import { DateTime } from 'luxon';
 import { UpdateCalDavEventRequest } from '../../../bloben-interface/event/event';
-import { createCommonResponse } from '../../../utils/common';
+import { createCommonResponse, formatToRRule } from '../../../utils/common';
 import {
   createEventFromCalendarObject,
   formatInviteData,
@@ -26,37 +28,99 @@ import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepos
 import CalDavEventAlarmEntity from '../../../data/entity/CalDavEventAlarmEntity';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
+import CalendarSettingsRepository from '../../../data/repository/CalendarSettingsRepository';
+import LuxonHelper from '../../../utils/luxonHelper';
+import RRule from 'rrule';
+import ReminderEntity from '../../../data/entity/ReminderEntity';
 import logger from '../../../utils/logger';
 
 export const processCaldavAlarms = async (
   queryRunner: QueryRunner,
   alarms: any,
-  event: CalDavEventEntity
+  event: CalDavEventEntity,
+  userID: string
 ) => {
   const promises: any = [];
 
   forEach(alarms, (alarm) => {
-    const isBefore: boolean = alarm?.trigger?.slice(0, 1) === '-';
+    if (alarm?.trigger) {
+      const isBefore: boolean = alarm?.trigger?.slice(0, 1) === '-';
 
-    const duration = parseAlarmDuration(alarm.trigger);
+      const duration = parseAlarmDuration(alarm.trigger);
 
-    if (duration && alarm?.trigger) {
-      const entries = Object.entries(duration);
-      const newAlarm = new CalDavEventAlarmEntity(event);
+      if (duration && alarm?.trigger) {
+        const entries = Object.entries(duration);
+        const newAlarm = new CalDavEventAlarmEntity(event);
 
-      newAlarm.amount = Number(entries[0][1]);
-      newAlarm.timeUnit = entries[0][0];
-      newAlarm.beforeStart = isBefore;
+        newAlarm.amount = Number(entries[0][1]);
+        newAlarm.timeUnit = entries[0][0];
+        newAlarm.beforeStart = isBefore;
 
-      if (alarm.xBlobenAlarmType) {
-        newAlarm.alarmType = alarm.xBlobenAlarmType;
+        promises.push(queryRunner.manager.save(newAlarm));
       }
-
-      promises.push(queryRunner.manager.save(newAlarm));
     }
   });
 
-  await Promise.all(promises);
+  const eventAlarms = await Promise.all(promises);
+
+  const calendarSettings = await CalendarSettingsRepository.findByUserID(
+    userID
+  );
+
+  const remindersPromises: any = [];
+  forEach(eventAlarms, (eventAlarm) => {
+    const sendAt = LuxonHelper.subtractFromDate(
+      event.startAt,
+      event.timezoneStartAt || calendarSettings.timezone,
+      eventAlarm.amount,
+      eventAlarm.timeUnit,
+      event.timezoneStartAt === TIMEZONE.FLOATING
+    );
+
+    if (event.isRepeated) {
+      // calculate reminders in week advance
+      const dateNow = DateTime.now();
+      const dateTo = dateNow.plus({ weeks: 1 });
+
+      const rRuleString: string = formatToRRule(
+        event.rRule,
+        sendAt.toISOString()
+      );
+
+      const rRule = RRule.fromString(rRuleString);
+
+      const rRuleResults: Date[] = rRule.between(
+        new Date(Date.UTC(dateNow.year, dateNow.month - 1, dateNow.day, 0, 0)),
+        new Date(
+          Date.UTC(
+            dateTo.year,
+            dateTo.month - 1,
+            dateTo.day,
+            dateTo.hour,
+            dateTo.minute
+          )
+        )
+      );
+
+      forEach(rRuleResults, (rRuleResult) => {
+        const newReminder = new ReminderEntity(
+          eventAlarm,
+          rRuleResult.toISOString(),
+          userID
+        );
+        remindersPromises.push(queryRunner.manager.save(newReminder));
+      });
+    } else {
+      const newReminder = new ReminderEntity(
+        eventAlarm,
+        sendAt.toISOString(),
+        userID
+      );
+      remindersPromises.push(queryRunner.manager.save(newReminder));
+    }
+  });
+
+  await Promise.all(remindersPromises);
 };
 
 export const updateCalDavEvent = async (
@@ -146,7 +210,12 @@ export const updateCalDavEvent = async (
       );
 
       if (eventTemp.alarms) {
-        await processCaldavAlarms(queryRunner, eventTemp.alarms, newEvent);
+        await processCaldavAlarms(
+          queryRunner,
+          eventTemp.alarms,
+          newEvent,
+          userID
+        );
       }
     }
 

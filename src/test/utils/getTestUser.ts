@@ -5,6 +5,16 @@ import UserEntity from '../../data/entity/UserEntity';
 import {env} from "../../index";
 import jwt from 'jsonwebtoken';
 
+export const getUserByID = async (id: string): Promise<UserEntity> => {
+    const connection: Connection = await getConnection();
+
+    return await connection.manager.findOne(UserEntity, {
+        where: {
+            id,
+        },
+    });
+};
+
 export const getTestUser = async (): Promise<UserEntity> => {
   const connection: Connection = await getConnection();
 

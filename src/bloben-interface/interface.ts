@@ -1,4 +1,4 @@
-import { Attendee, DateTimeObject, Organizer } from 'ical-js-parser-dev';
+import { Attendee, DateTimeObject, Organizer } from 'ical-js-parser';
 import { DAVCalendarObject } from 'tsdav';
 import { EventResult } from './event/event';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from './enums';
@@ -87,4 +87,9 @@ export interface Log {
   message: string;
   level: string;
   tags: string[];
+}
+
+export interface CalendarAlarms {
+  amount: number;
+  timeUnit: string;
 }

@@ -1,3 +1,5 @@
+import { CalendarAlarms } from '../interface';
+
 export interface GetCalDavCalendar {
   id: string;
   displayName: string;
@@ -7,6 +9,7 @@ export interface GetCalDavCalendar {
   timezone: string;
   url: string;
   isHidden?: boolean;
+  alarms: CalendarAlarms[];
 }
 
 export interface CreateCalDavCalendarRequest {
@@ -19,6 +22,7 @@ export interface CreateCalDavCalendarRequest {
 export interface UpdateCalDavCalendarRequest {
   name: string;
   color: string;
+  alarms: CalendarAlarms[];
 }
 
 export interface PatchCalDavCalendarRequest {

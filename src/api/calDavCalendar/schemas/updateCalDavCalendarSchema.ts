@@ -8,5 +8,13 @@ export const updateCalDavCalendarSchema = Joi.object({
   body: Joi.object().keys({
     name: Joi.string().required().min(2),
     color: Joi.string().required(),
+    alarms: Joi.array()
+      .items(
+        Joi.object().keys({
+          amount: Joi.number().min(0).required(),
+          timeUnit: Joi.string().allow('minutes', 'hours', 'days').required(),
+        })
+      )
+      .min(0),
   }),
 });

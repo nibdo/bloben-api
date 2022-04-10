@@ -1,3 +1,4 @@
+import { CalendarAlarms } from '../../../bloben-interface/interface';
 import { GetWebcalCalendarsResponse } from '../../../bloben-interface/webcalCalendar/webcalCalendar';
 import { Request, Response } from 'express';
 import { map } from 'lodash';
@@ -10,6 +11,7 @@ interface WebcalendarRaw {
   name: string;
   color: string;
   isHidden: boolean;
+  alarms: CalendarAlarms[];
   createdAt: string;
   updatedAt: string;
 }
@@ -31,7 +33,8 @@ export const getWebcalCalendars = async (
             wc.color as "color", 
             wc.is_hidden as "isHidden",
             wc.created_at as "createdAt", 
-            wc.updated_at as "updatedAt"
+            wc.updated_at as "updatedAt",
+            wc.alarms as "alarms"
          FROM webcal_calendars wc
          JOIN users u ON u.id = wc.user_id
          WHERE 
@@ -48,6 +51,7 @@ export const getWebcalCalendars = async (
     syncFrequency: item.syncFrequency,
     url: item.url,
     isHidden: item.isHidden,
+    alarms: item.alarms || [],
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }));
