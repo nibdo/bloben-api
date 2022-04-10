@@ -20,16 +20,21 @@ import {
   updateCalDavCalendar,
 } from '../api/caldavAccount/helpers/createCalDavCalendar';
 import { createDavClient } from '../service/davService';
-import { formatEventEntityToResult, formatEventInviteSubject } from './format';
+import {
+  formatEventCancelSubject,
+  formatEventEntityToResult,
+  formatEventInviteSubject,
+} from './format';
 import { formatToRRule } from './common';
 import { io } from '../app';
+import { processCaldavAlarms } from '../api/calDavEvent/handlers/updateCalDavEvent';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../data/repository/CalDavEventRepository';
-import ICalParser, { EventJSON } from 'ical-js-parser';
+import ICalParser, { EventJSON } from 'ical-js-parser-dev';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 import logger from './logger';
@@ -429,6 +434,12 @@ export const updateCalDavEvents = async (
             const newEvent = new CalDavEventEntity(eventTemp);
             eventsToSync.push(formatEventEntityToResult(newEvent));
             promises.push(queryRunner.manager.save(newEvent));
+
+            if (eventTemp.alarms) {
+              promises.push(
+                processCaldavAlarms(queryRunner, eventTemp.alarms, newEvent)
+              );
+            }
           }
         } catch (e) {
           logger.error(
@@ -679,7 +690,35 @@ export const formatInviteData = (
         event.startAt,
         event.timezoneStartAt
       ),
-      ical: injectMethod(iCalString, method),
+      ical: iCalString,
+      method: method,
+      // @ts-ignore
+      recipients: map(attendees, 'mailto'),
+    },
+  };
+};
+
+export const formatCancelInviteData = (
+  userID: string,
+  event: CalDavEventsRaw,
+  iCalString: string,
+  attendees: any[],
+  method: CALENDAR_METHOD
+) => {
+  return {
+    userID,
+    email: {
+      subject: `${formatEventCancelSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStartAt
+      )}`,
+      body: formatEventInviteSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStartAt
+      ),
+      ical: iCalString,
       method: method,
       // @ts-ignore
       recipients: map(attendees, 'mailto'),

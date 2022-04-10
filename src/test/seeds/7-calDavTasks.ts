@@ -5,7 +5,7 @@ import { testUserData } from './1-user-seed';
 import UserEntity from '../../data/entity/UserEntity';
 import { CreateCalDavEventRequest } from '../../bloben-interface/event/event';
 import CalDavCalendarEntity from '../../data/entity/CalDavCalendar';
-import ICalParser, { TodoJSON } from 'ical-js-parser';
+import ICalParser, { TodoJSON } from 'ical-js-parser-dev';
 import { DAVCalendarObject } from 'tsdav';
 import { v4 } from 'uuid';
 import CalDavTaskEntity from '../../data/entity/CalDavTaskEntity';

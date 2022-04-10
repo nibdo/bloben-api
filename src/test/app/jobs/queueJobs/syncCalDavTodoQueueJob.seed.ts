@@ -8,7 +8,7 @@ import CalDavCalendarEntity from '../../../../data/entity/CalDavCalendar';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 import { forEach } from 'lodash';
-import ICalParser, { TodoJSON } from 'ical-js-parser';
+import ICalParser, { TodoJSON } from 'ical-js-parser-dev';
 import { generateRandomString } from '../../../../utils/common';
 import { io } from '../../../../app';
 import { formatTodoJsonToCalDavTodo } from '../../../../utils/davHelperTodo';

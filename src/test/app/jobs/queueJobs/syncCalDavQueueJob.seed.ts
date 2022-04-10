@@ -9,7 +9,7 @@ import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRe
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 import CalDavEventEntity from '../../../../data/entity/CalDavEventEntity';
 import { forEach } from 'lodash';
-import ICalParser, { EventJSON } from 'ical-js-parser';
+import ICalParser, { EventJSON } from 'ical-js-parser-dev';
 import { formatEventJsonToCalDavEvent } from '../../../../utils/davHelper';
 import { generateRandomString } from '../../../../utils/common';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
