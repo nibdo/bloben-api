@@ -61,6 +61,12 @@ describe(`Update calDav calendar [PUT] ${PATH}`, async function () {
       .send({
         color: 'indigo',
         name: 'test',
+        alarms: [
+          {
+            amount: 10,
+            timeUnit: 'minutes',
+          },
+        ],
       });
 
     const { status } = response;

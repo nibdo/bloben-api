@@ -57,15 +57,6 @@ export const createWebcalCalendar = async (
     SOCKET_CHANNEL.SYNC,
     JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
   );
-  // io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
-  //   SOCKET_CHANNEL.CALENDAR,
-  //   createSocketCrudMsg(
-  //     webcalCalendar.id,
-  //     new Date().toISOString(),
-  //     SOCKET_CRUD_ACTION.CREATE,
-  //     SOCKET_APP_TYPE.WEBCAL_CALENDAR
-  //   )
-  // );
 
   return createCommonResponse('Webcalendar created');
 };

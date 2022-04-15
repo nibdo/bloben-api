@@ -88,3 +88,8 @@ export interface Log {
   level: string;
   tags: string[];
 }
+
+export interface CalendarAlarms {
+  amount: number;
+  timeUnit: string;
+}

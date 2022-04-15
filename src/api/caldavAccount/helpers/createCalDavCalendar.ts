@@ -80,5 +80,6 @@ export const updateCalDavCalendar = async (
     components: data.components,
     timezone: data.timezone,
     calDavAccountID: calDavAccount.id,
+    alarms: [],
   };
 };

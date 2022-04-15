@@ -1,3 +1,5 @@
+import { CalendarAlarms } from '../interface';
+
 export interface WebcalCalendarData {
   name: string;
   url: string;
@@ -8,6 +10,7 @@ export interface CreateWebcalCalendarRequest {
   name: string;
   color: string;
   syncFrequency: number;
+  alarms: CalendarAlarms[];
 }
 
 export interface GetWebcalCalendarsResponse {
@@ -17,6 +20,7 @@ export interface GetWebcalCalendarsResponse {
   syncFrequency: number;
   url: string;
   isHidden: boolean;
+  alarms: CalendarAlarms[];
   createdAt: string;
   updatedAt: string;
 }

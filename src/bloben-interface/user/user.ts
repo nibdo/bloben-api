@@ -74,3 +74,7 @@ export interface GetTwoFactorSecretResponse {
 export interface GetTwoFactorResponse {
   isEnabled: boolean;
 }
+
+export interface AddEmailRequest {
+  email: string;
+}

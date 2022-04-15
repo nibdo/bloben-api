@@ -20,9 +20,14 @@ import {
   updateCalDavCalendar,
 } from '../api/caldavAccount/helpers/createCalDavCalendar';
 import { createDavClient } from '../service/davService';
-import { formatEventEntityToResult, formatEventInviteSubject } from './format';
+import {
+  formatEventCancelSubject,
+  formatEventEntityToResult,
+  formatEventInviteSubject,
+} from './format';
 import { formatToRRule } from './common';
 import { io } from '../app';
+import { processCaldavAlarms } from '../api/calDavEvent/handlers/updateCalDavEvent';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
@@ -331,14 +336,12 @@ export const updateCalDavEvents = async (
             caldav_events e
         WHERE
             e.caldav_calendar_id = $1
-            AND e.deleted_at IS NULL
       `,
     [calDavCalendar.id]
   );
 
   const toInsert: string[] = [];
   const toDelete: string[] = [];
-  const toSoftDelete: string[] = [];
   const softDeleteExternalID: string[] = [];
 
   // filter events to insert, update or delete
@@ -374,26 +377,12 @@ export const updateCalDavEvents = async (
     });
 
     if (!foundItem) {
-      toSoftDelete.push(existingEvent.id);
+      toDelete.push(existingEvent.id);
       softDeleteExternalID.push(existingEvent.externalID);
     }
   });
 
   // delete events
-  if (toSoftDelete.length > 0) {
-    await queryRunner.manager.query(
-      `
-    UPDATE
-      caldav_events 
-    SET
-       deleted_at = now()
-    WHERE
-        id = ANY($1)
-  `,
-      [toSoftDelete]
-    );
-  }
-
   if (toDelete.length > 0) {
     await queryRunner.manager.query(
       `
@@ -408,7 +397,7 @@ export const updateCalDavEvents = async (
 
   const eventsToSync: any = [];
 
-  if (toInsert.length > 0 || toDelete.length > 0 || toSoftDelete.length > 0) {
+  if (toInsert.length > 0 || toDelete.length > 0) {
     await CalDavCacheService.deleteByUserID(userID);
   }
 
@@ -429,6 +418,17 @@ export const updateCalDavEvents = async (
             const newEvent = new CalDavEventEntity(eventTemp);
             eventsToSync.push(formatEventEntityToResult(newEvent));
             promises.push(queryRunner.manager.save(newEvent));
+
+            if (eventTemp.alarms) {
+              promises.push(
+                processCaldavAlarms(
+                  queryRunner,
+                  eventTemp.alarms,
+                  newEvent,
+                  userID
+                )
+              );
+            }
           }
         } catch (e) {
           logger.error(
@@ -679,7 +679,35 @@ export const formatInviteData = (
         event.startAt,
         event.timezoneStartAt
       ),
-      ical: injectMethod(iCalString, method),
+      ical: iCalString,
+      method: method,
+      // @ts-ignore
+      recipients: map(attendees, 'mailto'),
+    },
+  };
+};
+
+export const formatCancelInviteData = (
+  userID: string,
+  event: CalDavEventsRaw,
+  iCalString: string,
+  attendees: any[],
+  method: CALENDAR_METHOD
+) => {
+  return {
+    userID,
+    email: {
+      subject: `${formatEventCancelSubject(
+        event.summary,
+        (event.startAt as unknown as Date).toISOString(),
+        event.timezoneStartAt
+      )}`,
+      body: formatEventInviteSubject(
+        event.summary,
+        (event.startAt as unknown as Date).toISOString(),
+        event.timezoneStartAt
+      ),
+      ical: iCalString,
       method: method,
       // @ts-ignore
       recipients: map(attendees, 'mailto'),

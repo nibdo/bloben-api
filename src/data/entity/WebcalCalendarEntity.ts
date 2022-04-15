@@ -1,3 +1,4 @@
+import { CalendarAlarms } from '../../bloben-interface/interface';
 import {
   Column,
   CreateDateColumn,
@@ -32,6 +33,9 @@ export default class WebcalCalendarEntity {
   @Column({ default: 0 })
   attempt: number;
 
+  @Column({ type: 'jsonb', nullable: true })
+  alarms: CalendarAlarms[];
+
   @Column({ type: 'timestamptz', name: 'last_sync_at', nullable: true }) // prevent spamming sync
   lastSyncAt: Date;
 
@@ -61,12 +65,6 @@ export default class WebcalCalendarEntity {
   )
   webcalEvents: WebcalEventEntity[];
 
-  // constructor(data: string) {
-  //   if (data) {
-  //     this.data = data;
-  //   }
-  // }
-
   public onSuccess = () => {
     this.lastSyncAt = new Date();
     this.attempt = 0;
@@ -83,6 +81,7 @@ export default class WebcalCalendarEntity {
       this.name = body.name;
       this.user = user;
       this.syncFrequency = body.syncFrequency;
+      this.alarms = body.alarms;
     }
   }
 

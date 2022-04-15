@@ -142,5 +142,4 @@ export interface EventResult {
   props: any;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
 }

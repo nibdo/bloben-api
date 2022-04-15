@@ -36,6 +36,7 @@ export const updateCalDavCalendar = async (
     {
       customColor: body.color,
       customDisplayName: body.name,
+      alarms: body.alarms,
     }
   );
 

@@ -39,19 +39,7 @@ export const syncCalDavEvents = async (
   let eventsToUpdate: any = [];
 
   forEach(resultCalDavEvents, (event) => {
-    if (event.deletedAt !== null) {
-      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
-        SOCKET_CHANNEL.SYNC,
-        createSocketCrudMsg(
-          event.id,
-          new Date().toISOString(),
-          SOCKET_CRUD_ACTION.DELETE,
-          SOCKET_APP_TYPE.EVENT
-        )
-      );
-    } else {
-      eventsToUpdate.push(event);
-    }
+    eventsToUpdate.push(event);
   });
 
   // group by id
