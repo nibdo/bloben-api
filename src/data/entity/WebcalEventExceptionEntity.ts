@@ -14,7 +14,7 @@ export default class WebcalEventExceptionEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'exception_date' })
+  @Column({ name: 'exception_date' }) // original date
   exceptionDate: string;
 
   @Column({ name: 'exception_timezone', nullable: true })
