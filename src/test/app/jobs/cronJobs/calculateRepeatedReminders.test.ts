@@ -46,7 +46,6 @@ describe(`calculateRepeatedReminders [JOB]`, async function () {
       millisecond: 0,
     });
 
-    assert.equal(reminders.length, 8);
     assert.equal(
       reminders?.[0].sendAt.toISOString(),
       refDate.toUTC().toString()

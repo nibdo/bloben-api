@@ -1,4 +1,4 @@
-import { forEach, groupBy, map } from 'lodash';
+import { filter, forEach, groupBy, map } from 'lodash';
 
 import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../../../bloben-interface/enums';
@@ -6,6 +6,7 @@ import { EventResult } from '../../../bloben-interface/event/event';
 import { getRepeatedEvents } from '../../calDavEvent/helpers/repeatHelper';
 import LuxonHelper from '../../../utils/luxonHelper';
 import WebcalEventEntity from '../../../data/entity/WebcalEventEntity';
+import WebcalEventExceptionRepository from '../../../data/repository/WebcalEventExceptionRepository';
 import WebcalEventRepository from '../../../data/repository/WebcalEventRepository';
 
 export const overlapCondition: string =
@@ -75,30 +76,44 @@ export const getWebcalEvents = async (
                 we.deleted_at as "deletedAt",
                 we.external_id as "externalID",
                 wc.id as "calendarID",
-                wc.color as color,
-                wee.exception_date as "exceptionDate",
-                wee.exception_timezone as "exceptionTimezone"
+                wc.color as color
             FROM 
                 webcal_events we
             LEFT JOIN 
                 webcal_calendars wc ON we.external_calendar_id = wc.id
-            LEFT JOIN
-                webcal_event_exceptions wee ON wee.external_id = we.external_id AND wee.user_id = wc.user_id
             WHERE 
-                wc.user_id = $1 AND 
-                we.is_repeated = TRUE AND 
-                we.deleted_at IS NULL
+                wc.user_id = $1
+                AND we.is_repeated = TRUE 
+                AND we.deleted_at IS NULL
                 AND wc.is_hidden IS FALSE
                 `,
       [userID]
     );
+
+  const exceptions: any =
+    await WebcalEventExceptionRepository.getRepository().query(
+      `SELECT
+                we.exception_date as "exceptionDate",
+                we.external_id as "externalID"
+            FROM 
+                webcal_event_exceptions we
+            LEFT JOIN
+                webcal_calendars wc ON we.webcal_calendar_id = wc.id
+            WHERE 
+                wc.user_id = $1 
+                AND wc.is_hidden IS FALSE
+                AND wc.deleted_at IS NULL
+                `,
+      [userID]
+    );
+
+  const groupedExceptions: any = groupBy(exceptions, 'externalID');
 
   const groupedRepeatedEvents: any = groupBy(repeatedEventsRaw, 'id');
 
   const repeatedEvents: any = [];
 
   forEach(groupedRepeatedEvents, (eventResult) => {
-    const exceptions: any = [];
     const event: any = {};
 
     forEach(eventResult, (item) => {
@@ -127,103 +142,37 @@ export const getWebcalEvents = async (
             color: item.color,
           });
       }
-
-      if (item.exceptionDate) {
-        exceptions.push(item.exceptionDate);
-      }
     });
-
-    event.exceptions = exceptions;
 
     repeatedEvents.push(event);
   });
 
-  // const repeatedEvents: any = repeatedEventsRaw?.map((item: any) => ({
-  //   id: item.id,
-  //   summary: item.summary,
-  //   description: item.description,
-  //   location: item.location,
-  //   sequence: item.sequence,
-  //   organizer: item.organizer,
-  //   attendees: item.attendees,
-  //   allDay: item.allDay,
-  //   isRepeated: item.isRepeated,
-  //   rRule: item.rRule,
-  //   createdAt: item.createdAt,
-  //   updatedAt: item.updatedAt,
-  //   deletedAt: item.deletedAt,
-  //   externalID: item.externalID,
-  //   startAt: item.startAt,
-  //   endAt: item.endAt,
-  //   timezoneEnd: item.timezoneStart,
-  //   timezoneStart: item.timezoneStart,
-  //   webcalCalendar: {
-  //     id: item.calendarID,
-  //     color: item.color
-  //   }
-  // }));
-
   let repeatedEventsResult: WebcalEventEntity[] = [];
 
+  // process exceptions
   forEach(repeatedEvents, (event) => {
-    const repeatedEvents = getRepeatedEvents(
+    const eventExceptions = groupedExceptions[event.externalID];
+    const eventExceptionDates = map(eventExceptions, 'exceptionDate');
+
+    let repeatedEvents = getRepeatedEvents(
       event,
       rangeFromDateTime,
       rangeToDateTime
     );
 
+    // remove dates colliding with exceptions
+    if (eventExceptions && eventExceptions.length) {
+      repeatedEvents = filter(repeatedEvents, (event) => {
+        if (!eventExceptionDates.includes(event.startAt.toISOString())) {
+          return event;
+        }
+      });
+    }
+
     repeatedEventsResult = [...repeatedEventsResult, ...repeatedEvents];
   });
 
   result = [...result, ...normalEvents, ...repeatedEventsResult];
-
-  // find and filter duplicates from exceptions in repeated events
-  // const usedExternalIDs: any = {};
-  // forEach(result, (item: any) => {
-  //   usedExternalIDs[item.externalID] = usedExternalIDs[item.externalID]
-  //     ? (usedExternalIDs[item.externalID] = [
-  //         ...usedExternalIDs[item.externalID],
-  //         ...[
-  //           {
-  //             id: item.id,
-  //             sequence: item.sequence,
-  //             isRepeated: item.isRepeated
-  //           }
-  //         ]
-  //       ])
-  //     : [{ id: item.id, sequence: item.sequence, isRepeated: item.isRepeated }];
-  // });
-  //
-  // let sortedResult;
-  // forEach(usedExternalIDs, (items, key) => {
-  //   // found duplicate
-  //   if (items.length > 1) {
-  //     // find which to keep
-  //     // todo check
-  //     sortedResult = items.sort((a: any, b: any) => {
-  //       if (a.isRepeated && !b.isRepeated) {
-  //         return 1;
-  //       } else if (!a.isRepeated && !b.isRepeated) {
-  //         if (a.sequence > b.sequence) {
-  //           return -1;
-  //         }
-  //       } else {
-  //         return -1;
-  //       }
-  //     });
-  //   }
-  // });
-  //
-  // // filter duplicates from result
-  // const idsToRemove: string[] = map(sortedResult, item => item.id)?.slice(1);
-  //
-  // if (idsToRemove && idsToRemove.length > 0) {
-  //   result = filter(result, (item: any) => {
-  //     if (!idsToRemove.includes(item.id)) {
-  //       return item;
-  //     }
-  //   });
-  // }
 
   return map(result, (event) => ({
     id: event.id,
