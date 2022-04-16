@@ -22,5 +22,6 @@ export const getCalendarSettings = async (
     startOfWeek: calendarSettings.startOfWeek,
     timeFormat: calendarSettings.timeFormat,
     timezone: calendarSettings.timezone,
+    showWeekNumbers: calendarSettings.showWeekNumbers,
   };
 };
