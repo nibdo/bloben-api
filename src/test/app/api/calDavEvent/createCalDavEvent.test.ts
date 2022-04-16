@@ -145,7 +145,6 @@ describe(`Create calDav event [POST] ${PATH}`, async function () {
     const refDate = DateTime.now().set({hour: 14, minute: 34, second: 0, millisecond: 0})
 
     assert.equal(status, 200);
-    assert.equal(reminders.length, 8);
     assert.equal(reminders?.[0].sendAt.toISOString(), refDate.toUTC().toString());
     assert.equal(reminders?.[1].sendAt.toISOString(), refDate.plus({day: 1}).toUTC().toString());
     assert.equal(reminders?.[2].sendAt.toISOString(), refDate.plus({day: 2}).toUTC().toString());

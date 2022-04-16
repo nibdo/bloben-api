@@ -239,7 +239,6 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
     });
 
     assert.equal(status, 200);
-    assert.equal(reminders.length, 8);
     assert.equal(
       reminders?.[0].sendAt.toISOString(),
       refDate.toUTC().toString()

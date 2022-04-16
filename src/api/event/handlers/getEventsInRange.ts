@@ -68,8 +68,5 @@ export const getEventsInRange = async (
 
   result = [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
 
-  // await CalDavCacheService.set(userID, { rangeFrom, rangeTo }, result);
-  // }
-
   return result;
 };
