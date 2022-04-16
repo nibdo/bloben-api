@@ -7,6 +7,7 @@ export interface PatchCalendarSettingsRequest {
   hourHeight?: number;
   defaultCalendarID?: string;
   timezone?: string;
+  showWeekNumbers?: boolean;
 }
 
 export interface CalendarSettingsResponse {
@@ -16,4 +17,5 @@ export interface CalendarSettingsResponse {
   hourHeight: number;
   defaultCalendarID: string;
   timezone: string;
+  showWeekNumbers: boolean;
 }

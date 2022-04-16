@@ -19,5 +19,6 @@ export const patchCalendarSettingsSchema = Joi.object({
     hourHeight: Joi.number().min(10).max(120).optional(),
     defaultCalendarID: Joi.string().uuid().optional(),
     timezone: Joi.string().optional(),
+    showWeekNumbers: Joi.boolean().optional(),
   }),
 });
