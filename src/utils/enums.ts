@@ -40,6 +40,7 @@ export enum SOCKET_CHANNEL {
   CALENDAR = 'calendar',
   NOTES = 'notes',
   SYNC = 'sync',
+  NOTIFICATION = 'notification',
 }
 
 export enum SOCKET_MSG_TYPE {
@@ -48,6 +49,7 @@ export enum SOCKET_MSG_TYPE {
   WEBCAL_CALENDARS = 'WEBCAL_CALENDARS',
   CALDAV_TASKS = 'CALDAV_TASKS',
   CALDAV_TASK_SETTINGS = 'CALDAV_TASK_SETTINGS',
+  NOTIFICATIONS = 'NOTIFICATIONS',
 }
 
 export enum TIMEZONE {
@@ -67,9 +69,11 @@ export enum RATE_LIMIT {
   ADMIN_LOGIN = 20 * 1000, // 20 seconds
   CHALLENGE = 10 * 1000, // 10 seconds
   DEFAULT = 500,
+  UPDATE_SETTINGS = 20,
   GET_EVENTS = 50,
   SYNC = 60 * 1000,
   TIMEZONE = 20 * 1000,
+  CONFIRM_EMAIL = 5 * 1000,
 }
 
 export enum BODY_SIZE {
@@ -138,6 +142,7 @@ export enum LOG_TAG {
   CRON = 'CRON',
   QUEUE = 'QUEUE',
   REST = 'REST',
+  ADMIN = 'ADMIN',
   SECURITY = 'SECURITY',
   WEBSOCKET = 'WEBSOCKET',
   WEBCAL = 'WEBCAL',

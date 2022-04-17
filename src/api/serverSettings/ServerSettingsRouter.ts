@@ -1,27 +1,25 @@
 import { Router } from 'express';
 
-import * as PushSubscriptionController from './PushSubscriptionController';
+import * as ServerSettingsController from './ServerSettingsController';
 import { RATE_LIMIT } from '../../utils/enums';
 import { USER_ROLE } from '../user/UserEnums';
 import { authMiddleware } from '../../middleware/authMiddleware';
-import { createPushSubscriptionSchema } from './schemas/createPushSubscriptionSchema';
+import { emptySchema } from '../../common/schemas/emptySchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
-import { userMiddleware } from '../../middleware/userMiddleware';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
 
-const SocketSessionRoutes: Router = Router();
+const ServerSettingsRoutes: Router = Router();
 
-SocketSessionRoutes.post(
+ServerSettingsRoutes.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
     authMiddleware,
-    userMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(createPushSubscriptionSchema),
+    validationMiddleware(emptySchema),
   ],
-  PushSubscriptionController.createPushSubscription
+  ServerSettingsController.getServerSettings
 );
 
-export default SocketSessionRoutes;
+export default ServerSettingsRoutes;

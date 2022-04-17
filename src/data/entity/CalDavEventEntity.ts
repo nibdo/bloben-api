@@ -3,12 +3,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { CalDavEventObj } from '../../utils/davHelper';
 import { DateTime } from 'luxon';
 import CalDavCalendarEntity from './CalDavCalendar';
+import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
 
 @Entity('caldav_events')
 export default class CalDavEventEntity {
@@ -72,14 +74,14 @@ export default class CalDavEventEntity {
   @Column({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
-  deletedAt: Date;
-
   @ManyToOne(() => CalDavCalendarEntity, (calendar) => calendar.events, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'caldav_calendar_id', referencedColumnName: 'id' })
   calendar: CalDavCalendarEntity;
+
+  @OneToMany(() => CalDavEventAlarmEntity, (alarm) => alarm.event)
+  alarms: CalDavEventAlarmEntity[];
 
   parseRRule(rRule: string | null) {
     if (rRule) {
@@ -92,7 +94,7 @@ export default class CalDavEventEntity {
     }
   }
 
-  constructor(item: CalDavEventObj) {
+  constructor(item?: CalDavEventObj) {
     if (item) {
       const calendar = new CalDavCalendarEntity();
       calendar.id = item.calendarID;

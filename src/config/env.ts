@@ -34,11 +34,6 @@ export interface Env {
     username: string;
     password: string;
   };
-  vapid?: {
-    email: string;
-    publicKey: string;
-    privateKey: string;
-  };
   encryptionPassword?: string;
 }
 
@@ -98,11 +93,6 @@ export const loadEnv = (): Env => {
     redis: {
       host: process.env.REDIS_HOST,
       port: process.env.REDIS_PORT,
-    },
-    vapid: {
-      email: process.env.VAPID_EMAIL,
-      publicKey: process.env.VAPID_PUBLIC_KEY,
-      privateKey: process.env.VAPID_PRIVATE_KEY,
     },
     email:
       process.env.SMTP_HOST &&

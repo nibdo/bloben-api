@@ -30,9 +30,17 @@ export const updateWebcalCalendar = async (
     throw throwError(404, 'Webcal calendar not found');
   }
 
-  webcalCalendar.update(body);
-
-  await WebcalCalendarRepository.getRepository().save(webcalCalendar);
+  await WebcalCalendarRepository.getRepository().update(
+    {
+      id: webcalCalendar.id,
+    },
+    {
+      alarms: body.alarms,
+      syncFrequency: body.syncFrequency,
+      color: body.color,
+      name: body.name,
+    }
+  );
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
     SOCKET_CHANNEL.SYNC,

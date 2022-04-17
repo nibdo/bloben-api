@@ -15,7 +15,13 @@ const data: any = {
   name: 'Test cal',
   color: 'indigo',
   url: 'http://localhost:3002',
-  syncFrequency: 180
+  syncFrequency: 180,
+  alarms: [
+    {
+      amount: 10,
+      timeUnit: 'minutes',
+    },
+  ],
 };
 
 describe(`Update calendar [PUT] ${PATH}`, async function() {

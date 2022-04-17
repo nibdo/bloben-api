@@ -25,7 +25,6 @@ export interface CalDavEventsRaw {
   calendarID: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
 }
 
 @EntityRepository(CalDavEventEntity)
@@ -48,7 +47,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         e.color as "eventCustomColor",
         e.created_at as "createdAt",
         e.updated_at as "updatedAt",
-        e.deleted_at as "deletedAt",
         c.color as "color",
         c.custom_color as "customCalendarColor",
         c.id as "calendarID"
@@ -70,7 +68,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
       WHERE 
         a.user_id = $1
-        AND e.deleted_at IS NULL
         AND c.is_hidden IS FALSE
   `,
         [userID]
@@ -95,7 +92,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
       WHERE 
         a.user_id = $1
-        AND e.deleted_at IS NULL
         AND c.is_hidden IS FALSE
         AND e.is_repeated = FALSE
         AND (e.start_at, e.end_at) OVERLAPS (CAST($2 AS timestamp), CAST($3 AS timestamp))
@@ -118,7 +114,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
       WHERE 
         a.user_id = $1
-        AND e.deleted_at IS NULL
         AND c.is_hidden IS FALSE
         AND e.is_repeated = TRUE
   `,
@@ -144,7 +139,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       WHERE 
         a.user_id = $1
         AND e.id = $2
-        AND e.deleted_at IS NULL
   `,
         [userID, id]
       );
@@ -169,7 +163,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         INNER JOIN caldav_calendars cc ON cc.id = e.caldav_calendar_id
       WHERE 
         cc.url = $1
-        AND e.deleted_at IS NULL
   `,
         [calendarUrl]
       );
@@ -192,7 +185,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
       WHERE 
         a.user_id = $1
-        AND (e.created_at > $2 OR e.updated_at > $2 OR e.deleted_at > $2)
+        AND (e.created_at > $2 OR e.updated_at > $2)
   `,
         [userID, syncDate]
       );

@@ -13,7 +13,7 @@ import { AdminCreateUserRequest } from '../../bloben-interface/admin/admin';
 import { GetAccountResponse } from '../../bloben-interface/user/user';
 import { ROLE } from '../../bloben-interface/enums';
 import CalDavAccountEntity from './CalDavAccount';
-import PushSubscriptionEntity from './PushSubscriptionEntity';
+import CalendarSettingsEntity from './CalendarSettings';
 import UserEmailConfigEntity from './UserEmailConfig';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 
@@ -52,11 +52,8 @@ export default class UserEntity {
   @OneToOne(() => UserEmailConfigEntity)
   emailConfig: UserEmailConfigEntity;
 
-  @OneToMany(
-    () => PushSubscriptionEntity,
-    (pushSubscription) => pushSubscription.user
-  )
-  pushSubscriptions: PushSubscriptionEntity[];
+  @OneToOne(() => CalendarSettingsEntity)
+  calendarSettings: CalendarSettingsEntity;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

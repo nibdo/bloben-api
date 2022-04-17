@@ -30,7 +30,6 @@ export const formatEventEntityToResult = (
   type: EVENT_TYPE.CALDAV,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
-  deletedAt: event.deletedAt ? event.deletedAt.toISOString() : null,
 });
 export const formatEventRawToResult = (
   event: CalDavEventsRaw
@@ -58,10 +57,19 @@ export const formatEventRawToResult = (
   props: event.props || null,
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
-  deletedAt: event.deletedAt || null,
 });
 
 export const formatInviteStartDate = (startDate: string, timezone?: string) => {
+  if (timezone) {
+    return DateTime.fromISO(startDate)
+      .setZone(timezone)
+      .toFormat('ccc d LLL yyyy hh:mm');
+  } else {
+    return DateTime.fromISO(startDate).toFormat('ccc d LLL yyyy hh:mm');
+  }
+};
+
+export const formatCancelStartDate = (startDate: string, timezone?: string) => {
   if (timezone) {
     return DateTime.fromISO(startDate)
       .setZone(timezone)
@@ -80,4 +88,12 @@ export const formatEventInviteSubject = (
     startDate,
     timezone
   )}`;
+};
+
+export const formatEventCancelSubject = (
+  summary: string,
+  startDate: string,
+  timezone?: string
+) => {
+  return `Canceled: ${summary} - ${formatCancelStartDate(startDate, timezone)}`;
 };

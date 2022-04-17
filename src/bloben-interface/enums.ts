@@ -6,7 +6,14 @@ export enum ROLE {
 
 export enum ALARM_TYPE {
   PUSH = 'PUSH',
-  EMAIL = 'EMAIL',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export enum ALARM_UNIT {
+  MINUTES = 'minutes',
+  HOURS = 'hours',
+  DAYS = 'days',
+  WEEKS = 'weeks',
 }
 
 export enum SOCKET_APP_TYPE {

@@ -2,6 +2,8 @@ import { ImportMock } from 'ts-mock-imports';
 const nodemailer = require('nodemailer');
 
 export const mockNodemailer = () => {
+  ImportMock.restore();
+
   const mockManager = ImportMock.mockFunction(nodemailer, 'createTransport', {
     sendMail: (data: any) => {
       return Promise.resolve();

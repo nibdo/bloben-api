@@ -64,7 +64,7 @@ class ICalHelper {
           value: endAt,
         };
     this.uid = externalID;
-    // this.organizer = props.organizer;
+    this.organizer = props.organizer;
     // this.attendee = props.attendee;
     this.created = { value: createdAt };
     this.dtstamp = {
@@ -124,6 +124,8 @@ class ICalHelper {
     const template: any = {
       calendar: this.createCalendar(method),
       events: [this.getKnownProps()],
+      todos: [],
+      errors: [],
     };
 
     return ICalParser.toString(template);

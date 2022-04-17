@@ -77,6 +77,15 @@ const createTransport = (credentials: EmailCredentials) => {
 
 export const sendEmail = async (emailData: EmailData) => {
   return new Promise((resolve: any, reject: any) => {
+    // handle test cases
+    if (env.nodeEnv === NODE_ENV.TEST) {
+      if (env.email.password === 'fail') {
+        throw Error('Should fail test');
+      }
+
+      resolve('done');
+    }
+
     const nodemailerTransport: any = createTransport(getSmtpCredentials());
 
     // Send email

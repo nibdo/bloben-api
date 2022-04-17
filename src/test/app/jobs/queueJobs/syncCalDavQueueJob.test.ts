@@ -127,6 +127,6 @@ describe(`syncCalDavQueueJob [JOB]`, async function () {
       },
     });
 
-    assert.notEqual(event.deletedAt, null);
+    assert.equal(event, undefined);
   });
 });

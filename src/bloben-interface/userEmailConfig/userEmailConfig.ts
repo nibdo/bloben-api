@@ -9,6 +9,7 @@ export interface UpdateUserEmailConfigRequest {
 export interface GetUserEmailConfigResponse {
   hasSystemConfig: boolean;
   hasCustomConfig: boolean;
+  mailto: string | null;
 }
 
 export type UserEmailConfigData = UpdateUserEmailConfigRequest;
