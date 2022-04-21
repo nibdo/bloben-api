@@ -14,7 +14,11 @@ import { formatEventJsonToCalDavEvent } from '../../../../utils/davHelper';
 import { generateRandomString } from '../../../../utils/common';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 import { io } from '../../../../app';
-import { testIcalStringWrongDate } from '../../../seeds/4-calDavEvents';
+import {
+  testIcalStringTimeFormat,
+  testIcalStringUnsupportedZone,
+  testIcalStringWrongDate
+} from '../../../seeds/4-calDavEvents';
 const tsdav = require('tsdav');
 
 const createTestIcalString = (id: string, summary?: string) =>
@@ -178,6 +182,18 @@ const prepareMock = (accountUrl: string) => {
         etag: '221xv1v87sd4v7sd8v1sd7v',
         url: `${accountUrl}/asfasf/asfasfasf242`,
       })
+
+    events.push({
+      data: testIcalStringUnsupportedZone,
+      etag: '221xv1v87sd4v7sd38v1sd7v',
+      url: `${accountUrl}/asfasf/asfasfasf2412`,
+    })
+
+    events.push({
+      data: testIcalStringTimeFormat,
+      etag: '221xv1v87sd4v7sd38v21sd7v',
+      url: `${accountUrl}/asfasf/asfasf1asf2412`,
+    })
 
     return events
   });

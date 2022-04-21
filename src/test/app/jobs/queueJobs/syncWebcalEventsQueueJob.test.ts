@@ -167,4 +167,44 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
 
     assert.equal(webcalEvents.length, 1);
   });
+
+  it('Should not save not supported events', async function () {
+    await syncWebcalEventsQueueJob({
+      data: { userID: successUserID },
+    } as any);
+
+    const webcalCalendar =
+        await WebcalCalendarRepository.getRepository().findOne({
+          where: {
+            url: WEBCAL_MOCK_URL_SUCCESS,
+          },
+        });
+    const webcalEvents = await WebcalEventRepository.getRepository().find({
+      where: {
+        webcalCalendar,
+      },
+    });
+    const webcalEventA = await WebcalEventRepository.getRepository().findOne({
+      where: {
+        externalID: 'ba436346346@bloben.com',
+      },
+    });
+    const webcalEventB = await WebcalEventRepository.getRepository().findOne({
+      where: {
+        externalID: 'ba132123@bloben.com',
+      },
+    });
+    const webcalEventC = await WebcalEventRepository.getRepository().findOne({
+      where: {
+        externalID: '6khh9v56asfasfvbu22h7@bloben.com',
+      },
+    });
+
+    assert.equal(webcalEvents.length, 1);
+    assert.equal(webcalEventA, undefined);
+    assert.equal(webcalEventB, undefined);
+    assert.equal(webcalEventC.startAt.toISOString(), '2022-02-28T08:00:00.000Z');
+    assert.equal(webcalEventC.endAt.toISOString(), '2022-02-28T08:45:00.000Z');
+
+  });
 });

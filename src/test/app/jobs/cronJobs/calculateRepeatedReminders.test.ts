@@ -26,7 +26,7 @@ describe(`calculateRepeatedReminders [JOB]`, async function () {
     const requestBodyWithAlarmRepeated =
         createDummyCalDavEventWithRepeatedAlarm(
             repeatedEventData.calendar.id,
-            DateTime.now().set({ hour: 14, minute: 44, second: 0, millisecond: 0 })
+            DateTime.now().minus({day: 1}).set({ hour: 14, minute: 44, second: 0, millisecond: 0 })
         );
 
     mockTsDavEvent(requestBodyWithAlarmRepeated.iCalString)

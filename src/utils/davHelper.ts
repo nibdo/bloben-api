@@ -60,27 +60,49 @@ export interface CalDavEventObj {
 export const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
   let result;
 
-  isAllDay
-    ? (result = DateTime.fromFormat(event.dtstart.value, 'yyyyMMdd')
-        .toISO()
-        .toString())
-    : (result = event.dtstart.value);
+  if (!event?.dtstart?.value) {
+    throw Error(`Cannot parse date ${event?.dtstart?.value}`);
+  }
+
+  if (isAllDay) {
+    const dateTime = DateTime.fromFormat(event.dtstart.value, 'yyyyMMdd');
+
+    if (!dateTime.isValid) {
+      throw Error(`Cannot parse date ${event.dtstart.value}`);
+    }
+
+    result = dateTime.toISO().toString();
+  } else {
+    result = event.dtstart.value;
+  }
 
   return result;
 };
 export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
   let result;
 
+  if (!event?.dtstart?.value) {
+    throw Error(`Cannot parse date ${event?.dtstart?.value}`);
+  }
+
   if (!event.dtend?.value) {
     result = formatDTStartValue(event, isAllDay);
   } else {
-    isAllDay
-      ? (result = DateTime.fromFormat(event.dtend.value, 'yyyyMMdd')
-          .minus({ day: 1 })
-          .set({ hour: 0, minute: 0, second: 0 })
-          .toISO()
-          .toString())
-      : (result = event.dtend.value);
+    if (isAllDay) {
+      const dateTime = DateTime.fromFormat(event.dtend.value, 'yyyyMMdd');
+
+      if (!dateTime.isValid) {
+        throw Error(`Cannot parse date ${event.dtend.value}`);
+      }
+
+      result = dateTime
+        .minus({ day: 1 })
+        .set({ hour: 0, minute: 0, second: 0 })
+        .toISO()
+        .toString();
+    } else {
+      result = event.dtend.value;
+    }
   }
 
   return result;
