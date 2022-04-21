@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DateTime } from 'luxon';
-import { EventJSON } from 'ical-js-parser';
+import { DateTimeObject, EventJSON } from 'ical-js-parser';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 
 @Entity('webcal_event_exceptions')
@@ -14,8 +14,8 @@ export default class WebcalEventExceptionEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'exception_date' }) // original date
-  exceptionDate: string;
+  @Column({ type: 'timestamptz', name: 'exception_date', nullable: true }) // original date
+  exceptionDate: Date;
 
   @Column({ name: 'exception_timezone', nullable: true })
   exceptionTimezone: string;
@@ -37,37 +37,40 @@ export default class WebcalEventExceptionEntity {
   @Column({ name: 'user_id' })
   userID: string;
 
-  private formatDate(event: EventJSON): { zone: string; date: string } {
-    let stringDate: string;
+  // private formatDate(event: EventJSON): { zone: string; date: string } {
+  //   let stringDate: string;
+  //
+  //   if (typeof event.recurrenceId !== 'string' && event.recurrenceId?.TZID) {
+  //     stringDate = event.recurrenceId.TZID;
+  //   } else {
+  //     stringDate = event.recurrenceId as unknown as string;
+  //   }
+  //
+  //   const hasDelimiter: boolean = stringDate.indexOf(':') !== -1;
+  //   const [zone, date] = hasDelimiter
+  //     ? stringDate.split(':')
+  //     : [null, stringDate];
+  //
+  //   const dateParsed: string = zone
+  //     ? DateTime.fromISO(date, { zone }).toUTC().toString()
+  //     : DateTime.fromISO(date).toUTC().toString();
+  //
+  //   return {
+  //     zone,
+  //     date: dateParsed,
+  //   };
+  // }
 
-    if (typeof event.recurrenceId !== 'string' && event.recurrenceId?.TZID) {
-      stringDate = event.recurrenceId.TZID;
-    } else {
-      stringDate = event.recurrenceId as unknown as string;
-    }
-
-    const hasDelimiter: boolean = stringDate.indexOf(':') !== -1;
-    const [zone, date] = hasDelimiter
-      ? stringDate.split(':')
-      : [null, stringDate];
-
-    const dateParsed: string = zone
-      ? DateTime.fromISO(date, { zone }).toUTC().toString()
-      : DateTime.fromISO(date).toUTC().toString();
-
-    return {
-      zone,
-      date: dateParsed,
-    };
-  }
-
-  constructor(userID: string, webcalCalendarID: string, event: EventJSON) {
+  constructor(
+    userID: string,
+    webcalCalendarID: string,
+    event: EventJSON,
+    exception: DateTimeObject
+  ) {
     if (userID) {
-      const { zone, date } = this.formatDate(event);
-
       this.userID = userID;
-      this.exceptionDate = date;
-      this.exceptionTimezone = zone;
+      this.exceptionDate = DateTime.fromISO(exception?.value).toJSDate();
+      this.exceptionTimezone = exception.timezone;
       this.externalID = event.uid;
       this.webcalCalendarID = webcalCalendarID;
     }
