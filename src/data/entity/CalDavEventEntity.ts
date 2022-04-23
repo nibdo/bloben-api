@@ -9,6 +9,7 @@ import {
 
 import { CalDavEventObj } from '../../utils/davHelper';
 import { DateTime } from 'luxon';
+import { validateStringDate } from '../../utils/common';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
 
@@ -96,6 +97,9 @@ export default class CalDavEventEntity {
 
   constructor(item?: CalDavEventObj) {
     if (item) {
+      validateStringDate(item.startAt);
+      validateStringDate(item.endAt);
+
       const calendar = new CalDavCalendarEntity();
       calendar.id = item.calendarID;
 

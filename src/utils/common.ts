@@ -304,3 +304,17 @@ export const getUserIDFromWsRoom = (id: string) => {
 
   return id.slice(SOCKET_ROOM_NAMESPACE.USER_ID.length);
 };
+
+export const validateStringDate = (date: string) => {
+  if (!date || date.length === 0) {
+    throw Error('Empty event date');
+  }
+
+  const dateTime = DateTime.fromISO(date);
+
+  if (!dateTime.isValid) {
+    throw Error(`Cannot parse date ${date}`);
+  }
+
+  return true;
+};

@@ -8,7 +8,6 @@ import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository, {
   CalDavAccount,
 } from '../../../data/repository/CalDavAccountRepository';
-import RedisService from '../../../service/RedisService';
 
 export const updateCalDavAccount = async (
   req: Request,
@@ -41,8 +40,6 @@ export const updateCalDavAccount = async (
   await CalDavAccountRepository.getRepository().update(calDavAccount.id, {
     password,
   });
-
-  await RedisService.deleteDavClientCache(calDavAccount.id);
 
   return createCommonResponse('CalDav account updated', {
     id: calDavAccount.id,

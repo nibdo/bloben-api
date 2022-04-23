@@ -32,6 +32,7 @@ export const createDummyWebcal = async (data: {
       name: 'success',
       syncFrequency: data.syncFrequency,
       url: WEBCAL_MOCK_URL_SUCCESS,
+      alarms: [],
     },
     user
   );
@@ -62,6 +63,7 @@ export const createWebcalUserSuccess = async () => {
       name: 'success',
       syncFrequency: 0,
       url: WEBCAL_MOCK_URL_SUCCESS,
+      alarms: [],
     },
     user
   );
@@ -88,6 +90,7 @@ export const createWebcalUserFail = async () => {
       name: 'fail',
       syncFrequency: 0,
       url: WEBCAL_MOCK_URL_FAIL,
+      alarms: [],
     },
     user
   );
