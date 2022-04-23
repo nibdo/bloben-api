@@ -12,7 +12,6 @@ import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository, {
   CalDavAccount,
 } from '../../../data/repository/CalDavAccountRepository';
-import RedisService from '../../../service/RedisService';
 
 export const deleteCalDavAccount = async (
   req: Request,
@@ -29,8 +28,6 @@ export const deleteCalDavAccount = async (
   }
 
   await CalDavAccountRepository.getRepository().delete(calDavAccount.id);
-
-  await RedisService.deleteDavClientCache(calDavAccount.id);
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
     SOCKET_CHANNEL.SYNC,

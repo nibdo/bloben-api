@@ -14,6 +14,7 @@ import {
   deleteWebcalEventsExceptionsSql,
   deleteWebcalEventsSql,
 } from '../../data/sql/deleteWebcalEvents';
+import { forEach } from 'lodash';
 import { getUserIDFromWsRoom } from '../../utils/common';
 import { io } from '../../app';
 import { webcalSyncBullQueue } from '../../service/BullQueue';
@@ -139,9 +140,28 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
                     new WebcalEventExceptionEntity(
                       webcalCalendar.userID,
                       webcalCalendar.id,
-                      event
+                      event,
+                      event.recurrenceId
                     );
                   await queryRunner.manager.save(eventException);
+                }
+
+                if (event.exdate?.length) {
+                  const exceptionPromises: any = [];
+                  forEach(event.exdate, (exDate) => {
+                    const eventException: WebcalEventExceptionEntity =
+                      new WebcalEventExceptionEntity(
+                        webcalCalendar.userID,
+                        webcalCalendar.id,
+                        event,
+                        exDate
+                      );
+                    exceptionPromises.push(
+                      queryRunner.manager.save(eventException)
+                    );
+                  });
+
+                  await Promise.all(exceptionPromises);
                 }
 
                 // create new event

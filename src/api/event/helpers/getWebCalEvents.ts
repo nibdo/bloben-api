@@ -152,7 +152,9 @@ export const getWebcalEvents = async (
   // process exceptions
   forEach(repeatedEvents, (event) => {
     const eventExceptions = groupedExceptions[event.externalID];
-    const eventExceptionDates = map(eventExceptions, 'exceptionDate');
+    const eventExceptionDates = map(eventExceptions, (exception) =>
+      exception.exceptionDate?.toISOString()
+    );
 
     let repeatedEvents = getRepeatedEvents(
       event,
