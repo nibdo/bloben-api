@@ -9,7 +9,6 @@ import {
 } from '../../utils/enums';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { Job } from 'bullmq';
-import { WEBCAL_FAILED_THRESHOLD } from '../../utils/constants';
 import {
   deleteWebcalEventsExceptionsSql,
   deleteWebcalEventsSql,
@@ -48,8 +47,7 @@ export const getWebcalendarsForSync = (data?: { userID: string }) => {
             WHERE 
                 (
                     (SELECT wc.attempt = 0 AND wc.last_sync_at IS NULL) OR
-                    (wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 minutes') OR
-                    (wc.attempt > 0 AND wc.updated_at <= now () - INTERVAL '${WEBCAL_FAILED_THRESHOLD}')
+                    (wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 minutes')
                 )
                 ${data?.userID ? `AND wc.user_id = '${data.userID}'` : ''}
                 `

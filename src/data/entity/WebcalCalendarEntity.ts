@@ -80,7 +80,7 @@ export default class WebcalCalendarEntity {
       this.color = body.color;
       this.name = body.name;
       this.user = user;
-      this.syncFrequency = body.syncFrequency;
+      this.syncFrequency = Number(body.syncFrequency) * 60;
       this.alarms = body.alarms;
     }
   }
@@ -89,6 +89,6 @@ export default class WebcalCalendarEntity {
     this.url = body.url;
     this.color = body.color;
     this.name = body.name;
-    this.syncFrequency = body.syncFrequency;
+    this.syncFrequency = Number(body.syncFrequency) * 60;
   };
 }
