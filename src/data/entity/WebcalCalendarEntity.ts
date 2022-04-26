@@ -27,7 +27,7 @@ export default class WebcalCalendarEntity {
   @Column()
   color: string;
 
-  @Column({ name: 'sync_frequency', default: 320 }) // minutes
+  @Column({ name: 'sync_frequency', default: 10 }) // hours
   syncFrequency: number;
 
   @Column({ default: 0 })
