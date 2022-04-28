@@ -48,7 +48,7 @@ export const getWebcalCalendars = async (
     id: item.id,
     name: item.name,
     color: item.color,
-    syncFrequency: item.syncFrequency,
+    syncFrequency: item.syncFrequency / 60,
     url: item.url,
     isHidden: item.isHidden,
     alarms: item.alarms || [],
