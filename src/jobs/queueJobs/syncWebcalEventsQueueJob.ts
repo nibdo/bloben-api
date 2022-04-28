@@ -47,7 +47,7 @@ export const getWebcalendarsForSync = (data?: { userID: string }) => {
             WHERE 
                 (
                     (SELECT wc.attempt = 0 AND wc.last_sync_at IS NULL) OR
-                    (wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 minutes')
+                    (wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 hours')
                 )
                 ${data?.userID ? `AND wc.user_id = '${data.userID}'` : ''}
                 `
