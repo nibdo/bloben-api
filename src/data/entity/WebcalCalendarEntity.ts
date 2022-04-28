@@ -27,7 +27,7 @@ export default class WebcalCalendarEntity {
   @Column()
   color: string;
 
-  @Column({ name: 'sync_frequency', default: 320 }) // minutes
+  @Column({ name: 'sync_frequency', default: 10 }) // hours
   syncFrequency: number;
 
   @Column({ default: 0 })
@@ -80,7 +80,7 @@ export default class WebcalCalendarEntity {
       this.color = body.color;
       this.name = body.name;
       this.user = user;
-      this.syncFrequency = Number(body.syncFrequency) * 60;
+      this.syncFrequency = body.syncFrequency;
       this.alarms = body.alarms;
     }
   }
@@ -89,6 +89,6 @@ export default class WebcalCalendarEntity {
     this.url = body.url;
     this.color = body.color;
     this.name = body.name;
-    this.syncFrequency = Number(body.syncFrequency) * 60;
+    this.syncFrequency = body.syncFrequency;
   };
 }
