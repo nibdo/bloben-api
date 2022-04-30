@@ -14,20 +14,20 @@ export const initCronJobs = () => {
   const clearLogsJob = new CronJob('0 1 * * *', clearLogs);
   clearLogsJob.start();
 
-  const webcalJob = new CronJob('*/10 * * * *', webcalSyncQueueSocketJob);
+  const webcalJob = new CronJob('*/30 * * * *', webcalSyncQueueSocketJob);
   webcalJob.start();
 
   const syncCalDavEventsJob = new CronJob('*/60 * * * *', syncCalDavCronJob); // every hour
   syncCalDavEventsJob.start();
 
   const syncCalDavConnectedUsersJob = new CronJob(
-    '*/3 * * * *',
+    '*/10 * * * *',
     syncCalDavCronJobConnectedUsers
-  ); // every two minutes
+  ); // every ten minutes
   syncCalDavConnectedUsersJob.start();
 
   const syncCalDavTodoConnectedUsersJob = new CronJob(
-    '*/3 * * * *',
+    '*/10 * * * *',
     syncCalDavTaskCronJobConnectedUsers
   );
   syncCalDavTodoConnectedUsersJob.start();

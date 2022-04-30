@@ -701,7 +701,7 @@ export const formatInviteData = (
         event.startAt,
         event.timezoneStartAt
       ),
-      ical: iCalString,
+      ical: injectMethod(iCalString, method),
       method: method,
       // @ts-ignore
       recipients: map(attendees, 'mailto'),
@@ -729,7 +729,7 @@ export const formatCancelInviteData = (
         (event.startAt as unknown as Date).toISOString(),
         event.timezoneStartAt
       ),
-      ical: iCalString,
+      ical: injectMethod(iCalString, method),
       method: method,
       // @ts-ignore
       recipients: map(attendees, 'mailto'),

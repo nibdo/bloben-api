@@ -69,21 +69,8 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
   it('Should get calendar with last_sync_at older than sync freq interval', async function () {
     const { user } = await createDummyWebcal({
       attempt: 0,
-      syncFrequency: 30,
-      lastSyncAt: DateTime.now().minus({ minutes: 40 }).toJSDate(),
-    });
-
-    const result = await getWebcalendarsForSync({ userID: user.id });
-
-    assert.equal(result.length, 1);
-  });
-
-  it('Should get calendar with attempt > 0 and updated at older than failed' +
-      ' sync threshold', async function () {
-    const { user } = await createDummyWebcal({
-      attempt: 2,
-      lastSyncAt: DateTime.now().minus({ hours: 6 }).toJSDate(),
-      updatedAt: DateTime.now().minus({ hours: 5 }).toJSDate(),
+      syncFrequency: 1,
+      lastSyncAt: DateTime.now().minus({ minutes: 70 }).toJSDate(),
     });
 
     const result = await getWebcalendarsForSync({ userID: user.id });
@@ -95,6 +82,32 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
     const { user } = await createDummyWebcal({
       attempt: 2,
       lastSyncAt: DateTime.now().minus({ minutes: 6 }).toJSDate(),
+      updatedAt: DateTime.now().minus({ hours: 1 }).toJSDate(),
+    });
+
+    const result = await getWebcalendarsForSync({ userID: user.id });
+
+    assert.equal(result.length, 0);
+  });
+
+  it('Should not get calendar with syncFrequency < 1', async function () {
+    const { user } = await createDummyWebcal({
+      attempt: 0,
+      syncFrequency: 0,
+      lastSyncAt: DateTime.now().minus({ minutes: 600 }).toJSDate(),
+      updatedAt: DateTime.now().minus({ hours: 1 }).toJSDate(),
+    });
+
+    const result = await getWebcalendarsForSync({ userID: user.id });
+
+    assert.equal(result.length, 0);
+  });
+
+  it('Should not get calendar with syncFrequency < 1', async function () {
+    const { user } = await createDummyWebcal({
+      attempt: 0,
+      syncFrequency: 0,
+      lastSyncAt: DateTime.now().minus({ minutes: 600 }).toJSDate(),
       updatedAt: DateTime.now().minus({ hours: 1 }).toJSDate(),
     });
 
