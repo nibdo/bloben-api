@@ -12,7 +12,7 @@ const data: any = {
   name: 'Test cal',
   color: 'indigo',
   url: 'http://localhost:3001',
-  syncFrequency: 180,
+  syncFrequency: 1,
   alarms: [
     {
       amount: 10,

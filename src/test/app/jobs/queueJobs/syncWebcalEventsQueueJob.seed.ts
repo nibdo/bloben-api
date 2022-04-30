@@ -61,7 +61,7 @@ export const createWebcalUserSuccess = async () => {
     {
       color: 'indigo',
       name: 'success',
-      syncFrequency: 0,
+      syncFrequency: 1,
       url: WEBCAL_MOCK_URL_SUCCESS,
       alarms: [],
     },
@@ -88,7 +88,7 @@ export const createWebcalUserFail = async () => {
     {
       color: 'pink',
       name: 'fail',
-      syncFrequency: 0,
+      syncFrequency: 1,
       url: WEBCAL_MOCK_URL_FAIL,
       alarms: [],
     },
