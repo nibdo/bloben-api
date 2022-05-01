@@ -3,7 +3,12 @@ name: Tests
 on:
   pull_request:
     branches: [ development, production ]
-
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: false
+        default: 'warning'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -57,5 +62,9 @@ jobs:
           SMTP_USERNAME: asfasfasfaf
           SMTP_PASSWORD: asfasf
           ENCRYPTION_PASSWORD: sdoifjsdiog
-        run: npm run test-pipeline
-
+      - name: Run unit tests
+        run: npm run test-pipeline-unit
+      - name: Run e2e tests
+        run: npm run test-pipeline-e2e
+      - name: Run integration tests
+        run: npm run test-pipeline-integration
