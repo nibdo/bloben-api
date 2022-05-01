@@ -13,7 +13,7 @@ import { v4 } from 'uuid';
 import {DateTime} from "luxon";
 
 export const createDummyCalDavEvent = (
-  calendarID: string
+    calendarID: string
 ): CreateCalDavEventRequest => {
   const externalID = v4();
   return {
@@ -45,13 +45,14 @@ END:VCALENDAR`,
 };
 
 export const createDummyCalDavEventWithAttendees = (
-  calendarID: string
+    calendarID: string
 ): CreateCalDavEventRequest => {
   const externalID = v4();
   return {
     externalID,
     calendarID,
     iCalString: `BEGIN:VCALENDAR
+METHOD:REQUEST
 PRODID:Test
 VERSION:2.0
 CALSCALE:GREGORIAN
@@ -314,13 +315,13 @@ export class calDavEvents implements MigrationInterface {
       const icalJS = ICalParser.toJSON(event.iCalString);
       const eventJSON: EventJSON = icalJS.events[0];
       const eventObj = formatEventJsonToCalDavEvent(
-        eventJSON,
-        {
-          data: '',
-          etag: '123',
-          url: `http://${testUserData.username}`,
-        } as DAVCalendarObject,
-        calendar
+          eventJSON,
+          {
+            data: '',
+            etag: '123',
+            url: `http://${testUserData.username}`,
+          } as DAVCalendarObject,
+          calendar
       );
 
       events.push(new CalDavEventEntity(eventObj));

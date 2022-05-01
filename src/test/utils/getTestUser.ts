@@ -16,13 +16,13 @@ export const getUserByID = async (id: string): Promise<UserEntity> => {
 };
 
 export const getTestUser = async (): Promise<UserEntity> => {
-  const connection: Connection = await getConnection();
+    const connection: Connection = await getConnection();
 
-  return await connection.manager.findOne(UserEntity, {
-    where: {
-      username: testUserData.username,
-    },
-  });
+    return await connection.manager.findOne(UserEntity, {
+        where: {
+            username: testUserData.username,
+        },
+    });
 };
 
 export const getTestDemoUser = async (): Promise<UserEntity> => {
@@ -36,40 +36,40 @@ export const getTestDemoUser = async (): Promise<UserEntity> => {
 };
 
 export const getTestAdmin = async (): Promise<UserEntity> => {
-  const connection: Connection = await getConnection();
+    const connection: Connection = await getConnection();
 
-  return await connection.manager.findOne(UserEntity, {
-    where: {
-      username: 'admin',
-    },
-  });
+    return await connection.manager.findOne(UserEntity, {
+        where: {
+            username: 'admin',
+        },
+    });
 };
 
 export const createAdminToken = async () => {
-  const testUser: UserEntity = await getTestAdmin();
+    const testUser: UserEntity = await getTestAdmin();
 
-  return jwt.sign(
-      {
-        data: {
-          userID: testUser.id,
-          role: testUser.role,
+    return jwt.sign(
+        {
+            data: {
+                userID: testUser.id,
+                role: testUser.role,
+            },
         },
-      },
-      env.secret.sessionSecret,
-      { expiresIn: '1h' }
-  );
+        env.secret.sessionSecret,
+        { expiresIn: '1h' }
+    );
 }
 export const createWrongAdminToken = async () => {
-  const testUser: UserEntity = await getTestAdmin();
+    const testUser: UserEntity = await getTestAdmin();
 
-  return jwt.sign(
-      {
-        data: {
-          userID: testUser.id,
-          role: testUser.role,
+    return jwt.sign(
+        {
+            data: {
+                userID: testUser.id,
+                role: testUser.role,
+            },
         },
-      },
-      'pass',
-      { expiresIn: '1h' }
-  );
+        'pass',
+        { expiresIn: '1h' }
+    );
 }

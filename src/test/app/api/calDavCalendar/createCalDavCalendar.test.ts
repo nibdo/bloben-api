@@ -26,8 +26,8 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer())
-      .post(PATH)
-      .send(testBody);
+        .post(PATH)
+        .send(testBody);
 
     const { status } = response;
 
@@ -36,8 +36,8 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
 
   it('Should get status 403 demo user', async function () {
     const response: any = await request(createTestServerWithSession(true))
-      .post(PATH)
-      .send(testBody);
+        .post(PATH)
+        .send(testBody);
 
     const { status } = response;
 
@@ -60,8 +60,8 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
     mockTsDav()
 
     const response: any = await request(createTestServerWithSession())
-      .post(PATH)
-      .send({ ...testBody, accountID });
+        .post(PATH)
+        .send({ ...testBody, accountID });
 
     const { status } = response;
 

@@ -42,15 +42,15 @@ describe(`Create calDav event [POST] ${PATH}`, async function () {
     requestBodyAttendees = createDummyCalDavEventWithAttendees(calDavCalendar.id)
     requestBodyWithAlarm = createDummyCalDavEventWithAlarm(calDavCalendar.id);
     requestBodyWithAlarmRepeated = createDummyCalDavEventWithRepeatedAlarm(
-      calDavCalendar.id,
-      DateTime.now().set({ hour: 14, minute: 44, second: 0, millisecond: 0 })
+        calDavCalendar.id,
+        DateTime.now().set({ hour: 14, minute: 44, second: 0, millisecond: 0 })
     );
   });
   //
   it("Should get status 401", async function () {
     const response: any = await request(createTestServer())
-      .post(PATH)
-      .send(requestBody);
+        .post(PATH)
+        .send(requestBody);
 
     const { status } = response;
 
@@ -61,8 +61,8 @@ describe(`Create calDav event [POST] ${PATH}`, async function () {
     await request(createTestServerWithSession()).post(PATH).send(requestBody);
 
     const response: any = await request(createTestServerWithSession())
-      .post(PATH)
-      .send({ ...requestBody, calendarID: invalidUUID });
+        .post(PATH)
+        .send({ ...requestBody, calendarID: invalidUUID });
 
     const { status } = response;
 
@@ -74,8 +74,8 @@ describe(`Create calDav event [POST] ${PATH}`, async function () {
     mockManager = mockTsDavUnauthorized();
 
     const response: any = await request(createTestServerWithSession())
-      .post(PATH)
-      .send(requestBody);
+        .post(PATH)
+        .send(requestBody);
 
     const { status } = response;
 
@@ -97,8 +97,8 @@ describe(`Create calDav event [POST] ${PATH}`, async function () {
 
   it("Should get status 200", async function () {
     const response: any = await request(createTestServerWithSession())
-      .post(PATH)
-      .send(requestBody);
+        .post(PATH)
+        .send(requestBody);
 
     const { status } = response;
 

@@ -20,8 +20,8 @@ describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer())
-      .delete(PATH(calendarID))
-      .send();
+        .delete(PATH(calendarID))
+        .send();
 
     const { status } = response;
 
@@ -30,8 +30,8 @@ describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
 
   it('Should get status 403 demo user', async function () {
     const response: any = await request(createTestServerWithSession(true))
-      .delete(PATH(calendarID))
-      .send();
+        .delete(PATH(calendarID))
+        .send();
 
     const { status } = response;
 
@@ -42,8 +42,8 @@ describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
     mockTsDav();
 
     const response: any = await request(createTestServerWithSession())
-      .delete(PATH(invalidUUID))
-      .send();
+        .delete(PATH(invalidUUID))
+        .send();
 
     const { status } = response;
 
@@ -54,8 +54,8 @@ describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
     mockTsDav();
 
     const response: any = await request(createTestServerWithSession())
-      .delete(PATH(calendarID))
-      .send();
+        .delete(PATH(calendarID))
+        .send();
 
     const { status } = response;
 

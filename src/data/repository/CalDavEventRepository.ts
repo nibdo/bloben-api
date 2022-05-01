@@ -23,6 +23,11 @@ export interface CalDavEventsRaw {
   eventCustomColor: string;
   customCalendarColor: string | null;
   calendarID: string;
+  attendees: any[];
+  organizer: any;
+  valarms: any[];
+  exdates: any[];
+  recurrenceID: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +50,11 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         e.etag as "etag",
         e.href as "href",
         e.color as "eventCustomColor",
+        e.attendees as "attendees",
+        e.exdates as "exdates",
+        e.valarms as "valarms",
+        e.organizer as "organizer",
+        e.recurrence_id as "recurrenceID",
         e.created_at as "createdAt",
         e.updated_at as "updatedAt",
         c.color as "color",
@@ -110,8 +120,8 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         ${CalDavEventRepository.calDavEventRawProps}
       FROM 
         caldav_events e
-        INNER JOIN caldav_calendars c on c.id = e.caldav_calendar_id
-        INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
+        INNER JOIN caldav_calendars c ON c.id = e.caldav_calendar_id
+        INNER JOIN caldav_accounts a ON a.id = c.caldav_account_id
       WHERE 
         a.user_id = $1
         AND c.is_hidden IS FALSE

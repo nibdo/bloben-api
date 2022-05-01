@@ -3,7 +3,7 @@ import { filter, forEach, groupBy, map } from 'lodash';
 import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { EventResult } from '../../../bloben-interface/event/event';
-import { getRepeatedEvents } from '../../calDavEvent/helpers/repeatHelper';
+import { getOccurrences } from './getRepeatedEvents';
 import LuxonHelper from '../../../utils/luxonHelper';
 import WebcalEventEntity from '../../../data/entity/WebcalEventEntity';
 import WebcalEventExceptionRepository from '../../../data/repository/WebcalEventExceptionRepository';
@@ -156,7 +156,7 @@ export const getWebcalEvents = async (
       exception.exceptionDate?.toISOString()
     );
 
-    let repeatedEvents = getRepeatedEvents(
+    let repeatedEvents = getOccurrences(
       event,
       rangeFromDateTime,
       rangeToDateTime

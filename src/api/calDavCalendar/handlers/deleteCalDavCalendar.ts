@@ -35,10 +35,10 @@ export const deleteCalDavCalendar = async (
   const response = await client.deleteObject({ url: calDavCalendar.url });
 
   if (response.status >= 300) {
-    logger.error('Delete caldav calendar error', response?.[0], [
+    logger.error('Delete caldav calendar error', response.statusText, [
       LOG_TAG.CALDAV,
     ]);
-    throw throwError(409, 'Cannot delete caldav calendar');
+    throw throwError(409, response.statusText);
   }
 
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });

@@ -36,5 +36,5 @@ export const initSeeds = async () => {
 };
 
 export const initUserSeed = async () => {
-   await new userSeed().up();
+  await new userSeed().up();
 }
