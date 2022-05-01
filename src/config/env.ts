@@ -24,8 +24,9 @@ export interface Env {
     otpSecret: string;
   };
   redis: {
-    host: string;
-    port: string;
+    host?: string;
+    port?: string;
+    url?: string;
   };
   email?: {
     smtpPort: number;
@@ -52,8 +53,6 @@ const requiredEnvs: any = {
   DB_MIGRATIONS: process.env.DB_MIGRATIONS,
   SESSION_SECRET: process.env.SESSION_SECRET,
   // OTP_SECRET: process.env.OTP_SECRET,
-  REDIS_HOST: process.env.REDIS_HOST,
-  REDIS_PORT: process.env.REDIS_PORT,
   INITIAL_ADMIN_PASSWORD: process.env.INITIAL_ADMIN_PASSWORD,
 };
 
@@ -93,6 +92,7 @@ export const loadEnv = (): Env => {
     redis: {
       host: process.env.REDIS_HOST,
       port: process.env.REDIS_PORT,
+      url: process.env.REDIS_URL,
     },
     email:
       process.env.SMTP_HOST &&
