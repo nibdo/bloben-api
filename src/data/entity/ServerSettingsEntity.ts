@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   PrimaryColumn,
@@ -9,6 +10,9 @@ import {
 export default class ServerSettingsEntity {
   @PrimaryColumn({ default: 1 })
   id: number;
+
+  @Column({ name: 'check_new_version', default: false })
+  checkNewVersion: boolean;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
