@@ -30,7 +30,6 @@ jobs:
         run: npm run lint
       - name: Build app
         run: npm run build
-      - name: Run tests
         env:
           NODE_ENV: development
           HOST: localhost
