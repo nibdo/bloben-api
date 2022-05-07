@@ -1,9 +1,8 @@
 import { ImportMock } from 'ts-mock-imports';
 import { DAVAccount, DAVCalendar } from 'tsdav';
 import {
-  createDummyCalDavEventWithAlarm,
   testIcalString
-} from '../seeds/4-calDavEvents';
+} from '../integration/seeds/4-calDavEvents';
 const tsdav = require('tsdav');
 
 export const mockTsDav = () => {
