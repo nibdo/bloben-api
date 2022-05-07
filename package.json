@@ -28,6 +28,7 @@
     "test-unit": "./node_modules/.bin/env-cmd -f ./.env.test.local ts-mocha --config ./src/test/unit/mocharc.js",
     "test-e2e": "./node_modules/.bin/env-cmd -f ./.env.test.local ts-mocha --config ./src/test/e2e/mocharc.js",
     "test": "npm run test-unit && npm run test-integration && npm run test-e2e",
+    "test-pipeline": "npm run test-pipeline-unit && npm run test-pipeline-e2e && npm run test-pipeline-integration",
     "docker:test:up": "docker-compose -f docker-compose.test-local.yml up -d",
     "docker:test:down": "docker-compose -f docker-compose.test-local.yml down",
     "lint": "eslint . --ext ts"

@@ -2,13 +2,8 @@ name: Tests
 
 on:
   pull_request:
-    branches: [ development, production ]
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: false
-        default: 'warning'
+    branches: [ development, staging, production ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,6 +13,12 @@ jobs:
           node-version: 16.14.2
           registry-url: https://registry.npmjs.org/
       - uses: actions/checkout@v2
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Start containers
         env:
           POSTGRES_DB: bloben_test
@@ -62,9 +63,4 @@ jobs:
           SMTP_USERNAME: asfasfasfaf
           SMTP_PASSWORD: asfasf
           ENCRYPTION_PASSWORD: sdoifjsdiog
-      - name: Run unit tests
-        run: npm run test-pipeline-unit
-      - name: Run e2e tests
-        run: npm run test-pipeline-e2e
-      - name: Run integration tests
-        run: npm run test-pipeline-integration
+        run: npm run test-pipeline
