@@ -1,25 +1,29 @@
-import { ImportMock } from 'ts-mock-imports';
 import {
   calDavSyncBullQueue,
+  calDavSyncBullWorker,
+  calDavTaskSyncBullQueue,
+  emailBullQueue,
+  emailBullWorker,
   webcalSyncBullQueue,
+  webcalSyncBullWorker,
 } from '../../service/BullQueue';
 
 export const mockBullQueue = () => {
-  const mockManagerWebcal = ImportMock.mockClass(
-    webcalSyncBullQueue,
-    'webcalSyncBullQueue'
-  );
-  const mockManager = ImportMock.mockClass(
-    calDavSyncBullQueue,
-    'calDavSyncBullQueue'
-  );
+  const mockFunc = {add: async (key: string, data: any) => {
+      return Promise.resolve();
+    }}
   // @ts-ignore
-  mockManager.set('add', () => {
-    return;
-  });
-
+  calDavSyncBullWorker = mockFunc;
   // @ts-ignore
-  mockManagerWebcal.set('add', () => {
-    return;
-  });
+  calDavSyncBullQueue = mockFunc;
+  // @ts-ignore
+  calDavTaskSyncBullQueue = mockFunc;
+  // @ts-ignore
+  webcalSyncBullWorker = mockFunc;
+  // @ts-ignore
+  webcalSyncBullQueue = mockFunc;
+  // @ts-ignore
+  emailBullQueue = mockFunc;
+  // @ts-ignore
+  emailBullWorker = mockFunc;
 };

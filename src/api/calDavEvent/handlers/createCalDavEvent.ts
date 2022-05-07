@@ -78,8 +78,9 @@ export const createCalDavEvent = async (
     queryRunner = await connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    let newEvent;
     if (eventTemp) {
-      const newEvent = new CalDavEventEntity(eventTemp);
+      newEvent = new CalDavEventEntity(eventTemp);
 
       await CalDavEventRepository.getRepository().save(newEvent);
 
