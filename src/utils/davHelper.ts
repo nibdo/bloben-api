@@ -31,12 +31,14 @@ import { processCaldavAlarms } from '../api/calDavEvent/handlers/updateCalDavEve
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
+import CalDavEventExceptionEntity from '../data/entity/CalDavEventExceptionEntity';
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../data/repository/CalDavEventRepository';
-import ICalParser, { EventJSON } from 'ical-js-parser';
+import ICalParser, { DateTimeObject, EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
+
 import logger from './logger';
 
 export interface CalDavEventObj {
@@ -51,7 +53,12 @@ export interface CalDavEventObj {
   description: string | null;
   etag: string;
   color: string;
-  alarms: any;
+  recurrenceID?: DateTimeObject;
+  alarms?: any[];
+  organizer?: any;
+  attendees?: any[];
+  exdates?: DateTimeObject[];
+  valarms?: any[];
   rRule: string | null;
   href: string;
   [key: string]: any;
@@ -127,11 +134,16 @@ export const formatEventJsonToCalDavEvent = (
     isRepeated: event.rrule !== undefined || false,
     rRule: event.rrule || null,
     summary: event.summary || '',
+    organizer: event.organizer || null,
     location: event.location || null,
     description: event.description || null,
     etag: calendarObject.etag,
     color: event.color || null,
-    alarms: event.alarms,
+    alarms: event.alarms || [],
+    valarms: event.alarms || [],
+    exdates: event.exdate || [],
+    attendees: event.attendee || [],
+    recurrenceID: event.recurrenceId,
     href: calendarObject.url,
   };
 };
@@ -269,6 +281,30 @@ export const createEventFromCalendarObject = (
   if (event) {
     return formatEventJsonToCalDavEvent(event, calendarObject, calendar);
   }
+};
+
+export const createEventsFromDavObject = (
+  calendarObject: DAVCalendarObject,
+  calendar: any
+) => {
+  const result: CalDavEventObj[] = [];
+  const icalJS = ICalParser.toJSON(calendarObject.data);
+  const events: EventJSON[] = icalJS.events;
+
+  if (icalJS.errors?.length) {
+    logger.warn(
+      `Parsing event from caldav event string error ${JSON.stringify(
+        icalJS.errors
+      )}`,
+      [LOG_TAG.CRON, LOG_TAG.CALDAV]
+    );
+  }
+
+  forEach(events, (event) => {
+    result.push(formatEventJsonToCalDavEvent(event, calendarObject, calendar));
+  });
+
+  return result;
 };
 
 // Note id and url are not linked
@@ -434,24 +470,50 @@ export const updateCalDavEvents = async (
     forEach(toInsertResponse, (item: any) => {
       if (item.data) {
         try {
-          const eventTemp = createEventFromCalendarObject(item, calDavCalendar);
+          const eventsTemp = createEventsFromDavObject(item, calDavCalendar);
 
-          if (eventTemp) {
-            const newEvent = new CalDavEventEntity(eventTemp);
-            eventsToSync.push(formatEventEntityToResult(newEvent));
-            promises.push(queryRunner.manager.save(newEvent));
+          forEach(eventsTemp, (eventTemp) => {
+            if (eventTemp) {
+              const newEvent = new CalDavEventEntity(eventTemp);
+              eventsToSync.push(formatEventEntityToResult(newEvent));
+              promises.push(queryRunner.manager.save(newEvent));
 
-            if (eventTemp.alarms) {
-              promises.push(
-                processCaldavAlarms(
-                  queryRunner,
-                  eventTemp.alarms,
-                  newEvent,
-                  userID
-                )
-              );
+              if (eventTemp.recurrenceID) {
+                const eventException = new CalDavEventExceptionEntity(
+                  userID,
+                  calDavCalendar.id,
+                  eventTemp,
+                  eventTemp.recurrenceID?.value,
+                  newEvent
+                );
+                promises.push(queryRunner.manager.save(eventException));
+              }
+
+              if (eventTemp.exdates?.length) {
+                forEach(eventTemp.exdates, (exDate) => {
+                  const eventException = new CalDavEventExceptionEntity(
+                    userID,
+                    calDavCalendar.id,
+                    eventTemp,
+                    exDate?.value,
+                    newEvent
+                  );
+                  promises.push(queryRunner.manager.save(eventException));
+                });
+              }
+
+              if (eventTemp.alarms) {
+                promises.push(
+                  processCaldavAlarms(
+                    queryRunner,
+                    eventTemp.alarms,
+                    newEvent,
+                    userID
+                  )
+                );
+              }
             }
-          }
+          });
         } catch (e) {
           logger.error(
             `Creating event from caldav event string error with event ${item.data}`,
@@ -667,9 +729,15 @@ export const removeSupportedProps = (originalItem: EventJSON) => {
   delete item.etag;
   delete item.color;
   delete item.description;
+  delete item.rrule;
   delete item.rRule;
   delete item.data;
   delete item.url;
+  delete item.attendee;
+  delete item.alarms;
+  delete item.exdate;
+  delete item.organizer;
+  delete item.recurrenceId;
 
   return item;
 };

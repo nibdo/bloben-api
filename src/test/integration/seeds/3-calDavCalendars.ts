@@ -30,12 +30,12 @@ export class calDavCalendars implements MigrationInterface {
     const connection: Connection = await getConnection();
 
     const user: UserEntity | undefined = await connection.manager.findOne(
-      UserEntity,
-      {
-        where: {
-          username: testUserData.username,
-        },
-      }
+        UserEntity,
+        {
+          where: {
+            username: testUserData.username,
+          },
+        }
     );
 
     const calDavAccounts: CalDavAccountEntity[] = [];

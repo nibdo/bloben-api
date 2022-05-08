@@ -12,6 +12,7 @@ import { DateTime } from 'luxon';
 import { validateStringDate } from '../../utils/common';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
+import CalDavEventExceptionEntity from './CalDavEventExceptionEntity';
 
 @Entity('caldav_events')
 export default class CalDavEventEntity {
@@ -54,6 +55,36 @@ export default class CalDavEventEntity {
   @Column({ nullable: true })
   data: string;
 
+  @Column({
+    type: 'jsonb',
+    array: false,
+    default: () => "'[]'",
+    nullable: true,
+  })
+  exdates: object[];
+
+  @Column({
+    type: 'jsonb',
+    array: false,
+    default: () => "'[]'",
+    nullable: true,
+  })
+  attendees: object[];
+
+  @Column({ name: 'organizer', type: 'json', nullable: true })
+  organizer: object;
+
+  @Column({ name: 'recurrence_id', type: 'json', nullable: true })
+  recurrenceID: object;
+
+  @Column({
+    type: 'jsonb',
+    array: false,
+    default: () => "'[]'",
+    nullable: true,
+  })
+  valarms: object[];
+
   @Column({ type: 'json', nullable: true })
   props: object;
 
@@ -84,6 +115,12 @@ export default class CalDavEventEntity {
   @OneToMany(() => CalDavEventAlarmEntity, (alarm) => alarm.event)
   alarms: CalDavEventAlarmEntity[];
 
+  @OneToMany(
+    () => CalDavEventExceptionEntity,
+    (exception) => exception.caldavEvent
+  )
+  exceptions: CalDavEventExceptionEntity[];
+
   parseRRule(rRule: string | null) {
     if (rRule) {
       const partA: string = rRule.slice(0, rRule.indexOf('UNTIL'));
@@ -105,6 +142,7 @@ export default class CalDavEventEntity {
 
       this.props = item.props;
       this.externalID = item.externalID;
+      this.recurrenceID = item.recurrenceID;
       this.startAt = DateTime.fromISO(item.startAt).toUTC().toJSDate();
       this.endAt = DateTime.fromISO(item.endAt).toUTC().toJSDate();
       this.timezoneStartAt = item.timezone;
@@ -119,6 +157,10 @@ export default class CalDavEventEntity {
       this.summary = item.summary;
       this.calendar = calendar;
       this.href = item.href;
+      this.exdates = item.exdates || [];
+      this.attendees = item.attendees || [];
+      this.organizer = item.organizer;
+      this.valarms = item.valarms || [];
       this.createdAt = item.created
         ? DateTime.fromISO(item.created).toUTC().toJSDate()
         : new Date();

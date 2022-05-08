@@ -71,3 +71,51 @@ export const syncCalDavEvents = async (
     next(error);
   }
 };
+
+export const getCalDavEvent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavEventService.getCalDavEvent(req, res);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateRepeatedCalDavEvent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavEventService.updateRepeatedCalDavEvent(
+      req,
+      res
+    );
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteRepeatedCalDavEvent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavEventService.deleteRepeatedCalDavEvent(
+      req,
+      res
+    );
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};

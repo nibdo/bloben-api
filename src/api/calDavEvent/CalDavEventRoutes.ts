@@ -6,10 +6,13 @@ import { USER_ROLE } from '../user/UserEnums';
 import { authMiddleware } from '../../middleware/authMiddleware';
 import { createCalDavEventSchema } from './schemas/createCalDavEventSchema';
 import { deleteCalDavEventSchema } from './schemas/deleteCalDavEventSchema';
+import { deleteRepeatedCalDavEventSchema } from './schemas/deleteRepeatedCalDavEventSchema';
+import { getCalDavEventSchema } from './schemas/getCalDavEventSchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
 import { syncRequestSchema } from '../../common/schemas/syncRequestSchema';
 import { updateCalDavEventSchema } from './schemas/updateCalDavEventSchema';
+import { updateRepeatedCalDavEventSchema } from './schemas/updateRepeatedCalDavEventSchema';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
 
 const CalDavEventRoutes: Router = Router();
@@ -24,7 +27,16 @@ CalDavEventRoutes.get(
   ],
   CalDavEventController.syncCalDavEvents
 );
-
+CalDavEventRoutes.put(
+  '/repeated',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+    validationMiddleware(updateRepeatedCalDavEventSchema),
+  ],
+  CalDavEventController.updateRepeatedCalDavEvent
+);
 CalDavEventRoutes.put(
   '/',
   [
@@ -47,6 +59,16 @@ CalDavEventRoutes.post(
   CalDavEventController.createCalDavEvent
 );
 CalDavEventRoutes.delete(
+  '/repeated',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+    validationMiddleware(deleteRepeatedCalDavEventSchema),
+  ],
+  CalDavEventController.deleteRepeatedCalDavEvent
+);
+CalDavEventRoutes.delete(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -55,6 +77,16 @@ CalDavEventRoutes.delete(
     validationMiddleware(deleteCalDavEventSchema),
   ],
   CalDavEventController.deleteCalDavEvent
+);
+CalDavEventRoutes.get(
+  '/',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+    validationMiddleware(getCalDavEventSchema),
+  ],
+  CalDavEventController.getCalDavEvent
 );
 
 export default CalDavEventRoutes;

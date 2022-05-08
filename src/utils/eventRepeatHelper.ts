@@ -1,13 +1,13 @@
 import { DateTime } from 'luxon';
 import { forEach } from 'lodash';
-import { getRepeatedEvents } from '../api/calDavEvent/helpers/repeatHelper';
+import { getOccurrences } from '../api/event/helpers/getRepeatedEvents';
 
 export const addRepeatedEvents = (data: any, range: any) => {
   let result: any = [];
 
   forEach(data, (item) => {
     if (item.isRepeated) {
-      const repeatedEvents = getRepeatedEvents(
+      const repeatedEvents = getOccurrences(
         item,
         DateTime.fromISO(range.rangeFrom),
         DateTime.fromISO(range.rangeTo)
