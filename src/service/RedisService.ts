@@ -2,13 +2,23 @@ import { REDIS_PREFIX } from '../utils/enums';
 import { redisClient } from '../index';
 
 export default {
+  setLastVersion: async (version: string) => {
+    const key = `${REDIS_PREFIX.DOCKER_LAST_VERSION}`;
+
+    await redisClient.set(key, version, 'EX', 60 * 60 * 4); // 4 hours
+  },
+  getLastVersion: async (): Promise<string> => {
+    const key = `${REDIS_PREFIX.DOCKER_LAST_VERSION}`;
+
+    return redisClient.get(key);
+  },
   setDavClientCache: async (
     accountID: string,
     clientData: { authHeaders: any; account: any }
   ) => {
     const key = `${REDIS_PREFIX.DAV_CLIENT}_${accountID}`;
 
-    await redisClient.set(key, JSON.stringify(clientData), 'PX', 60 * 60 * 24); // 24 hours
+    await redisClient.set(key, JSON.stringify(clientData), 'EX', 60 * 60 * 24); // 24 hours
   },
   getDavClientCache: async (accountID: string) => {
     const key = `${REDIS_PREFIX.DAV_CLIENT}_${accountID}`;

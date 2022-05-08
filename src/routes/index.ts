@@ -9,7 +9,6 @@ import CalDavTaskRoutes from '../api/calDavTask/CalDavTaskRoutes';
 import CalDavTaskSettingsRoutes from '../api/calDavTaskSettings/CalDavTaskSettingsRoutes';
 import CalendarSettingsRouter from '../api/calendarSettings/CalendarSettingsRouter';
 import EventRoutes from '../api/event/EventRoutes';
-import ServerSettingsRouter from '../api/serverSettings/ServerSettingsRouter';
 import SocketRouter from '../api/socket/SocketRoutes';
 import SyncRouter from '../api/sync/SyncRoutes';
 import TimezoneRouter from '../api/timezone/TimezoneRoutes';
@@ -40,6 +39,5 @@ AppRouter.use(`/${API_VERSIONS.V1}/webcal/events`, WebcalEventsRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/version`, VersionRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/sync`, SyncRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/calendar-settings`, CalendarSettingsRouter);
-AppRouter.use(`/${API_VERSIONS.V1}/server-settings`, ServerSettingsRouter);
 
 export default AppRouter;

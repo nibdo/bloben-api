@@ -2,7 +2,7 @@ name: Tests
 
 on:
   pull_request:
-    branches: [ development, production ]
+    branches: [ development, staging, production ]
 
 jobs:
   build:
@@ -13,6 +13,12 @@ jobs:
           node-version: 16.14.2
           registry-url: https://registry.npmjs.org/
       - uses: actions/checkout@v2
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Start containers
         env:
           POSTGRES_DB: bloben_test
@@ -58,4 +64,3 @@ jobs:
           SMTP_PASSWORD: asfasf
           ENCRYPTION_PASSWORD: sdoifjsdiog
         run: npm run test-pipeline
-

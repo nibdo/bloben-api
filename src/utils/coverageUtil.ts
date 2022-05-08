@@ -7,7 +7,7 @@ import util from 'util';
 const readdir: any = util.promisify(fs.readdir);
 
 const BASE_DIR = './src/api';
-const TEST_DIR = './src/test/app/api';
+const TEST_DIR = './src/test/integration/app/api';
 
 const getFiles = async (
   dir: string,

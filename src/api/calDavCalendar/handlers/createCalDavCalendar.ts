@@ -48,9 +48,9 @@ export const createCalDavCalendar = async (
     components[`${DAVNamespaceShort.CALDAV}:comp name="${component}"`] = '';
   });
 
-  const calendarRemoteID = v4();
+  const remoteID = v4();
   const result = await client.makeCalendar({
-    url: `${calDavAccount.url}/calendars/${calDavAccount.username}/${calendarRemoteID}`,
+    url: `${calDavAccount.url}/calendars/${calDavAccount.username}/${remoteID}`,
     props: {
       [`${DAVNamespaceShort.DAV}:displayname`]: body.name,
       [`${DAVNamespaceShort.CALDAV}:supported-calendar-component-set`]:
@@ -71,7 +71,5 @@ export const createCalDavCalendar = async (
 
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
 
-  return createCommonResponse('CalDav calendar created', {
-    remoteID: calendarRemoteID,
-  });
+  return createCommonResponse('CalDav calendar created', { remoteID });
 };

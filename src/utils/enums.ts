@@ -30,6 +30,7 @@ export enum REDIS_PREFIX {
   USER_ID_KEY_2FA = 'userID2FA',
   CHANGE_PASSWORD = 'changePassword',
   DAV_CLIENT = 'davClient',
+  DOCKER_LAST_VERSION = 'dockerLastVersion',
 }
 
 export enum WEBSOCKET_PREFIX {
