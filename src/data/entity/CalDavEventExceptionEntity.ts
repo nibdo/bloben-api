@@ -7,8 +7,29 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DateTime } from 'luxon';
+import { DateTimeObject } from 'ical-js-parser';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventEntity from './CalDavEventEntity';
+
+export const formatDate = (date: DateTimeObject) => {
+  let result;
+
+  if (!date?.value) {
+    throw Error(`Cannot parse date ${date}`);
+  }
+
+  if (date.timezone) {
+    result = DateTime.fromISO(date.value, {
+      zone: date.timezone,
+    })
+      .toUTC()
+      .toString();
+  } else {
+    result = DateTime.fromISO(date.value).toString();
+  }
+
+  return result;
+};
 
 @Entity('caldav_event_exceptions')
 export default class CalDavEventExceptionEntity {
@@ -48,12 +69,12 @@ export default class CalDavEventExceptionEntity {
     userID: string,
     caldavCalendarID: string,
     event: CalDavEventObj,
-    exception: string,
+    exception: DateTimeObject,
     eventEntity: CalDavEventEntity
   ) {
     if (userID && event) {
       this.userID = userID;
-      this.exceptionDate = DateTime.fromISO(exception).toJSDate();
+      this.exceptionDate = formatDate(exception);
       this.exceptionTimezone = event.timezone;
       this.externalID = event.externalID;
       this.calDavCalendarID = caldavCalendarID;

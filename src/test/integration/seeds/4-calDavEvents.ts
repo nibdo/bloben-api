@@ -1,16 +1,19 @@
-import { Connection, MigrationInterface, getConnection } from 'typeorm';
-import { forEach } from 'lodash';
+import {Connection, getConnection, MigrationInterface} from 'typeorm';
+import {forEach} from 'lodash';
 
-import { testUserData } from './1-user-seed';
+import {testUserData} from './1-user-seed';
 import UserEntity from '../../../data/entity/UserEntity';
-import { CreateCalDavEventRequest } from '../../../bloben-interface/event/event';
+import {
+  CreateCalDavEventRequest,
+  UpdateRepeatedCalDavEventRequest
+} from '../../../bloben-interface/event/event';
 import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
-import ICalParser, { EventJSON } from 'ical-js-parser';
-import { formatEventJsonToCalDavEvent } from '../../../utils/davHelper';
-import { DAVCalendarObject } from 'tsdav';
-import { v4 } from 'uuid';
-import { DateTime } from 'luxon';
+import ICalParser, {EventJSON} from 'ical-js-parser';
+import {formatEventJsonToCalDavEvent} from '../../../utils/davHelper';
+import {DAVCalendarObject} from 'tsdav';
+import {v4} from 'uuid';
+import {DateTime} from 'luxon';
 
 export const createDummyCalDavEvent = (
   calendarID: string,

@@ -137,21 +137,24 @@ const handleChangeAllWithCalendar = async (
   }
 
   // combine original event with new version
-  const startAtChanged = DateTime.fromISO(body.event.startAt);
-  const endAtChanged = DateTime.fromISO(body.event.endAt);
+  let startAtNew = DateTime.fromISO(body.event.startAt);
+  let endAtNew = DateTime.fromISO(body.event.endAt);
 
-  const startAtNew = DateTime.fromISO(eventsData[0].startAt).set({
-    hour: startAtChanged.hour,
-    minute: startAtChanged.minute,
-    second: 0,
-    millisecond: 0,
-  });
-  const endAtNew = DateTime.fromISO(eventsData[0].endAt).set({
-    hour: endAtChanged.hour,
-    minute: endAtChanged.minute,
-    second: 0,
-    millisecond: 0,
-  });
+  if (body.event.rRule === eventsData[0].rRule) {
+    startAtNew = DateTime.fromISO(eventsData[0].startAt).set({
+      hour: startAtNew.hour,
+      minute: startAtNew.minute,
+      second: 0,
+      millisecond: 0,
+    });
+
+    endAtNew = DateTime.fromISO(eventsData[0].endAt).set({
+      hour: endAtNew.hour,
+      minute: endAtNew.minute,
+      second: 0,
+      millisecond: 0,
+    });
+  }
 
   eventsData = [
     eventResultToCalDavEventObj(
@@ -159,7 +162,6 @@ const handleChangeAllWithCalendar = async (
         ...body.event,
         startAt: startAtNew.toString(),
         endAt: endAtNew.toString(),
-        rRule: eventsData[0].rRule,
         props: {
           exdate: undefined,
           recurrenceId: undefined,
@@ -178,12 +180,21 @@ const handleChangeAllWithCalendar = async (
   });
 
   // delete prev event
-  await client.deleteCalendarObject({
+  const responseDelete = await client.deleteCalendarObject({
     calendarObject: {
       url: body.prevEvent.url,
       etag: body.prevEvent.etag,
     },
   });
+
+  if (responseDelete.status >= 300) {
+    logger.error(
+      `Status: ${responseDelete.status} Message: ${responseDelete.statusText}`,
+      null,
+      [LOG_TAG.CALDAV, LOG_TAG.REST]
+    );
+    throw throwError(409, `Cannot delete event: ${responseDelete.statusText}`);
+  }
 
   return {
     response,
@@ -222,21 +233,23 @@ const handleChangeAll = async (
   });
 
   // combine original event with new version
-  const startAtChanged = DateTime.fromISO(body.event.startAt);
-  const endAtChanged = DateTime.fromISO(body.event.endAt);
+  let startAtNew = DateTime.fromISO(body.event.startAt);
+  let endAtNew = DateTime.fromISO(body.event.endAt);
 
-  const startAtNew = DateTime.fromISO(eventsData[0].startAt).set({
-    hour: startAtChanged.hour,
-    minute: startAtChanged.minute,
-    second: 0,
-    millisecond: 0,
-  });
-  const endAtNew = DateTime.fromISO(eventsData[0].endAt).set({
-    hour: endAtChanged.hour,
-    minute: endAtChanged.minute,
-    second: 0,
-    millisecond: 0,
-  });
+  if (body.event.rRule === eventsData[0].rRule) {
+    startAtNew = DateTime.fromISO(eventsData[0].startAt).set({
+      hour: startAtNew.hour,
+      minute: startAtNew.minute,
+      second: 0,
+      millisecond: 0,
+    });
+    endAtNew = DateTime.fromISO(eventsData[0].endAt).set({
+      hour: endAtNew.hour,
+      minute: endAtNew.minute,
+      second: 0,
+      millisecond: 0,
+    });
+  }
 
   eventsData = [
     eventResultToCalDavEventObj(
@@ -244,7 +257,10 @@ const handleChangeAll = async (
         ...body.event,
         startAt: startAtNew.toString(),
         endAt: endAtNew.toString(),
-        rRule: eventsData[0].rRule,
+        rRule:
+          body.event.rRule === eventsData[0].rRule
+            ? eventsData[0].rRule
+            : body.event.rRule,
         exdates: [],
         recurrenceID: undefined,
       },

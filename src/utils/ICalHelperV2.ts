@@ -1,6 +1,6 @@
-import ICalParser from 'ical-js-parser';
+import ICalParser from 'ical-js-parser-dev';
 
-import { CalDavEventObj } from './davHelper';
+import { CalDavEventObj, formatIcalDate } from './davHelper';
 import { DateTime } from 'luxon';
 import { forEach, map } from 'lodash';
 import { v4 } from 'uuid';
@@ -115,13 +115,13 @@ class ICalHelperV2 {
       result.dtstart = {
         value: allDay
           ? DateTime.fromISO(startAt).toFormat('yyyyMMdd')
-          : LuxonHelper.toUtcString(startAt),
+          : formatIcalDate(startAt, timezoneStartAt),
         timezone: allDay ? undefined : timezoneStartAt || timezone,
       };
       result.dtend = {
         value: allDay
           ? DateTime.fromISO(endAt).plus({ day: 1 }).toFormat('yyyyMMdd')
-          : LuxonHelper.toUtcString(endAt),
+          : formatIcalDate(endAt, timezoneStartAt),
         timezone: allDay ? undefined : timezoneStartAt || timezone,
       };
       result.uid = externalId ? externalId : externalID ? externalID : v4();
@@ -154,11 +154,12 @@ class ICalHelperV2 {
 
       if (recurrenceID) {
         result.recurrenceId = {
-          value: recurrenceID?.value || recurrenceID,
+          value:
+            formatIcalDate(recurrenceID?.value, timezoneStartAt) ||
+            recurrenceID,
           timezone: allDay ? undefined : timezoneStartAt || timezone,
         };
       }
-
       if (exdates?.length) {
         result.exdate = exdates;
       }

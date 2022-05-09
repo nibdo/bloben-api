@@ -1,9 +1,10 @@
-import ICalParser from 'ical-js-parser';
+import ICalParser from 'ical-js-parser-dev';
 
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
 import { forEach } from 'lodash';
+import { formatIcalDate } from './davHelper';
 
 export type CalendarMethod = 'REQUEST' | 'REPLY';
 export const CALENDAR_REQUEST_METHOD: CalendarMethod = 'REQUEST';
@@ -49,7 +50,7 @@ class ICalHelper {
 
     this.dtstart = timezoneStartAt
       ? {
-          value: startAt,
+          value: formatIcalDate(startAt, timezoneStartAt),
           timezone: timezoneStartAt,
         }
       : {
@@ -57,7 +58,7 @@ class ICalHelper {
         };
     this.dtend = timezoneStartAt
       ? {
-          value: endAt,
+          value: formatIcalDate(endAt, timezoneStartAt),
           timezone: timezoneStartAt,
         }
       : {

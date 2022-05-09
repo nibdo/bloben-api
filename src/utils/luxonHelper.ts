@@ -157,3 +157,14 @@ export default LuxonHelper;
 
 export const formatToIcalDateString = (date: string): string =>
   DateTime.fromISO(date).toUTC().toFormat("yyyyMMdd'T'HHmmss'Z'");
+
+// export const formatDateInDateTimeObject = (item: DateTimeObject) => {
+//   const dateFormatted = date.setZone('Europe/Berlin')
+//
+//   return {
+//     startAt: `${dateFormatted.toFormat('yyyyMMdd')}T${dateFormatted.toFormat('HHmm')}00`,
+//     endAt: `${dateFormatted.plus({ hour: 1 }).toFormat('yyyyMMdd')}T${date
+//         .plus({ hour: 1 })
+//         .toFormat('HHmm')}00`,
+//   };
+// };

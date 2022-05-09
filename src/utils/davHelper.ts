@@ -64,6 +64,20 @@ export interface CalDavEventObj {
   [key: string]: any;
 }
 
+export const formatIcalDate = (date: string, timezone?: string | null) => {
+  if (!date) {
+    return undefined;
+  }
+
+  if (timezone) {
+    return DateTime.fromISO(date, { zone: timezone }).toFormat(
+      `yyyyMMdd'T'HHmmss`
+    );
+  }
+
+  return date;
+};
+
 export const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
   let result;
 
@@ -80,7 +94,15 @@ export const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
 
     result = dateTime.toISO().toString();
   } else {
-    result = event.dtstart.value;
+    if (event.dtstart.timezone) {
+      result = DateTime.fromISO(event.dtstart.value, {
+        zone: event.dtstart.timezone,
+      })
+        .toUTC()
+        .toString();
+    } else {
+      result = event.dtstart.value;
+    }
   }
 
   return result;
@@ -108,7 +130,15 @@ export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
         .toISO()
         .toString();
     } else {
-      result = event.dtend.value;
+      if (event.dtend.timezone) {
+        result = DateTime.fromISO(event.dtend.value, {
+          zone: event.dtend.timezone,
+        })
+          .toUTC()
+          .toString();
+      } else {
+        result = event.dtend.value;
+      }
     }
   }
 
@@ -483,7 +513,7 @@ export const updateCalDavEvents = async (
                   userID,
                   calDavCalendar.id,
                   eventTemp,
-                  eventTemp.recurrenceID?.value,
+                  eventTemp.recurrenceID,
                   newEvent
                 );
                 promises.push(queryRunner.manager.save(eventException));
@@ -495,7 +525,7 @@ export const updateCalDavEvents = async (
                     userID,
                     calDavCalendar.id,
                     eventTemp,
-                    exDate?.value,
+                    exDate,
                     newEvent
                   );
                   promises.push(queryRunner.manager.save(eventException));
