@@ -8,5 +8,7 @@ export const deleteCalDavEventSchema = Joi.object({
     calendarID: Joi.string().required(),
     url: Joi.string().required(),
     etag: Joi.string().required(),
+    sendInvite: Joi.boolean().optional(),
+    inviteMessage: Joi.string().optional().allow(null),
   }),
 });

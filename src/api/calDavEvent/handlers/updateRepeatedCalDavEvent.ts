@@ -2,10 +2,18 @@ import { Request, Response } from 'express';
 
 import { CommonResponse } from '../../../bloben-interface/interface';
 
-import { BULL_QUEUE, LOG_TAG } from '../../../utils/enums';
+import {
+  BULL_QUEUE,
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../utils/enums';
+import { CALENDAR_METHOD } from '../../../utils/ICalHelper';
 import {
   CalDavEventObj,
   createEventsFromDavObject,
+  formatInviteData,
 } from '../../../utils/davHelper';
 import { DAVClient } from 'tsdav';
 import { DateTime } from 'luxon';
@@ -14,9 +22,14 @@ import {
   UpdateRepeatedCalDavEventRequest,
 } from '../../../bloben-interface/event/event';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../bloben-interface/enums';
-import { calDavSyncBullQueue } from '../../../service/BullQueue';
+import {
+  calDavSyncBullQueue,
+  emailBullQueue,
+} from '../../../service/BullQueue';
 import { createCommonResponse } from '../../../utils/common';
+import { forEach } from 'lodash';
 import { formatToIcalDateString } from '../../../utils/luxonHelper';
+import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
 import { throwError } from '../../../utils/errorCodes';
 import { v4 } from 'uuid';
@@ -26,16 +39,22 @@ import CalDavEventRepository from '../../../data/repository/CalDavEventRepositor
 import ICalHelperV2 from '../../../utils/ICalHelperV2';
 import logger from '../../../utils/logger';
 
-interface UpdateResult {
+export interface RepeatEventUpdateResult {
   response: any;
   attendeesData?: {
     icalString: string;
     event: CalDavEventObj;
   }[];
 }
-
-const createICalStringForAttendees = (data: any) => {
-  if (data?.attendees?.length || data?.props?.attendee?.length) {
+export const createICalStringMultiEventForAttendees = (
+  data: CalDavEventObj[]
+) => {
+  if (data[0]?.attendees?.length) {
+    return new ICalHelperV2(data).parseTo();
+  }
+};
+export const createICalStringForAttendees = (data: CalDavEventObj) => {
+  if (data?.attendees?.length) {
     return new ICalHelperV2([data]).parseTo();
   }
 };
@@ -70,7 +89,7 @@ const handleSingleEventChange = async (
   eventsTemp: CalDavEventObj[],
   body: UpdateRepeatedCalDavEventRequest,
   client: DAVClient
-): Promise<UpdateResult> => {
+): Promise<RepeatEventUpdateResult> => {
   // filter by recurrence id of updated event
   let eventsData = eventsTemp.filter((event) => {
     if (event?.recurrenceID) {
@@ -117,7 +136,7 @@ const handleChangeAllWithCalendar = async (
   client: DAVClient,
   calDavAccount: any,
   userID
-): Promise<UpdateResult> => {
+): Promise<RepeatEventUpdateResult> => {
   // get only event with rrule prop
   let eventsData = eventsTemp.filter((event) => {
     if (event.rrule || event.rRule) {
@@ -200,20 +219,8 @@ const handleChangeAllWithCalendar = async (
     response,
     attendeesData: [
       {
-        icalString: createICalStringForAttendees(body.event),
-        event: eventResultToCalDavEventObj(
-          {
-            ...body.event,
-            startAt: startAtNew.toString(),
-            endAt: endAtNew.toString(),
-            rRule: eventsData[0].rRule,
-            props: {
-              exdate: undefined,
-              recurrenceId: undefined,
-            },
-          },
-          eventsData[0].href
-        ),
+        icalString: createICalStringForAttendees(eventsData[0]),
+        event: eventsData[0],
       },
     ],
   };
@@ -224,7 +231,7 @@ const handleChangeAll = async (
   body: UpdateRepeatedCalDavEventRequest,
   client: DAVClient,
   userID: string
-): Promise<UpdateResult> => {
+): Promise<RepeatEventUpdateResult> => {
   // get only event with rrule prop
   let eventsData = eventsTemp.filter((event) => {
     if (event.rrule || event.rRule) {
@@ -292,14 +299,8 @@ const handleChangeAll = async (
     response,
     attendeesData: [
       {
-        icalString: createICalStringForAttendees(eventsData),
-        event: eventResultToCalDavEventObj({
-          ...body.event,
-          startAt: startAtNew.toString(),
-          endAt: endAtNew.toString(),
-          rRule: eventsData[0].rRule,
-          props: { exdate: undefined, recurrenceId: undefined },
-        }),
+        icalString: createICalStringForAttendees(eventsData[0]),
+        event: eventsData[0],
       },
     ],
   };
@@ -310,7 +311,7 @@ const handleChangeThisAndFuture = async (
   body: UpdateRepeatedCalDavEventRequest,
   client: DAVClient,
   calDavAccount: any
-): Promise<UpdateResult> => {
+): Promise<RepeatEventUpdateResult> => {
   let originRRule = '';
   let originalEventWithRRule;
   // get only event with rrule prop
@@ -371,18 +372,16 @@ const handleChangeThisAndFuture = async (
     response,
     attendeesData: [
       {
-        icalString: createICalStringForAttendees(eventsData),
+        icalString: createICalStringMultiEventForAttendees(eventsData),
         event: eventResultToCalDavEventObj(
           originalEventWithRRule,
           eventsData[0].href
         ),
       },
       {
-        icalString: createICalStringForAttendees({
-          ...body.event,
-          externalId: idNew,
-          rRule: originRRule,
-        }),
+        icalString: createICalStringForAttendees(
+          eventResultToCalDavEventObj(eventResultNew, eventsData[0].href)
+        ),
         event: eventResultToCalDavEventObj(eventResultNew, eventsData[0].href),
       },
     ],
@@ -430,7 +429,14 @@ export const updateRepeatedCalDavEvent = async (
     calDavAccount.calendar
   );
 
-  let result: UpdateResult;
+  if (
+    body.type !== REPEATED_EVENT_CHANGE_TYPE.ALL &&
+    body.event.attendees.length !== eventsTemp?.[0].attendees.length
+  ) {
+    throw throwError(409, 'Attendees can be changed only for all instances');
+  }
+
+  let result: RepeatEventUpdateResult;
 
   if (body.type !== REPEATED_EVENT_CHANGE_TYPE.ALL && body.prevEvent) {
     throw throwError(
@@ -469,7 +475,36 @@ export const updateRepeatedCalDavEvent = async (
     throw throwError(409, `Cannot create event: ${result.response.statusText}`);
   }
 
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.SYNCING, value: true })
+  );
+
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
+
+  if (body.sendInvite && result.attendeesData.length) {
+    const promises: any = [];
+
+    forEach(result.attendeesData, (attendeesItem) => {
+      if (attendeesItem.icalString && attendeesItem.event?.attendees) {
+        promises.push(
+          emailBullQueue.add(
+            BULL_QUEUE.EMAIL,
+            formatInviteData(
+              userID,
+              attendeesItem.event,
+              attendeesItem.icalString,
+              attendeesItem.event.attendees,
+              CALENDAR_METHOD.REQUEST,
+              body.inviteMessage
+            )
+          )
+        );
+      }
+    });
+
+    await Promise.all(promises);
+  }
 
   return createCommonResponse('Event updated', {});
 };

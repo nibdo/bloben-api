@@ -14,6 +14,12 @@ export default class ServerSettingsEntity {
   @Column({ name: 'check_new_version', default: false })
   checkNewVersion: boolean;
 
+  @Column({ name: 'email_counter', default: 200 })
+  emailCounter: number;
+
+  @Column({ name: 'inner_email_counter', default: 0 })
+  innerEmailCounter: number;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

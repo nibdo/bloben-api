@@ -40,6 +40,9 @@ export default class UserEntity {
   @Column({ name: 'two_factor_secret', nullable: true })
   twoFactorSecret: string;
 
+  @Column({ name: 'emails_allowed', default: true })
+  emailsAllowed: boolean;
+
   @OneToMany(
     () => WebcalCalendarEntity,
     (externalCalendar) => externalCalendar.user
