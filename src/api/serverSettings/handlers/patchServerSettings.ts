@@ -21,9 +21,7 @@ export const patchServerSettings = async (
 
   await ServerSettingsRepository.getRepository().update(
     { id: serverSettings.id },
-    {
-      checkNewVersion: body.checkNewVersion,
-    }
+    body
   );
 
   return createCommonResponse('Server settings updated');

@@ -96,17 +96,16 @@ export const createCalDavEvent = async (
       await queryRunner.commitTransaction();
       await queryRunner.release();
 
-      // @ts-ignore
-      if (newEvent.props?.attendee) {
+      if (newEvent.attendees && body.sendInvite) {
         await emailBullQueue.add(
           BULL_QUEUE.EMAIL,
           formatInviteData(
             userID,
             eventTemp,
             body.iCalString,
-            // @ts-ignore
-            newEvent.props.attendee,
-            CALENDAR_METHOD.REQUEST
+            newEvent.attendees,
+            CALENDAR_METHOD.REQUEST,
+            body.inviteMessage
           )
         );
       }

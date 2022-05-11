@@ -28,6 +28,7 @@ export const adminUpdateUser = async (
 
   const data: any = {
     isEnabled: body.isEnabled,
+    emailsAllowed: body.emailsAllowed,
   };
 
   if (user.role !== ROLE.ADMIN) {

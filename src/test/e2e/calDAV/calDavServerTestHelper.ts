@@ -262,7 +262,8 @@ export const createRepeatedEventBodyJSON = (
   recurrenceID?: string,
   summary?: string,
   rRule?: string,
-  prevEvent?: any
+  prevEvent?: any,
+  attendees?: any
 ): UpdateRepeatedCalDavEventRequest => {
   return {
     calendarID,
@@ -285,7 +286,7 @@ export const createRepeatedEventBodyJSON = (
       rRule: rRule || null,
       type: EVENT_TYPE.CALDAV,
       valarms: [],
-      attendees: [],
+      attendees: attendees || [],
       exdates: [],
       recurrenceID: recurrenceID
         ? {

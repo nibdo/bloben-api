@@ -36,6 +36,7 @@ describe(`Update user admin [PATCH] ${PATH}`, async function () {
       .set('token', token)
       .send({
         isEnabled: true,
+        emailsAllowed: false,
         role: USER_ROLE.DEMO,
       });
 
@@ -52,6 +53,7 @@ describe(`Update user admin [PATCH] ${PATH}`, async function () {
       .set('token', token)
       .send({
         isEnabled: true,
+        emailsAllowed: false,
         role: USER_ROLE.DEMO,
       });
 
@@ -67,6 +69,7 @@ describe(`Update user admin [PATCH] ${PATH}`, async function () {
       .set('token', token)
       .send({
         isEnabled: true,
+        emailsAllowed: false,
         role: USER_ROLE.DEMO,
       });
 
@@ -82,6 +85,7 @@ describe(`Update user admin [PATCH] ${PATH}`, async function () {
       .set('token', wrongToken)
       .send({
         isEnabled: true,
+        emailsAllowed: false,
         role: USER_ROLE.DEMO,
       });
 

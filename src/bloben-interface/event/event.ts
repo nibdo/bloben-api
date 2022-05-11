@@ -54,6 +54,8 @@ export interface CreateCalDavEventRequest {
   externalID: string;
   calendarID: string;
   iCalString: string;
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }
 
 interface PrevEventInRequest {
@@ -71,6 +73,8 @@ export interface UpdateCalDavEventRequest {
   etag: string;
   url: string;
   prevEvent: PrevEventInRequest | null;
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }
 
 export interface UpdateRepeatedCalDavEventRequest {
@@ -82,6 +86,8 @@ export interface UpdateRepeatedCalDavEventRequest {
   url: string;
   type: REPEATED_EVENT_CHANGE_TYPE;
   prevEvent: PrevEventInRequest | null;
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }
 
 export interface DeleteCalDavEventRequest {
@@ -89,6 +95,8 @@ export interface DeleteCalDavEventRequest {
   id: string;
   etag: string;
   url: string;
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }
 
 export interface DeleteRepeatedCalDavEventRequest
@@ -97,6 +105,8 @@ export interface DeleteRepeatedCalDavEventRequest
   iCalString?: string;
   recurrenceID?: DateTimeObject;
   exDates?: DateTimeObject[];
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }
 
 export interface EventBody {

@@ -5,8 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { DateTime } from 'luxon';
 import { DateTimeObject, EventJSON } from 'ical-js-parser';
+import { formatDate } from './CalDavEventExceptionEntity';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 
 @Entity('webcal_event_exceptions')
@@ -69,7 +69,7 @@ export default class WebcalEventExceptionEntity {
   ) {
     if (userID) {
       this.userID = userID;
-      this.exceptionDate = DateTime.fromISO(exception?.value).toJSDate();
+      this.exceptionDate = formatDate(exception);
       this.exceptionTimezone = exception.timezone;
       this.externalID = event.uid;
       this.webcalCalendarID = webcalCalendarID;
