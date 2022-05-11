@@ -8,6 +8,7 @@ export const updateUserSchema = Joi.object({
   }),
   body: Joi.object({
     isEnabled: Joi.boolean().required(),
+    emailsAllowed: Joi.boolean().required(),
     role: Joi.string().valid(USER_ROLE.USER, USER_ROLE.DEMO).optional(),
   }),
 });

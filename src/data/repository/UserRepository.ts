@@ -39,6 +39,7 @@ export default class UserRepository extends Repository<UserEntity> {
         'isEnabled',
         'isTwoFactorEnabled',
         'twoFactorSecret',
+        'emailsAllowed',
       ],
     });
   }

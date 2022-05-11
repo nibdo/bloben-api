@@ -1,18 +1,24 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../bloben-interface/interface';
-import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { DateTime } from 'luxon';
 import {
+  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
   TIMEZONE,
 } from '../../../utils/enums';
+import { CALENDAR_METHOD } from '../../../utils/ICalHelper';
+import { CommonResponse } from '../../../bloben-interface/interface';
+import { Connection, QueryRunner, getConnection } from 'typeorm';
+import { DateTime } from 'luxon';
 import { UpdateCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse, formatToRRule } from '../../../utils/common';
-import { createEventFromCalendarObject } from '../../../utils/davHelper';
+import {
+  createEventFromCalendarObject,
+  formatInviteData,
+} from '../../../utils/davHelper';
+import { emailBullQueue } from '../../../service/BullQueue';
 import { forEach } from 'lodash';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
@@ -213,18 +219,19 @@ export const updateCalDavEvent = async (
       }
     }
 
-    // if (eventTemp.props?.attendee) {
-    //   await emailBullQueue.add(
-    //     BULL_QUEUE.EMAIL,
-    //     formatInviteData(
-    //       userID,
-    //       eventTemp,
-    //       body.iCalString,
-    //       eventTemp.props.attendee,
-    //       CALENDAR_METHOD.REQUEST
-    //     )
-    //   );
-    // }
+    if (event.attendees && body.sendInvite) {
+      await emailBullQueue.add(
+        BULL_QUEUE.EMAIL,
+        formatInviteData(
+          userID,
+          eventTemp,
+          body.iCalString,
+          eventTemp.props.attendee,
+          CALENDAR_METHOD.REQUEST,
+          body.inviteMessage
+        )
+      );
+    }
 
     // delete previous event if calendar was changed
     if (body.prevEvent) {

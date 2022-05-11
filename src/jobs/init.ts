@@ -5,11 +5,18 @@ import { syncCalDavCronJobConnectedUsers } from './cronJobs/syncCalDavCronJobCon
 import { CronJob } from 'cron';
 import { calculateRepeatedReminders } from './cronJobs/calculateRepatedReminders';
 import { groupLogsCronJob } from './cronJobs/groupLogsCronJob';
+import { resetEmailDailyLimit } from './cronJobs/resetEmailDailyLimit';
 import { sendNotification } from './cronJobs/sendNotification';
 import { syncCalDavTaskCronJobConnectedUsers } from './cronJobs/syncCalDavTaskCronJobConnectedUsers';
 import { webcalSyncQueueSocketJob } from './queueJobs/syncWebcalEventsQueueJob';
 
 export const initCronJobs = () => {
+  const resetEmailDailyLimitJob = new CronJob(
+    '15 00 * * *',
+    resetEmailDailyLimit
+  );
+  resetEmailDailyLimitJob.start();
+
   // clean logs
   const clearLogsJob = new CronJob('0 1 * * *', clearLogs);
   clearLogsJob.start();
