@@ -10,5 +10,8 @@ export const getServerSettings = async (): Promise<GetServerSettings> => {
     throw throwError(404, 'Server settings not found');
   }
 
-  return { checkNewVersion: serverSettings.checkNewVersion };
+  return {
+    checkNewVersion: serverSettings.checkNewVersion,
+    emailCounter: serverSettings.emailCounter,
+  };
 };

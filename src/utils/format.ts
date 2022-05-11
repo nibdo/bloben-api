@@ -92,18 +92,25 @@ export const formatCancelStartDate = (startDate: string, timezone?: string) => {
 export const formatEventInviteSubject = (
   summary: string,
   startDate: string,
-  timezone?: string
+  timezone?: string,
+  inviteMessage?: string
 ) => {
   return `Invitation: ${summary} - ${formatInviteStartDate(
     startDate,
     timezone
-  )}`;
+  )}\n\n\nNote: ${inviteMessage}`;
 };
 
 export const formatEventCancelSubject = (
   summary: string,
   startDate: string,
-  timezone?: string
+  timezone?: string,
+  inviteMessage?: string
 ) => {
-  return `Canceled: ${summary} - ${formatCancelStartDate(startDate, timezone)}`;
+  return `Canceled: ${summary} - ${formatCancelStartDate(
+    startDate,
+    timezone
+  )}\n\n\n
+   Note: ${inviteMessage}
+  `;
 };

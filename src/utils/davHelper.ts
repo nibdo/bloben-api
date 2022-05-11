@@ -784,7 +784,8 @@ export const formatInviteData = (
   event: CalDavEventObj | CalDavEventsRaw,
   iCalString: string,
   attendees: any[],
-  method: CALENDAR_METHOD
+  method: CALENDAR_METHOD,
+  inviteMessage?: string
 ) => {
   return {
     userID,
@@ -797,7 +798,8 @@ export const formatInviteData = (
       body: formatEventInviteSubject(
         event.summary,
         event.startAt,
-        event.timezoneStartAt
+        event.timezoneStartAt,
+        inviteMessage
       ),
       ical: injectMethod(iCalString, method),
       method: method,
@@ -812,7 +814,8 @@ export const formatCancelInviteData = (
   event: CalDavEventsRaw,
   iCalString: string,
   attendees: any[],
-  method: CALENDAR_METHOD
+  method: CALENDAR_METHOD,
+  inviteMessage?: string
 ) => {
   return {
     userID,
@@ -825,7 +828,38 @@ export const formatCancelInviteData = (
       body: formatEventInviteSubject(
         event.summary,
         (event.startAt as unknown as Date).toISOString(),
+        event.timezoneStartAt,
+        inviteMessage
+      ),
+      ical: injectMethod(iCalString, method),
+      method: method,
+      // @ts-ignore
+      recipients: map(attendees, 'mailto'),
+    },
+  };
+};
+
+export const formatRecurringCancelInviteData = (
+  userID: string,
+  event: CalDavEventObj,
+  iCalString: string,
+  attendees: any[],
+  method: CALENDAR_METHOD,
+  inviteMessage?: string
+) => {
+  return {
+    userID,
+    email: {
+      subject: `${formatEventCancelSubject(
+        event.summary,
+        event.startAt,
         event.timezoneStartAt
+      )}`,
+      body: formatEventInviteSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStartAt,
+        inviteMessage
       ),
       ical: injectMethod(iCalString, method),
       method: method,

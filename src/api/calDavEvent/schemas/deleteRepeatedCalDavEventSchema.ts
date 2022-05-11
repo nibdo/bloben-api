@@ -22,5 +22,7 @@ export const deleteRepeatedCalDavEventSchema = Joi.object({
     iCalString: Joi.string().allow(null),
     recurrenceID: DateTimezoneObject.allow(null),
     exDates: Joi.array().items(DateTimezoneObject).allow(null),
+    sendInvite: Joi.boolean().optional(),
+    inviteMessage: Joi.string().optional().allow(null),
   }),
 });

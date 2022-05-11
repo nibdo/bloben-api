@@ -1,4 +1,4 @@
-import ICalParser from 'ical-js-parser-dev';
+import ICalParser from 'ical-js-parser';
 
 import { CalDavEventObj, formatIcalDate } from './davHelper';
 import { DateTime } from 'luxon';

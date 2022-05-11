@@ -42,7 +42,8 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
       minute: 0,
       second: 0,
       millisecond: 0,
-    }).toUTC()
+    })
+    .toUTC();
 
   beforeEach(async () => {
     const { calDavAccount, user } = await initSeeds();
@@ -114,24 +115,24 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
 
   it('Should get status 200 update all with new rRule', async function () {
     const body = createBody(
-        createRepeatedEventBodyJSON(
-            calendarID,
-            eventData.id,
-            eventData.remoteID,
-            eventData.url,
-            eventData.etag,
-            REPEATED_EVENT_CHANGE_TYPE.ALL,
-            undefined,
-            undefined,
-            undefined,
-            'test',
-            'FREQ=WEEKLY;INTERVAL=1'
-        )
+      createRepeatedEventBodyJSON(
+        calendarID,
+        eventData.id,
+        eventData.remoteID,
+        eventData.url,
+        eventData.etag,
+        REPEATED_EVENT_CHANGE_TYPE.ALL,
+        undefined,
+        undefined,
+        undefined,
+        'test',
+        'FREQ=WEEKLY;INTERVAL=1'
+      )
     );
 
     const response: any = await request(createE2ETestServerWithSession())
-        .put(PATH)
-        .send(body);
+      .put(PATH)
+      .send(body);
 
     const { status } = response;
 
@@ -177,6 +178,38 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
     assert.equal(status, 409);
   });
 
+  it('Should get status 409 cannot change attendees', async function () {
+    const newDate = baseDateTime.plus({ day: 2 });
+
+    const body = createBody(
+      createRepeatedEventBodyJSON(
+        calendarID,
+        eventData.id,
+        eventData.remoteID,
+        eventData.url,
+        eventData.etag,
+        REPEATED_EVENT_CHANGE_TYPE.SINGLE,
+        newDate.set({ hour: 21 }).toString(),
+        newDate.set({ hour: 22 }).toString(),
+        newDate.toString(),
+        'summary',
+        undefined,
+        undefined,
+        [{ mailto: 'test@bloben.com' }]
+      )
+    );
+
+    const response: any = await request(createE2ETestServerWithSession())
+      .put(PATH)
+      .send(body);
+
+    const { status } = response;
+
+    assert.equal(status, 409);
+    assert.equal(response.body.message, 'Attendees can be changed only for' +
+        ' all instances')
+  });
+
   it('Should get status 200 single with one recurrence', async function () {
     const newDate = baseDateTime.plus({ day: 2 });
 
@@ -211,9 +244,9 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
     assert.notEqual(baseEvent.rRule, null);
     assert.equal(recurrenceEvent.rRule, null);
     assert.equal(
-        DateTime.fromJSDate(recurrenceEvent.startAt).toUTC().toString(),
-        newDate.set({ hour: 21 }).toUTC().toString(),
-        'baseEvent startAt'
+      DateTime.fromJSDate(recurrenceEvent.startAt).toUTC().toString(),
+      newDate.set({ hour: 21 }).toUTC().toString(),
+      'baseEvent startAt'
     );
     assert.equal(
       // @ts-ignore
@@ -467,15 +500,25 @@ END:VCALENDAR`;
     );
     assert.equal(
       // @ts-ignore
-      DateTime.fromISO(recurrenceEvent.recurrenceID?.value, {zone: recurrenceEvent.recurrenceID?.timezone}).toUTC().toString(),
+      DateTime.fromISO(recurrenceEvent.recurrenceID?.value, {
+        // @ts-ignore
+        zone: recurrenceEvent.recurrenceID?.timezone,
+      })
+        .toUTC()
+        .toString(),
       dateRef.toUTC().toString(),
       'recurrenceEvent recurrenceID'
     );
     assert.equal(
+      // @ts-ignore
+      DateTime.fromISO(recurrenceEvent2.recurrenceID?.value, {
         // @ts-ignore
-        DateTime.fromISO(recurrenceEvent2.recurrenceID?.value, {zone: recurrenceEvent2.recurrenceID?.timezone}).toUTC().toString(),
-        newDate.toUTC().toString(),
-        'recurrenceEvent2 recurrenceID'
+        zone: recurrenceEvent2.recurrenceID?.timezone,
+      })
+        .toUTC()
+        .toString(),
+      newDate.toUTC().toString(),
+      'recurrenceEvent2 recurrenceID'
     );
   });
 
@@ -594,7 +637,12 @@ END:VCALENDAR`;
     );
     assert.equal(
       // @ts-ignore
-      DateTime.fromISO(recurrenceEvent.recurrenceID?.value, {zone: recurrenceEvent.recurrenceID?.timezone}).toUTC().toString(),
+      DateTime.fromISO(recurrenceEvent.recurrenceID?.value, {
+        // @ts-ignore
+        zone: recurrenceEvent.recurrenceID?.timezone,
+      })
+        .toUTC()
+        .toString(),
       dateRef.toUTC().toString(),
       'recurrenceEvent recurrenceID'
     );
