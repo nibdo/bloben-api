@@ -5,6 +5,7 @@ import { UserEmailConfigData } from '../../bloben-interface/userEmailConfig/user
 import { env } from '../../index';
 import { sendEmailInvite } from '../../service/EmailService';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';
+import UserRepository from '../../data/repository/UserRepository';
 import logger, { groupLogs } from '../../utils/logger';
 
 export const sendEmailQueueJob = async (job: Job): Promise<void> => {
@@ -21,6 +22,8 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
       GROUP_LOG_KEY.EMAIL_JOB,
       `send email starts for userID ${userID}`
     );
+
+    const user = await UserRepository.findById(userID);
 
     // get user or system email config
     const userEmailConfig = await UserEmailConfigRepository.findByUserID(
@@ -49,7 +52,7 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
       LOG_TAG.QUEUE,
       LOG_TAG.EMAIL,
     ]);
-    await sendEmailInvite(email, emailConfigData);
+    await sendEmailInvite(email, user, emailConfigData);
   } catch (e) {
     logger.error(`Sending event invite error`, e, [
       LOG_TAG.QUEUE,

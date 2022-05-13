@@ -1,4 +1,4 @@
-import ICalParser from 'ical-js-parser-dev';
+import ICalParser from 'ical-js-parser';
 
 import { CalDavEventObj, formatIcalDate } from './davHelper';
 import { DateTime } from 'luxon';
@@ -108,17 +108,20 @@ class ICalHelperV2 {
         sequence,
         timezone,
         externalID,
+        status,
+        dtstart,
+        dtend,
       } = event;
 
       const result: any = {};
 
-      result.dtstart = {
+      result.dtstart = dtstart || {
         value: allDay
           ? DateTime.fromISO(startAt).toFormat('yyyyMMdd')
           : formatIcalDate(startAt, timezoneStartAt),
         timezone: allDay ? undefined : timezoneStartAt || timezone,
       };
-      result.dtend = {
+      result.dtend = dtend || {
         value: allDay
           ? DateTime.fromISO(endAt).plus({ day: 1 }).toFormat('yyyyMMdd')
           : formatIcalDate(endAt, timezoneStartAt),
@@ -145,7 +148,7 @@ class ICalHelperV2 {
       result.summary = summary;
       result.location = location;
       // this.sequence = sequence;
-      result.status = 'CONFIRMED';
+      result.status = status || 'CONFIRMED';
       result.transp = 'OPAQUE';
 
       if (color) {

@@ -52,7 +52,7 @@ const logger = {
 
     winstonLogger?.log({
       level: LOG_LEVEL.ERROR,
-      message: `${message}: ${error}`,
+      message: `${message}: ${JSON.stringify(error)}`,
       method,
       path,
       tags,
