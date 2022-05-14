@@ -27,9 +27,9 @@ import AdminRoutes from '../../routes/adminRoutes';
 loadEnv();
 
 const testSessionMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+    req: Request,
+    res: Response,
+    next: NextFunction
 ) => {
   const testUser: UserEntity = await getTestUser();
 
@@ -67,7 +67,7 @@ export const createTestServerWithSession = (isDemoUser?: boolean) => {
   TestBlobenApp.use(cors(corsOptions));
   // Set session settings
   TestBlobenApp.use(
-    session(createSessionConfig(redisStore, redisClientOriginal))
+      session(createSessionConfig(redisStore, redisClientOriginal))
   );
 
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
@@ -126,7 +126,7 @@ export const createTestServer = () => {
   redisClient = asyncRedis.createClient(redisConfig);
   const TestBlobenApp = Express();
   TestBlobenApp.use(
-    session(createSessionConfig(redisStore, redisClientOriginal))
+      session(createSessionConfig(redisStore, redisClientOriginal))
   );
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());

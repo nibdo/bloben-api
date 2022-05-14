@@ -11,5 +11,6 @@ export const adminGetUsers = async (): Promise<GetUsersResponse[]> => {
     username: user.username,
     role: user.role,
     isEnabled: user.isEnabled,
+    emailsAllowed: user.emailsAllowed,
   }));
 };

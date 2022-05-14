@@ -219,7 +219,7 @@ export const updateCalDavEvent = async (
       }
     }
 
-    if (eventTemp.props?.attendee) {
+    if (event.attendees && body.sendInvite) {
       await emailBullQueue.add(
         BULL_QUEUE.EMAIL,
         formatInviteData(
@@ -227,7 +227,8 @@ export const updateCalDavEvent = async (
           eventTemp,
           body.iCalString,
           eventTemp.props.attendee,
-          CALENDAR_METHOD.REQUEST
+          CALENDAR_METHOD.REQUEST,
+          body.inviteMessage
         )
       );
     }

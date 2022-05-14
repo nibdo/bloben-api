@@ -4,7 +4,7 @@ import { forEach, groupBy, map } from 'lodash';
 import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { EventResult } from '../../../bloben-interface/event/event';
-import { getRepeatedEvents } from '../../calDavEvent/helpers/repeatHelper';
+import { getOccurrences } from '../../event/helpers/getRepeatedEvents';
 import LuxonHelper from '../../../utils/luxonHelper';
 import WebcalEventEntity from '../../../data/entity/WebcalEventEntity';
 import WebcalEventRepository from '../../../data/repository/WebcalEventRepository';
@@ -193,7 +193,7 @@ export const getWebcalEvents = async (
   let repeatedEventsResult: WebcalEventEntity[] = [];
 
   forEach(repeatedEvents, (event) => {
-    const repeatedEvents = getRepeatedEvents(
+    const repeatedEvents = getOccurrences(
       event,
       rangeFromDateTime,
       rangeToDateTime

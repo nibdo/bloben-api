@@ -24,6 +24,11 @@ export const formatEventEntityToResult = (
   // externalID: event.externalID,
   isRepeated: event.isRepeated,
   rRule: event.rRule,
+  attendees: event.attendees,
+  exdates: event.exdates,
+  valarms: event.valarms,
+  organizer: event.organizer,
+  recurrenceID: event.recurrenceID,
   etag: event.etag,
   url: event.href,
   props: event.props || null,
@@ -54,6 +59,11 @@ export const formatEventRawToResult = (
   isRepeated: event.isRepeated,
   rRule: event.rRule,
   type: EVENT_TYPE.CALDAV,
+  valarms: event.valarms,
+  attendees: event.attendees,
+  exdates: event.exdates,
+  organizer: event.organizer,
+  recurrenceID: event.recurrenceID,
   props: event.props || null,
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
@@ -82,18 +92,22 @@ export const formatCancelStartDate = (startDate: string, timezone?: string) => {
 export const formatEventInviteSubject = (
   summary: string,
   startDate: string,
-  timezone?: string
+  timezone?: string,
+  inviteMessage?: string
 ) => {
   return `Invitation: ${summary} - ${formatInviteStartDate(
     startDate,
     timezone
-  )}`;
+  )}${inviteMessage ? `\n\n\nNote: ${inviteMessage}` : ''}`;
 };
 
 export const formatEventCancelSubject = (
   summary: string,
   startDate: string,
-  timezone?: string
+  timezone?: string,
+  inviteMessage?: string
 ) => {
-  return `Canceled: ${summary} - ${formatCancelStartDate(startDate, timezone)}`;
+  return `Canceled: ${summary} - ${formatCancelStartDate(startDate, timezone)}${
+    inviteMessage ? `\n\n\nNote: ${inviteMessage}` : ''
+  }`;
 };

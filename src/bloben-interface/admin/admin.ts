@@ -20,6 +20,7 @@ export interface GetUsersResponse {
   username: string;
   isEnabled: boolean;
   role: ROLE;
+  emailsAllowed: boolean;
 }
 
 export interface AdminCreateUserRequest {
@@ -29,5 +30,6 @@ export interface AdminCreateUserRequest {
 
 export interface AdminUpdateUserRequest {
   isEnabled: boolean;
+  emailsAllowed: boolean;
   role?: ROLE;
 }

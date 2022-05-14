@@ -41,5 +41,10 @@ export const syncCalDavQueueJob = async (job: Job): Promise<void> => {
         JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
       );
     }
+
+    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+      SOCKET_CHANNEL.SYNC,
+      JSON.stringify({ type: SOCKET_MSG_TYPE.SYNCING, value: false })
+    );
   }
 };

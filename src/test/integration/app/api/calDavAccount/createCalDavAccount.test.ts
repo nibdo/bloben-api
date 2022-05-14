@@ -21,9 +21,9 @@ describe(`Create calDav account [POST] ${PATH}`, async function() {
         mockManager = initCalDavMock()
     });
 
-  beforeEach(async () => {
-      await initSeeds();
-  });
+    beforeEach(async () => {
+        await initSeeds();
+    });
 
     it("Should get status 401", async function() {
         const response: any = await request(createTestServer())
@@ -40,7 +40,7 @@ describe(`Create calDav account [POST] ${PATH}`, async function() {
     });
 
     it("Should get status 409 already exists", async function() {
-       await request(createTestServerWithSession())
+        await request(createTestServerWithSession())
             .post(PATH)
             .send({
                 username: "abecede",
@@ -95,17 +95,17 @@ describe(`Create calDav account [POST] ${PATH}`, async function() {
         assert.equal(status, 403);
     });
 
-  it("Should get status 200", async function() {
-    const response: any = await request(createTestServerWithSession())
-      .post(PATH)
-      .send({
-        username: "abecede",
-        password: "fefefefaasfaf",
-        url: "http://localhost"
-      } as CreateCalDavAccountRequest);
+    it("Should get status 200", async function() {
+        const response: any = await request(createTestServerWithSession())
+            .post(PATH)
+            .send({
+                username: "abecede",
+                password: "fefefefaasfaf",
+                url: "http://localhost"
+            } as CreateCalDavAccountRequest);
 
-    const { status } = response;
+        const { status } = response;
 
-    assert.equal(status, 200);
-  });
+        assert.equal(status, 200);
+    });
 });

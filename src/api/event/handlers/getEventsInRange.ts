@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 
 import { DateTime } from 'luxon';
 import { EventResult } from '../../../bloben-interface/event/event';
-import { forEach, map } from 'lodash';
 import { formatEventRawToResult } from '../../../utils/format';
-import { getRepeatedEvents } from '../../calDavEvent/helpers/repeatHelper';
+import { getRepeatedEvents } from '../helpers/getRepeatedEvents';
 import { getWebcalEvents } from '../helpers/getWebCalEvents';
+import { map } from 'lodash';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import LuxonHelper from '../../../utils/luxonHelper';
 
@@ -45,22 +45,16 @@ export const getEventsInRange = async (
     rangeTo
   );
 
-  const repeatedEvents = await CalDavEventRepository.getRepeatedEvents(userID);
-  let repeatedEventsResult = [];
+  const repeatedEvents = await getRepeatedEvents(
+    userID,
+    rangeFromDateTime,
+    rangeToDateTime
+  );
 
-  forEach(repeatedEvents, (event) => {
-    const repeatedEvents = getRepeatedEvents(
-      event,
-      rangeFromDateTime,
-      rangeToDateTime
-    );
-
-    repeatedEventsResult = [...repeatedEventsResult, ...repeatedEvents];
-  });
   const calDavEventsNormal = map(normalEvents, (event) =>
     formatEventRawToResult(event)
   );
-  const calDavEventsRepeated = map(repeatedEventsResult, (event) =>
+  const calDavEventsRepeated = map(repeatedEvents, (event) =>
     formatEventRawToResult(event)
   );
 

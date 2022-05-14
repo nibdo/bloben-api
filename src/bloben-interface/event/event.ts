@@ -1,4 +1,5 @@
-import { ALARM_TYPE, EVENT_TYPE } from '../enums';
+import { ALARM_TYPE, EVENT_TYPE, REPEATED_EVENT_CHANGE_TYPE } from '../enums';
+import { DateTimeObject } from 'ical-js-parser';
 
 export interface AlarmRequest {
   id: string;
@@ -53,6 +54,15 @@ export interface CreateCalDavEventRequest {
   externalID: string;
   calendarID: string;
   iCalString: string;
+  sendInvite?: boolean;
+  inviteMessage?: string;
+}
+
+interface PrevEventInRequest {
+  id: string;
+  externalID: string;
+  url: string;
+  etag: string;
 }
 
 export interface UpdateCalDavEventRequest {
@@ -62,12 +72,22 @@ export interface UpdateCalDavEventRequest {
   externalID: string;
   etag: string;
   url: string;
-  prevEvent: {
-    id: string;
-    externalID: string;
-    url: string;
-    etag: string;
-  } | null;
+  prevEvent: PrevEventInRequest | null;
+  sendInvite?: boolean;
+  inviteMessage?: string;
+}
+
+export interface UpdateRepeatedCalDavEventRequest {
+  id: string;
+  event: EventResult;
+  calendarID: string;
+  externalID: string;
+  etag: string;
+  url: string;
+  type: REPEATED_EVENT_CHANGE_TYPE;
+  prevEvent: PrevEventInRequest | null;
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }
 
 export interface DeleteCalDavEventRequest {
@@ -75,6 +95,18 @@ export interface DeleteCalDavEventRequest {
   id: string;
   etag: string;
   url: string;
+  sendInvite?: boolean;
+  inviteMessage?: string;
+}
+
+export interface DeleteRepeatedCalDavEventRequest
+  extends DeleteCalDavEventRequest {
+  type: REPEATED_EVENT_CHANGE_TYPE;
+  iCalString?: string;
+  recurrenceID?: DateTimeObject;
+  exDates?: DateTimeObject[];
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }
 
 export interface EventBody {
@@ -120,6 +152,19 @@ export interface EventDecrypted {
   sequence: string;
 }
 
+interface EventResultProps {
+  exdate?: any[];
+  alarms?: any[];
+  attendee?: any[];
+  status?: string;
+  created?: any;
+  lastModified?: any;
+  transp?: any;
+  organizer?: any;
+  sequence?: any;
+  recurrenceId?: any;
+}
+
 export interface EventResult {
   id: string; // entity id
   externalID: string; // caldav, webcal id
@@ -139,7 +184,12 @@ export interface EventResult {
   type: EVENT_TYPE;
   color: string;
   calendarID: string;
-  props: any;
+  props?: EventResultProps;
+  attendees?: any[];
+  exdates?: any[];
+  valarms?: any[];
+  organizer?: any;
+  recurrenceID?: any;
   createdAt: string;
   updatedAt: string;
 }
