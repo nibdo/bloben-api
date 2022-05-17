@@ -1,6 +1,7 @@
 import { BULL_QUEUE } from '../utils/enums';
 import { Queue, Worker } from 'bullmq';
 import { env } from '../index';
+import { processEmailEventJob } from '../jobs/queueJobs/processEmailEventJob';
 import { sendEmailQueueJob } from '../jobs/queueJobs/sendEmailQueueJob';
 import { syncCalDavQueueJob } from '../jobs/queueJobs/syncCalDavQueueJob';
 import { syncCalDavTaskQueueJob } from '../jobs/queueJobs/syncCalDavTaskQueueJob';
@@ -13,6 +14,8 @@ export let webcalSyncBullWorker;
 export let webcalSyncBullQueue;
 export let emailBullQueue;
 export let emailBullWorker;
+export let emailInviteBullQueue;
+export let emailInviteBullWorker;
 
 export const createBullQueue = (queueName: BULL_QUEUE) => {
   return new Queue(queueName, {
@@ -81,6 +84,21 @@ export const createWebcalSyncBullWorker = async () => {
   );
 };
 
+export const createEmailInviteBullWorker = async () => {
+  return new Worker(
+    BULL_QUEUE.EMAIL_INVITE,
+    async (job) => {
+      await processEmailEventJob(job);
+    },
+    {
+      connection: {
+        host: env.redis.host,
+        port: env.redis.port,
+      },
+    }
+  );
+};
+
 export const initBullQueue = async () => {
   calDavSyncBullQueue = createBullQueue(BULL_QUEUE.CALDAV_SYNC);
   calDavSyncBullWorker = await createCalDavSyncBullWorker();
@@ -93,4 +111,7 @@ export const initBullQueue = async () => {
 
   emailBullQueue = createBullQueue(BULL_QUEUE.EMAIL);
   emailBullWorker = await createEmailBullWorker();
+
+  emailInviteBullQueue = createBullQueue(BULL_QUEUE.EMAIL_INVITE);
+  emailInviteBullWorker = await createEmailInviteBullWorker();
 };

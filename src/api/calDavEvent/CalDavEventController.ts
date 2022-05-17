@@ -119,3 +119,17 @@ export const deleteRepeatedCalDavEvent = async (
     next(error);
   }
 };
+
+export const updatePartstatStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavEventService.updatePartstatStatus(req, res);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};

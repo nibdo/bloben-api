@@ -12,6 +12,7 @@ interface WebcalendarRaw {
   color: string;
   isHidden: boolean;
   alarms: CalendarAlarms[];
+  userMailto: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,6 +33,7 @@ export const getWebcalCalendars = async (
             wc.name as "name", 
             wc.color as "color", 
             wc.is_hidden as "isHidden",
+            wc.user_mailto as "userMailto",
             wc.created_at as "createdAt", 
             wc.updated_at as "updatedAt",
             wc.alarms as "alarms"
@@ -52,6 +54,7 @@ export const getWebcalCalendars = async (
     url: item.url,
     isHidden: item.isHidden,
     alarms: item.alarms || [],
+    userMailto: item.userMailto,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }));

@@ -8,7 +8,7 @@ import {
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
 
-const PATH = `/api/v1/events`;
+const PATH = `/api/v1/events/range`;
 
 describe(`Get events [GET] ${PATH}`, async function () {
   beforeEach(async () => {
@@ -17,7 +17,7 @@ describe(`Get events [GET] ${PATH}`, async function () {
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer()).get(
-      `${PATH}`
+      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&isDark=true`
     );
 
     const { status } = response;
@@ -27,7 +27,7 @@ describe(`Get events [GET] ${PATH}`, async function () {
 
   it('Should get status 200 demo user', async function () {
     const response: any = await request(createTestServerWithSession(true)).get(
-      `${PATH}`
+      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&isDark=true`
     );
 
     const { status } = response;
@@ -37,11 +37,12 @@ describe(`Get events [GET] ${PATH}`, async function () {
 
   it('Should get status 200', async function () {
     const response: any = await request(createTestServerWithSession()).get(
-      `${PATH}`
+      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&isDark=true`
     );
 
     const { status } = response;
 
+    console.log('aa', response.body);
     assert.equal(status, 200);
   });
 });

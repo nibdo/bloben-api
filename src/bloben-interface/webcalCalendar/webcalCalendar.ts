@@ -11,6 +11,7 @@ export interface CreateWebcalCalendarRequest {
   color: string;
   syncFrequency: number;
   alarms: CalendarAlarms[];
+  userMailto: string;
 }
 
 export interface GetWebcalCalendarsResponse {
@@ -21,6 +22,7 @@ export interface GetWebcalCalendarsResponse {
   url: string;
   isHidden: boolean;
   alarms: CalendarAlarms[];
+  userMailto: string;
   createdAt: string;
   updatedAt: string;
 }

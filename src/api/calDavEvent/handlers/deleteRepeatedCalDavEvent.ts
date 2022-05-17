@@ -27,6 +27,7 @@ import { createICalStringForAttendees } from './updateRepeatedCalDavEvent';
 import { forEach, map } from 'lodash';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
+import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventExceptionRepository from '../../../data/repository/CalDavEventExceptionRepository';
@@ -303,7 +304,10 @@ export const deleteRepeatedCalDavEvent = async (
                 userID,
                 attendeesItem.event,
                 attendeesItem.icalString,
-                attendeesItem.event.attendees,
+                removeOrganizerFromAttendees(
+                  attendeesItem.event.organizer,
+                  attendeesItem.event.attendees
+                ),
                 CALENDAR_METHOD.REQUEST
               )
             )
@@ -316,7 +320,10 @@ export const deleteRepeatedCalDavEvent = async (
                 userID,
                 attendeesItem.event,
                 attendeesItem.icalString,
-                attendeesItem.event.attendees,
+                removeOrganizerFromAttendees(
+                  attendeesItem.event.organizer,
+                  attendeesItem.event.attendees
+                ),
                 CALENDAR_METHOD.CANCEL,
                 body.inviteMessage
               )

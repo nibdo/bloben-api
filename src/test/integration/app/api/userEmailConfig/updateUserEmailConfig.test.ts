@@ -9,6 +9,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { userEmailConfigData } from '../../../seeds/9-userEmailConfig';
 import { mockNodemailer } from '../../../../__mocks__/nodemailer';
+import {mockImapService} from "../../../../__mocks__/ImapService";
 
 const PATH = '/api/v1/users/email-config';
 
@@ -53,6 +54,32 @@ describe(`Update user email config [PATCH] ${PATH}`, async function () {
     const response: any = await request(server)
       .patch(PATH)
       .send(userEmailConfigData);
+
+    const { status } = response;
+
+    assert.equal(status, 200);
+  });
+
+  it('Should get status 200 new config with imap', async function () {
+    await mockImapService()
+
+    await initUserSeed();
+
+    const server: any = createTestServerWithSession();
+
+    const response: any = await request(server)
+      .patch(PATH)
+      .send({
+        ...userEmailConfigData,
+        ...{
+          imap: {
+            imapHost: 'a',
+            imapPort: 200,
+            imapPassword: 'c',
+            imapUsername: 'd',
+          },
+        },
+      });
 
     const { status } = response;
 
