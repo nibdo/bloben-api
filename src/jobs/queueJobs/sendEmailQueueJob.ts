@@ -35,16 +35,18 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
       : null;
 
     const emailConfigData = {
-      smtpEmail: userEmailConfigData?.smtpEmail || env.email.identity,
-      smtpHost: userEmailConfigData?.smtpHost || env.email.smtpHost,
-      smtpPort: userEmailConfigData?.smtpPort || env.email.smtpPort,
-      smtpPassword: userEmailConfigData?.smtpPassword || env.email.password,
-      smtpUsername: userEmailConfigData?.smtpUsername || env.email.username,
+      smtpEmail: userEmailConfigData?.smtp?.smtpEmail || env.email.identity,
+      smtpHost: userEmailConfigData?.smtp?.smtpHost || env.email.smtpHost,
+      smtpPort: userEmailConfigData?.smtp?.smtpPort || env.email.smtpPort,
+      smtpPassword:
+        userEmailConfigData?.smtp?.smtpPassword || env.email.password,
+      smtpUsername:
+        userEmailConfigData?.smtp?.smtpUsername || env.email.username,
     };
 
     email.from = emailConfigData.smtpEmail;
 
-    if (!userEmailConfigData?.smtpPassword && !env.email.password) {
+    if (!userEmailConfigData?.smtp?.smtpPassword && !env.email.password) {
       return;
     }
 

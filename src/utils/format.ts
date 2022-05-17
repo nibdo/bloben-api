@@ -1,8 +1,37 @@
+import {
+  Attendee,
+  EventResult,
+  Organizer,
+} from '../bloben-interface/event/event';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../bloben-interface/enums';
-import { EventResult } from '../bloben-interface/event/event';
+import { EventStyle } from '../bloben-interface/interface';
+import { find } from 'lodash';
+import { getEventStyle } from '../api/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
+
+const parseCalDavStyle = (
+  event: CalDavEventsRaw,
+  color: string,
+  isDark: boolean
+) => {
+  let style: EventStyle = {};
+
+  if (event.organizer?.mailto) {
+    // get user attendee
+    const userAttendee = find(
+      event.attendees,
+      (item) => item.mailto === event.organizer.mailto
+    );
+
+    const partstat = userAttendee?.['PARTSTAT'];
+
+    style = getEventStyle(partstat, userAttendee?.['ROLE'], color, isDark);
+  }
+
+  return style;
+};
 
 export const formatEventEntityToResult = (
   event: CalDavEventEntity
@@ -24,10 +53,10 @@ export const formatEventEntityToResult = (
   // externalID: event.externalID,
   isRepeated: event.isRepeated,
   rRule: event.rRule,
-  attendees: event.attendees,
+  attendees: event.attendees.length ? (event.attendees as Attendee[]) : null,
   exdates: event.exdates,
   valarms: event.valarms,
-  organizer: event.organizer,
+  organizer: event.organizer ? (event.organizer as Organizer) : null,
   recurrenceID: event.recurrenceID,
   etag: event.etag,
   url: event.href,
@@ -37,37 +66,43 @@ export const formatEventEntityToResult = (
   updatedAt: event.updatedAt.toISOString(),
 });
 export const formatEventRawToResult = (
-  event: CalDavEventsRaw
-): EventResult => ({
-  id: event.id,
-  externalID: event.externalID,
-  internalID: event.internalID,
-  summary: event.summary,
-  location: event.location,
-  description: event.description,
-  // alarms: alarms[event.id] ? alarms[event.id] : [],
-  allDay: event.allDay,
-  calendarID: event.calendarID,
-  color: event.eventCustomColor || event.customCalendarColor || event.color,
-  // data: event.data,
-  startAt: event.startAt,
-  endAt: event.endAt,
-  timezoneEndAt: event.timezoneStartAt,
-  timezoneStartAt: event.timezoneStartAt,
-  etag: event.etag,
-  url: event.href,
-  isRepeated: event.isRepeated,
-  rRule: event.rRule,
-  type: EVENT_TYPE.CALDAV,
-  valarms: event.valarms,
-  attendees: event.attendees,
-  exdates: event.exdates,
-  organizer: event.organizer,
-  recurrenceID: event.recurrenceID,
-  props: event.props || null,
-  createdAt: event.createdAt,
-  updatedAt: event.updatedAt,
-});
+  event: CalDavEventsRaw,
+  isDark: boolean
+): EventResult => {
+  const eventColor =
+    event.eventCustomColor || event.customCalendarColor || event.color;
+  return {
+    id: event.id,
+    externalID: event.externalID,
+    internalID: event.internalID,
+    summary: event.summary,
+    location: event.location,
+    description: event.description,
+    // alarms: alarms[event.id] ? alarms[event.id] : [],
+    allDay: event.allDay,
+    calendarID: event.calendarID,
+    color: eventColor,
+    // data: event.data,
+    startAt: event.startAt,
+    endAt: event.endAt,
+    timezoneEndAt: event.timezoneStartAt,
+    timezoneStartAt: event.timezoneStartAt,
+    etag: event.etag,
+    url: event.href,
+    isRepeated: event.isRepeated,
+    rRule: event.rRule,
+    type: EVENT_TYPE.CALDAV,
+    valarms: event.valarms,
+    attendees: event.attendees,
+    exdates: event.exdates,
+    organizer: event.organizer,
+    recurrenceID: event.recurrenceID,
+    props: event.props || null,
+    createdAt: event.createdAt,
+    updatedAt: event.updatedAt,
+    style: parseCalDavStyle(event, eventColor, isDark),
+  };
+};
 
 export const formatInviteStartDate = (startDate: string, timezone?: string) => {
   if (timezone) {

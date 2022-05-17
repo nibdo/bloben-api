@@ -45,17 +45,27 @@ export default class WebcalEventEntity {
   @Column({ nullable: true })
   location: string;
 
-  @Column({ nullable: true, type: 'json' })
-  attendees: JSON;
+  @Column({
+    type: 'jsonb',
+    array: false,
+    default: () => "'[]'",
+    nullable: true,
+  })
+  attendees: object;
 
-  @Column({ nullable: true, type: 'json' })
-  organizer: JSON;
+  @Column({ name: 'organizer', type: 'json', nullable: true })
+  organizer: object;
 
   @Column({ name: 'r_rule', nullable: true })
   rRule: string;
 
-  @Column({ name: 'exceptions', nullable: true, type: 'json' })
-  exceptions: JSON;
+  @Column({
+    type: 'jsonb',
+    array: false,
+    default: () => "'[]'",
+    nullable: true,
+  })
+  exceptions: object;
 
   @Column({ nullable: false, default: 1 })
   sequence: number;

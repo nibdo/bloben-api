@@ -31,6 +31,7 @@ export enum REDIS_PREFIX {
   CHANGE_PASSWORD = 'changePassword',
   DAV_CLIENT = 'davClient',
   DOCKER_LAST_VERSION = 'dockerLastVersion',
+  WAS_ACTIVE = 'wasActive',
 }
 
 export enum WEBSOCKET_PREFIX {
@@ -134,6 +135,7 @@ export enum BULL_QUEUE {
   CALDAV_TASK_SYNC = 'CALDAV_TASK_SYNC',
   WEBCAL_SYNC = 'WEBCAL_SYNC',
   EMAIL = 'EMAIL',
+  EMAIL_INVITE = 'EMAIL_INVITE',
 }
 
 export enum SOCKET_ROOM_NAMESPACE {
@@ -161,4 +163,5 @@ export enum GROUP_LOG_KEY {
   WEBCAL_SYNC_JOB = 'WEBCAL_SYNC_JOB',
   CACHE_CALDAV_JOB = 'CACHE_CALDAV_JOB',
   EMAIL_JOB = 'EMAIL_JOB',
+  IMAP_SYNC_JOB = 'IMAP_SYNC_JOB',
 }
