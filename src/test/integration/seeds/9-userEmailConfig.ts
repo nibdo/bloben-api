@@ -7,11 +7,15 @@ import { CryptoAes } from '../../../utils/CryptoAes';
 import { UserEmailConfigData } from '../../../bloben-interface/userEmailConfig/userEmailConfig';
 
 export const userEmailConfigData: UserEmailConfigData = {
-  smtpEmail: 'test@bloben.com',
-  smtpHost: 'ebda',
-  smtpPassword: 'asfasf',
-  smtpPort: 100,
-  smtpUsername: 'asfasf',
+  imapSyncingInterval: 15,
+  smtp: {
+    smtpEmail: 'test@bloben.com',
+    smtpHost: 'ebda',
+    smtpPassword: 'asfasf',
+    smtpPort: 100,
+    smtpUsername: 'asfasf',
+  },
+  imap: null
 };
 
 export class userEmailConfig implements MigrationInterface {
@@ -28,7 +32,7 @@ export class userEmailConfig implements MigrationInterface {
 
     const data = await CryptoAes.encrypt(userEmailConfigData);
 
-    const emailConfig = new UserEmailConfigEntity(user, data);
+    const emailConfig = new UserEmailConfigEntity(user, data, 15, false);
 
     await connection.manager.save(emailConfig);
   }

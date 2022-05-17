@@ -9,6 +9,6 @@ export const deleteCalDavEventSchema = Joi.object({
     url: Joi.string().required(),
     etag: Joi.string().required(),
     sendInvite: Joi.boolean().optional(),
-    inviteMessage: Joi.string().optional().allow(null),
+    inviteMessage: Joi.string().max(300).optional().allow(null),
   }),
 });

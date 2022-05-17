@@ -1,5 +1,25 @@
-import { ALARM_TYPE, EVENT_TYPE, REPEATED_EVENT_CHANGE_TYPE } from '../enums';
+import {
+  ALARM_TYPE,
+  ATTENDEE_PARTSTAT,
+  ATTENDEE_ROLE,
+  EVENT_TYPE,
+  REPEATED_EVENT_CHANGE_TYPE,
+} from '../enums';
 import { DateTimeObject } from 'ical-js-parser';
+import { EventStyle } from '../interface';
+
+export interface Organizer {
+  CN: string;
+  mailto: string;
+}
+
+export interface Attendee {
+  CN: string;
+  mailto: string;
+  ROLE: ATTENDEE_ROLE;
+  RSVP: string;
+  PARTSTAT: ATTENDEE_PARTSTAT;
+}
 
 export interface AlarmRequest {
   id: string;
@@ -185,11 +205,18 @@ export interface EventResult {
   color: string;
   calendarID: string;
   props?: EventResultProps;
-  attendees?: any[];
+  attendees?: Attendee[] | null;
   exdates?: any[];
   valarms?: any[];
-  organizer?: any;
+  organizer?: Organizer | null;
   recurrenceID?: any;
   createdAt: string;
   updatedAt: string;
+  style?: EventStyle;
+}
+
+export interface UpdatePartstatStatusRequest {
+  status: ATTENDEE_PARTSTAT;
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }

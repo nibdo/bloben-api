@@ -111,6 +111,7 @@ class ICalHelperV2 {
         status,
         dtstart,
         dtend,
+        meta,
       } = event;
 
       const result: any = {};
@@ -155,6 +156,10 @@ class ICalHelperV2 {
         result.color = color;
       }
 
+      if (meta?.hideStatus) {
+        result.status = undefined;
+      }
+
       if (recurrenceID) {
         result.recurrenceId = {
           value:
@@ -175,10 +180,14 @@ class ICalHelperV2 {
       if (props) {
         forEach(Object.entries(props), (propItem) => {
           if (propItem[0] === 'sequence') {
-            if (sequence) {
+            if (meta?.hideSequence) {
               result.sequence = String(Number(propItem[1]));
             } else {
-              result[propItem[0]] = String(Number(propItem[1]) + 1);
+              if (sequence) {
+                result.sequence = String(Number(propItem[1]));
+              } else {
+                result[propItem[0]] = String(Number(propItem[1]) + 1);
+              }
             }
           }
         });

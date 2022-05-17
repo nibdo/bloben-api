@@ -1,25 +1,158 @@
-import { filter, forEach, groupBy, map } from 'lodash';
+import { filter, find, forEach, groupBy, map } from 'lodash';
 
+import {
+  ATTENDEE_PARTSTAT,
+  ATTENDEE_ROLE,
+  EVENT_TYPE,
+} from '../../../bloben-interface/enums';
 import { DateTime } from 'luxon';
-import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { EventResult } from '../../../bloben-interface/event/event';
+import { EventStyle } from '../../../bloben-interface/interface';
 import { getOccurrences } from './getRepeatedEvents';
 import LuxonHelper from '../../../utils/luxonHelper';
-import WebcalEventEntity from '../../../data/entity/WebcalEventEntity';
 import WebcalEventExceptionRepository from '../../../data/repository/WebcalEventExceptionRepository';
 import WebcalEventRepository from '../../../data/repository/WebcalEventRepository';
 
-export const overlapCondition: string =
-  '(we.start_at, we.end_at) OVERLAPS (CAST(:rangeFrom AS timestamp),' +
-  ' CAST(:rangeTo AS' +
-  ' timestamp))';
+export const getEventStyle = (
+  partstat: ATTENDEE_PARTSTAT,
+  role: ATTENDEE_ROLE,
+  color: string,
+  isDark: boolean
+) => {
+  const style: EventStyle = {};
+
+  if (partstat === ATTENDEE_PARTSTAT.DECLINED) {
+    style.textDecoration = 'line-through';
+    style.border = `solid 1px ${color}`;
+    style.backgroundColor = isDark ? 'rgb(29, 31, 38)' : 'white';
+    style.color = isDark ? 'white' : 'black';
+  }
+
+  if (
+    partstat === ATTENDEE_PARTSTAT.NEEDS_ACTION ||
+    partstat === ATTENDEE_PARTSTAT.TENTATIVE
+  ) {
+    style.border = `solid 1px ${color}`;
+    style.backgroundColor = isDark ? 'rgb(29, 31, 38)' : 'white';
+    style.color = isDark ? 'white' : 'black';
+  }
+
+  return style;
+};
+
+export const parseWebcalStyle = (
+  event: WebCalEventFormatted,
+  isDark: boolean
+) => {
+  let style: EventStyle = {};
+
+  if (event.webCalCalendar.userMailto) {
+    // get user attendee
+    const userAttendee = find(
+      event.attendees,
+      (item) => item.mailto === event.webCalCalendar.userMailto
+    );
+
+    const partstat = userAttendee?.['PARTSTAT'];
+
+    style = getEventStyle(
+      partstat,
+      userAttendee?.['ROLE'],
+      event.webCalCalendar.color,
+      isDark
+    );
+  }
+
+  return style;
+};
+
+interface WebCalExceptionRaw {
+  exceptionDate: Date;
+  externalID: string;
+}
+
+interface WebCalEventRaw {
+  id: string;
+  summary: string;
+  startAt: Date;
+  endAt: Date;
+  timezoneStartAt: string;
+  description: string;
+  location: string;
+  sequence: string;
+  organizer: any;
+  attendees: any;
+  allDay: boolean;
+  isRepeated: boolean;
+  rRule: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  externalID: string;
+  calendarID: string;
+  color: string;
+  userMailto: string | null;
+}
+interface WebCalEventFormatted {
+  id: string;
+  startAt: Date;
+  endAt: Date;
+  timezoneStartAt: string;
+  timezoneEndAt: string;
+  summary: string;
+  description: string;
+  location: string;
+  sequence: string;
+  organizer: any;
+  attendees: any;
+  allDay: boolean;
+  isRepeated: boolean;
+  rRule: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  externalID: string;
+  calendarID: string;
+  webCalCalendar: {
+    id: string;
+    color: string;
+    userMailto: string | null;
+  };
+}
+
+const formatWebCalEventRaw = (
+  webCalEventRaw: WebCalEventRaw
+): WebCalEventFormatted => ({
+  id: webCalEventRaw.id,
+  startAt: webCalEventRaw.startAt,
+  endAt: webCalEventRaw.endAt,
+  timezoneStartAt: webCalEventRaw.timezoneStartAt,
+  timezoneEndAt: webCalEventRaw.timezoneStartAt,
+  summary: webCalEventRaw.summary,
+  description: webCalEventRaw.description,
+  location: webCalEventRaw.location,
+  sequence: webCalEventRaw.sequence,
+  organizer: webCalEventRaw.organizer,
+  attendees: webCalEventRaw.attendees,
+  allDay: webCalEventRaw.allDay,
+  isRepeated: webCalEventRaw.isRepeated,
+  rRule: webCalEventRaw.rRule,
+  createdAt: webCalEventRaw.createdAt,
+  updatedAt: webCalEventRaw.updatedAt,
+  externalID: webCalEventRaw.externalID,
+  calendarID: webCalEventRaw.calendarID,
+  webCalCalendar: {
+    id: webCalEventRaw.calendarID,
+    color: webCalEventRaw.color,
+    userMailto: webCalEventRaw.userMailto,
+  },
+});
 
 export const getWebcalEvents = async (
   userID: string,
   rangeFrom: string,
-  rangeTo: string
+  rangeTo: string,
+  isDark: boolean
 ): Promise<EventResult[]> => {
-  let result: any = [];
+  let result: WebCalEventFormatted[] = [];
 
   const rangeFromDateTime: DateTime = LuxonHelper.parseToDateTime(
     rangeFrom as string
@@ -28,34 +161,48 @@ export const getWebcalEvents = async (
     rangeTo as string
   );
 
-  const normalEvents: WebcalEventEntity[] =
-    await WebcalEventRepository.getRepository()
-      .createQueryBuilder('we')
-      .leftJoinAndSelect('we.webcalCalendar', 'wc')
-      .addSelect([
-        'we.id',
-        'we.summary',
-        'we.description',
-        'we.location',
-        'we.sequence',
-        'we.organizer',
-        'we.attendees',
-        'we.allDay',
-        'we.isRepeated',
-        'we.rRule',
-        'we.createdAt',
-        'we.updatedAt',
-        'we.deletedAt',
-        'we.externalID',
-      ])
-      .where('wc.user_id = :userID', { userID })
-      .andWhere('we.isRepeated = false')
-      .andWhere(overlapCondition, { rangeFrom, rangeTo })
-      .andWhere('we.deletedAt IS NULL')
-      .andWhere('wc.isHidden IS FALSE')
-      .getMany();
+  const normalEventsRaw: WebCalEventRaw[] =
+    await WebcalEventRepository.getRepository().query(
+      `
+    SELECT 
+        DISTINCT ON (we.id)
+        we.id as id,
+        we.start_at    as "startAt",
+        we.end_at      as "endAt",
+        we.timezone_start_at as "timezoneStartAt",
+        we.summary     as summary,
+        we.description as description,
+        we.location    as location,
+        we.sequence    as sequence,
+        we.organizer   as organizer,
+        we.attendees   as attendees,
+        we.all_day     as "allDay",
+        we.is_repeated as "isRepeated",
+        we.r_rule      as "rRule",
+        we.created_at  as "createdAt",
+        we.updated_at  as "updatedAt",
+        we.external_id as "externalID",
+        wc.id          as "calendarID",
+        wc.color       as "color",
+        wc.user_mailto as "userMailto"
+    FROM webcal_events we
+    INNER JOIN webcal_calendars wc on we.external_calendar_id = wc.id
+    WHERE 
+        we.is_repeated IS FALSE
+        AND we.deleted_at IS NULL
+        AND wc.deleted_at IS NULL
+        AND wc.is_hidden IS FALSE
+        AND wc.user_id = $1
+        AND (we.start_at, we.end_at) 
+            OVERLAPS 
+            (CAST($2 AS timestamp), CAST($3 AS timestamp));
+  `,
+      [userID, rangeFrom, rangeTo]
+    );
 
-  const repeatedEventsRaw: any =
+  const normalEvents = map(normalEventsRaw, formatWebCalEventRaw);
+
+  const repeatedEventsRaw: WebCalEventRaw[] =
     await WebcalEventRepository.getRepository().query(
       `SELECT
                 we.id as id,
@@ -76,7 +223,8 @@ export const getWebcalEvents = async (
                 we.deleted_at as "deletedAt",
                 we.external_id as "externalID",
                 wc.id as "calendarID",
-                wc.color as color
+                wc.color as color,
+                wc.user_mailto as "userMailto"
             FROM 
                 webcal_events we
             LEFT JOIN 
@@ -90,7 +238,7 @@ export const getWebcalEvents = async (
       [userID]
     );
 
-  const exceptions: any =
+  const exceptions: WebCalExceptionRaw[] =
     await WebcalEventExceptionRepository.getRepository().query(
       `SELECT
                 we.exception_date as "exceptionDate",
@@ -107,47 +255,32 @@ export const getWebcalEvents = async (
       [userID]
     );
 
-  const groupedExceptions: any = groupBy(exceptions, 'externalID');
+  const groupedExceptions: { [key: string]: WebCalExceptionRaw[] } = groupBy(
+    exceptions,
+    'externalID'
+  );
 
-  const groupedRepeatedEvents: any = groupBy(repeatedEventsRaw, 'id');
+  const groupedRepeatedEvents: { [key: string]: WebCalEventRaw[] } = groupBy(
+    repeatedEventsRaw,
+    'id'
+  );
 
-  const repeatedEvents: any = [];
+  const repeatedEvents: WebCalEventFormatted[] = [];
 
   forEach(groupedRepeatedEvents, (eventResult) => {
-    const event: any = {};
+    let event: WebCalEventFormatted;
 
     forEach(eventResult, (item) => {
       // store only first main item
-      if (!event.id) {
-        (event.id = item.id),
-          (event.summary = item.summary),
-          (event.description = item.description),
-          (event.location = item.location),
-          (event.sequence = item.sequence),
-          (event.organizer = item.organizer),
-          (event.attendees = item.attendees),
-          (event.allDay = item.allDay),
-          (event.isRepeated = item.isRepeated),
-          (event.rRule = item.rRule),
-          (event.createdAt = item.createdAt),
-          (event.updatedAt = item.updatedAt),
-          (event.deletedAt = item.deletedAt),
-          (event.externalID = item.externalID),
-          (event.startAt = item.startAt),
-          (event.endAt = item.endAt),
-          (event.timezoneEndAt = item.timezoneStartAt),
-          (event.timezoneStartAt = item.timezoneStartAt),
-          (event.webcalCalendar = {
-            id: item.calendarID,
-            color: item.color,
-          });
+      if (!event) {
+        event = formatWebCalEventRaw(item);
       }
     });
 
     repeatedEvents.push(event);
   });
 
-  let repeatedEventsResult: WebcalEventEntity[] = [];
+  let repeatedEventsResult: WebCalEventFormatted[] = [];
 
   // process exceptions
   forEach(repeatedEvents, (event) => {
@@ -179,7 +312,7 @@ export const getWebcalEvents = async (
   return map(result, (event) => ({
     id: event.id,
     externalID: event.externalID,
-    internalID: event.internalID,
+    internalID: event.id,
     summary: event.summary,
     description: event.description,
     location: event.location,
@@ -190,8 +323,8 @@ export const getWebcalEvents = async (
     props: null,
     // alarms: event.alarms ? event.alarms : [],
     allDay: event.allDay,
-    calendarID: event.webcalCalendar.id,
-    color: event.webcalCalendar.color,
+    calendarID: event.webCalCalendar.id,
+    color: event.webCalCalendar.color,
     startAt: event.startAt.toISOString(),
     endAt: event.endAt.toISOString(),
     timezoneEndAt: event.timezoneStartAt,
@@ -201,6 +334,6 @@ export const getWebcalEvents = async (
     type: EVENT_TYPE.WEBCAL,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
-    deletedAt: event.deletedAt?.toISOString(),
+    style: parseWebcalStyle(event, isDark),
   }));
 };

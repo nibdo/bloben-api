@@ -3,8 +3,12 @@ import nodemailer from 'nodemailer';
 
 import { EmailCredentials } from '../common/interface/common';
 import { EmailInviteData } from '../bloben-interface/event/event';
+import {
+  ImapConfig,
+  ImapData,
+  SmtpData,
+} from '../bloben-interface/userEmailConfig/userEmailConfig';
 import { LOG_TAG, NODE_ENV } from '../utils/enums';
-import { UserEmailConfigData } from '../bloben-interface/userEmailConfig/userEmailConfig';
 import { env } from '../index';
 import { throwError } from '../utils/errorCodes';
 import ServerSettingsRepository from '../data/repository/ServerSettingsRepository';
@@ -13,9 +17,7 @@ import logger from '../utils/logger';
 
 const createMessageID = () => `${v4()}@bloben`;
 
-export const getSmtpCredentials = (
-  data?: UserEmailConfigData
-): EmailCredentials => ({
+export const getSmtpCredentials = (data?: SmtpData): EmailCredentials => ({
   port: data ? data.smtpPort : env.email.smtpPort,
   host: data ? data.smtpHost : env.email.smtpHost,
   auth: {
@@ -25,10 +27,20 @@ export const getSmtpCredentials = (
   secure: false,
 });
 
+export const getImapCredentials = (data?: ImapData): ImapConfig => ({
+  port: data.imapPort,
+  host: data.imapHost,
+  auth: {
+    user: data.imapUsername,
+    pass: data.imapPassword,
+  },
+  secure: false,
+});
+
 export const sendEmailInvite = async (
   emailInvite: EmailInviteData,
   user: UserEntity,
-  configData?: UserEmailConfigData
+  configData?: SmtpData
 ) => {
   if (!user.emailsAllowed) {
     throw throwError(409, 'User cannot send email');

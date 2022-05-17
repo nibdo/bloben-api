@@ -24,6 +24,7 @@ import {
   formatEventCancelSubject,
   formatEventEntityToResult,
   formatEventInviteSubject,
+  formatPartstatResponseSubject,
 } from './format';
 import { formatToRRule } from './common';
 import { io } from '../app';
@@ -39,6 +40,7 @@ import ICalParser, { DateTimeObject, EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 import RRule from 'rrule';
 
+import { ATTENDEE_PARTSTAT } from '../bloben-interface/enums';
 import logger from './logger';
 
 export interface CalDavEventObj {
@@ -777,6 +779,51 @@ export const injectMethod = (icalString: string, method: CALENDAR_METHOD) => {
   const secondPart = icalString.slice(icalString.indexOf('CALSCALE:') - 1);
 
   return `${firstPart}METHOD:${method}${secondPart}`;
+};
+
+export const removeMethod = (icalString: string) => {
+  const indexOfMethod = icalString.indexOf('METHOD:');
+
+  if (indexOfMethod === -1) {
+    return icalString;
+  }
+
+  const firstPart = icalString.slice(0, indexOfMethod);
+  const secondPart = icalString.slice(indexOfMethod);
+  const indexOfNewLine = secondPart.indexOf('\n');
+
+  return `${firstPart}${secondPart.slice(indexOfNewLine + 1)}`;
+};
+
+export const formatPartstatResponseData = (
+  userID: string,
+  event: CalDavEventObj | CalDavEventsRaw,
+  partstat: ATTENDEE_PARTSTAT,
+  iCalString: string,
+  attendees: any[],
+  inviteMessage?: string
+) => {
+  return {
+    userID,
+    email: {
+      subject: formatPartstatResponseSubject(
+        event.summary,
+        partstat,
+        event.startAt,
+        event.timezoneStartAt
+      ),
+      body: formatEventInviteSubject(
+        event.summary,
+        event.startAt,
+        event.timezoneStartAt,
+        inviteMessage
+      ),
+      ical: injectMethod(iCalString, CALENDAR_METHOD.REPLY),
+      method: CALENDAR_METHOD.REPLY,
+      // @ts-ignore
+      recipients: map(attendees, 'mailto'),
+    },
+  };
 };
 
 export const formatInviteData = (

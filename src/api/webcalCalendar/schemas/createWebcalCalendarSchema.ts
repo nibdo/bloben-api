@@ -16,5 +16,6 @@ export const createWebcalCalendarSchema = Joi.object({
         })
       )
       .min(0),
+    userMailto: Joi.string().email().optional().allow(null),
   }),
 });
