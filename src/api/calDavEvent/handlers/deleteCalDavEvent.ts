@@ -13,6 +13,7 @@ import { emailBullQueue } from '../../../service/BullQueue';
 import { formatCancelInviteData } from '../../../utils/davHelper';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
+import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
@@ -60,7 +61,7 @@ export const deleteCalDavEvent = async (
         userID,
         event,
         icalString,
-        event.attendees,
+        removeOrganizerFromAttendees(event.organizer, event.attendees),
         CALENDAR_METHOD.CANCEL,
         body.inviteMessage
       )

@@ -779,6 +779,20 @@ export const injectMethod = (icalString: string, method: CALENDAR_METHOD) => {
   return `${firstPart}METHOD:${method}${secondPart}`;
 };
 
+export const removeMethod = (icalString: string) => {
+  const indexOfMethod = icalString.indexOf('METHOD:');
+
+  if (indexOfMethod === -1) {
+    return icalString;
+  }
+
+  const firstPart = icalString.slice(0, indexOfMethod);
+  const secondPart = icalString.slice(indexOfMethod);
+  const indexOfNewLine = secondPart.indexOf('\n');
+
+  return `${firstPart}${secondPart.slice(indexOfNewLine + 1)}`;
+};
+
 export const formatInviteData = (
   userID: string,
   event: CalDavEventObj | CalDavEventsRaw,

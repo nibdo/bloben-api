@@ -26,6 +26,13 @@ import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import logger from '../../../utils/logger';
 
+export const removeOrganizerFromAttendees = (
+  organizer: { mailto: string },
+  attendees: { mailto: string }[]
+): any[] => {
+  return attendees.filter((item) => item.mailto !== organizer.mailto);
+};
+
 export const createCalDavEvent = async (
   req: Request,
   res: Response
@@ -103,7 +110,10 @@ export const createCalDavEvent = async (
             userID,
             eventTemp,
             body.iCalString,
-            newEvent.attendees,
+            removeOrganizerFromAttendees(
+              newEvent.organizer,
+              newEvent.attendees
+            ),
             CALENDAR_METHOD.REQUEST,
             body.inviteMessage
           )

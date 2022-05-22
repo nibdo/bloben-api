@@ -9,6 +9,12 @@ import { map } from 'lodash';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import LuxonHelper from '../../../utils/luxonHelper';
 
+interface Query {
+  rangeFrom: string;
+  rangeTo: string;
+  isDark: string;
+}
+
 /**
  * Get events outside base range
  * @param req
@@ -19,7 +25,7 @@ export const getEventsInRange = async (
   res: Response
 ): Promise<unknown> => {
   const { userID } = res.locals;
-  const { rangeFrom, rangeTo } = req.query as any;
+  const { rangeFrom, rangeTo, isDark } = req.query as unknown as Query;
 
   let result: EventResult[] = [];
 
@@ -52,13 +58,18 @@ export const getEventsInRange = async (
   );
 
   const calDavEventsNormal = map(normalEvents, (event) =>
-    formatEventRawToResult(event)
+    formatEventRawToResult(event, isDark === 'true')
   );
   const calDavEventsRepeated = map(repeatedEvents, (event) =>
-    formatEventRawToResult(event)
+    formatEventRawToResult(event, isDark === 'true')
   );
 
-  const webCalEvents = await getWebcalEvents(userID, rangeFrom, rangeTo);
+  const webCalEvents = await getWebcalEvents(
+    userID,
+    rangeFrom,
+    rangeTo,
+    isDark === 'true'
+  );
 
   result = [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
 
