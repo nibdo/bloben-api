@@ -19,7 +19,7 @@ export interface Duration {
 export const formatToNotificationDateKey = (date: DateTime): string =>
   date.toFormat('yyyyMMdd:HHmm');
 
-const parseDurationString = (value: string): ALARM_DURATION => {
+export const parseDurationString = (value: string): ALARM_DURATION => {
   if (value === 'D') {
     return ALARM_DURATION.DAY;
   } else if (value === 'W') {
