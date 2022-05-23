@@ -25,7 +25,7 @@ import {
   formatEventEntityToResult,
   formatEventInviteSubject,
 } from './format';
-import { formatToRRule } from './common';
+import { formatToRRule, parseEventDuration } from './common';
 import { io } from '../app';
 import { processCaldavAlarms } from '../api/calDavEvent/handlers/updateCalDavEvent';
 import { v4 } from 'uuid';
@@ -115,7 +115,14 @@ export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
   }
 
   if (!event.dtend?.value) {
-    result = formatDTStartValue(event, isAllDay);
+    if (event.duration) {
+      result = parseEventDuration(
+        formatDTStartValue(event, isAllDay),
+        event.duration
+      );
+    } else {
+      result = formatDTStartValue(event, isAllDay);
+    }
   } else {
     if (isAllDay) {
       const dateTime = DateTime.fromFormat(event.dtend.value, 'yyyyMMdd');
@@ -153,7 +160,6 @@ export const formatEventJsonToCalDavEvent = (
   const isAllDay = event?.dtstart?.value?.length === '20220318'.length;
 
   return {
-    props: removeSupportedProps(event),
     ...{ ...calendarObject, data: null }, // clear ical data prop
     calendarID: calendar.id,
     externalID: event.uid || '',
@@ -175,6 +181,7 @@ export const formatEventJsonToCalDavEvent = (
     attendees: event.attendee || [],
     recurrenceID: event.recurrenceId,
     href: calendarObject.url,
+    props: removeSupportedProps(event),
   };
 };
 export const checkCalendarChange = (

@@ -1,6 +1,6 @@
 {
   "name": "bloben-api",
-  "version": "0.7.2",
+  "version": "0.8.1",
   "description": "",
   "baseUrl": "./",
   "license": "AGPL",
@@ -83,7 +83,7 @@
     "helmet": "5.0.2",
     "http-errors": "2.0.0",
     "http-proxy-middleware": "2.0.6",
-    "ical-js-parser": "0.6.6",
+    "ical-js-parser": "0.6.8",
     "joi": "17.6.0",
     "jsonwebtoken": "8.5.1",
     "kalend-layout": "0.0.11",
