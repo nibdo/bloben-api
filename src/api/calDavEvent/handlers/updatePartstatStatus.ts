@@ -75,7 +75,9 @@ export const updatePartstatStatus = async (
     existingEvent.calendarID,
     existingEvent.etag,
     existingEvent.href,
-    body.status
+    body.status,
+    body.sendInvite,
+    body.inviteMessage
   );
 
   if (newAttendees?.length) {

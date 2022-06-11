@@ -42,7 +42,6 @@ describe(`Get events [GET] ${PATH}`, async function () {
 
     const { status } = response;
 
-    console.log('aa', response.body);
     assert.equal(status, 200);
   });
 });

@@ -1,3 +1,4 @@
+import { ATTENDEE_PARTSTAT, EVENT_TYPE } from '../bloben-interface/enums';
 import {
   Attendee,
   EventResult,
@@ -5,7 +6,6 @@ import {
 } from '../bloben-interface/event/event';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
-import { EVENT_TYPE } from '../bloben-interface/enums';
 import { EventStyle } from '../bloben-interface/interface';
 import { find } from 'lodash';
 import { getEventStyle } from '../api/event/helpers/getWebCalEvents';
@@ -134,6 +134,30 @@ export const formatEventInviteSubject = (
     startDate,
     timezone
   )}${inviteMessage ? `\n\n\nNote: ${inviteMessage}` : ''}`;
+};
+
+const parsePartstat = (partStat: ATTENDEE_PARTSTAT) => {
+  if (partStat === ATTENDEE_PARTSTAT.TENTATIVE) {
+    return `Tentative: `;
+  } else if (partStat === ATTENDEE_PARTSTAT.DECLINED) {
+    return 'Rejected: ';
+  } else if (partStat === ATTENDEE_PARTSTAT.ACCEPTED) {
+    return 'Accepted';
+  }
+
+  return '';
+};
+
+export const formatPartstatResponseSubject = (
+  summary: string,
+  partStat: ATTENDEE_PARTSTAT,
+  startDate: string,
+  timezone?: string
+) => {
+  return `${parsePartstat(partStat)}: ${summary} - ${formatInviteStartDate(
+    startDate,
+    timezone
+  )}`;
 };
 
 export const formatEventCancelSubject = (

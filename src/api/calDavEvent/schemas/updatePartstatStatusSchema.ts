@@ -11,5 +11,7 @@ export const updatePartstatStatusSchema = Joi.object({
     status: Joi.string()
       .valid(...map(ATTENDEE_PARTSTAT, (item) => item))
       .required(),
+    sendInvite: Joi.boolean().required().default(false),
+    inviteMessage: Joi.string().max(300).optional().allow(null),
   }),
 });

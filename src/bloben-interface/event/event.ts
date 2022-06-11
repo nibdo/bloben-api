@@ -217,4 +217,6 @@ export interface EventResult {
 
 export interface UpdatePartstatStatusRequest {
   status: ATTENDEE_PARTSTAT;
+  sendInvite?: boolean;
+  inviteMessage?: string;
 }

@@ -1,19 +1,23 @@
 import { ATTENDEE_PARTSTAT } from '../../bloben-interface/enums';
 import { Attendee } from '../../bloben-interface/event/event';
-import { Job } from 'bullmq';
 import {
+  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../utils/enums';
+import { Job } from 'bullmq';
 import {
   createEventFromCalendarObject,
+  formatPartstatResponseData,
   removeMethod,
 } from '../../utils/davHelper';
+import { emailBullQueue } from '../../service/BullQueue';
 import { find } from 'lodash';
 import { io } from '../../app';
 import { loginToCalDav } from '../../service/davService';
+import { removeOrganizerFromAttendees } from '../../api/calDavEvent/handlers/createCalDavEvent';
 import { throwError } from '../../utils/errorCodes';
 import CalDavAccountRepository from '../../data/repository/CalDavAccountRepository';
 import CalDavCalendarRepository from '../../data/repository/CalDavCalendarRepository';
@@ -30,7 +34,9 @@ export const updatePartstatStatusForAttendee = async (
   calendarID: string,
   etag: string,
   href: string,
-  parstat?: ATTENDEE_PARTSTAT
+  parstat?: ATTENDEE_PARTSTAT,
+  sendInvite?: boolean,
+  inviteMessage?: string
 ): Promise<Attendee[] | null> => {
   if (!attendees?.length) {
     return null;
@@ -76,12 +82,42 @@ export const updatePartstatStatusForAttendee = async (
       calendarObject: {
         url: href,
         data: icalStringNew,
-        etag,
+        etag: fetchedEvents[0].etag,
       },
     });
 
     if (response.status >= 300) {
+      logger.error(
+        `Update event PARTSTAT error with status: ${response.status} ${response.statusText}`
+      );
       return null;
+    }
+
+    if (sendInvite) {
+      const icalStringResponse: string = new ICalHelperV2([
+        {
+          ...eventTemp,
+          attendees: [
+            { ...attendeeNew, PARTSTAT: parstat || attendeeNew.PARTSTAT },
+          ],
+          meta: { hideStatus: true, hideSequence: true },
+        },
+      ]).parseTo();
+
+      await emailBullQueue.add(
+        BULL_QUEUE.EMAIL,
+        formatPartstatResponseData(
+          userID,
+          eventTemp,
+          parstat,
+          icalStringResponse,
+          removeOrganizerFromAttendees(
+            eventTemp.organizer,
+            eventTemp.attendees
+          ),
+          inviteMessage
+        )
+      );
     }
 
     io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
@@ -146,6 +182,8 @@ export const processEmailEventJob = async (
     );
 
     if (!existingEvent.length) {
+      // TODO in next release
+      return;
       let defaultCalDavCalendarID: string;
       // get default calendar and create new event
       const calendarSettings =
