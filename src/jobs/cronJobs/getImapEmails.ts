@@ -46,7 +46,6 @@ export const getImapEmails = async (): Promise<void> => {
         ec.has_imap IS TRUE
         AND ec.data IS NOT NULL
     `);
-    logger.debug('userEmailConfigs ' + userEmailConfigs.length);
 
     const decryptedConfigs: UserEmailConfigDecrypted[] = [];
 
@@ -83,7 +82,6 @@ export const getImapEmails = async (): Promise<void> => {
     }
 
     for (const decryptedConfig of decryptedConfigs) {
-      logger.debug('Checking IMAP');
       const getEmailsResult = await imapService.getEmails(
         decryptedConfig.imap,
         decryptedConfig.userID,

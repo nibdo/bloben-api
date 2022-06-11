@@ -53,6 +53,6 @@ export const initCronJobs = () => {
   );
   calculateRepeatedRemindersJob.start();
 
-  const getImapEmailsJob = new CronJob('*/30 * * * *', getImapEmails());
+  const getImapEmailsJob = new CronJob('*/30 * * * *', getImapEmails);
   getImapEmailsJob.start();
 };
