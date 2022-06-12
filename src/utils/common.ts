@@ -7,7 +7,9 @@ import { DateTime, Interval } from 'luxon';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../bloben-interface/enums';
 import { SOCKET_ROOM_NAMESPACE } from './enums';
 import { WEEKDAY_START } from 'kalend-layout';
+import { forEach } from 'lodash';
 import { getMonthDays } from './calendarDays';
+import { parseDurationString } from './caldavAlarmHelper';
 
 export const createCommonResponse = (
   message = '',
@@ -317,4 +319,22 @@ export const validateStringDate = (date: string) => {
   }
 
   return true;
+};
+
+export const parseEventDuration = (startAt: string, duration: string) => {
+  let durationString = '';
+  let numberValue = '';
+  forEach(duration, (letter: string) => {
+    if (isNaN(Number(letter))) {
+      durationString = parseDurationString(letter);
+    } else {
+      numberValue = `${numberValue}${letter}`;
+    }
+  });
+
+  return DateTime.fromISO(startAt)
+    .plus({
+      [durationString]: Number(numberValue),
+    })
+    .toString();
 };
