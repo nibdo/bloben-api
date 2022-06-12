@@ -39,6 +39,7 @@ export const updateWebcalCalendar = async (
       syncFrequency: body.syncFrequency,
       color: body.color,
       name: body.name,
+      userMailto: body.userMailto,
     }
   );
 

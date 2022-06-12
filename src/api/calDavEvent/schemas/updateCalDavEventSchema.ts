@@ -16,7 +16,7 @@ export const updateEventBodySchema = Joi.object({
   url: Joi.string().required(),
   prevEvent: prevEventSchema.allow(null),
   sendInvite: Joi.boolean().optional(),
-  inviteMessage: Joi.string().optional().allow(null),
+  inviteMessage: Joi.string().max(300).optional().allow(null),
 });
 
 export const updateCalDavEventSchema = Joi.object({

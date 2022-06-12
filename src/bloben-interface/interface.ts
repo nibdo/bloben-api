@@ -93,3 +93,12 @@ export interface CalendarAlarms {
   amount: number;
   timeUnit: string;
 }
+
+export interface EventStyle {
+  textDecoration?: string;
+  backgroundColor?: string;
+  backgroundImage?: string;
+  backgroundSize?: string;
+  color?: string;
+  border?: string;
+}

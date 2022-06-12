@@ -14,6 +14,13 @@ import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
 import CalDavEventExceptionEntity from './CalDavEventExceptionEntity';
 
+export const columnJSON = {
+  type: 'jsonb',
+  array: false,
+  default: () => "'[]'",
+  nullable: true,
+};
+
 @Entity('caldav_events')
 export default class CalDavEventEntity {
   @PrimaryGeneratedColumn('uuid')

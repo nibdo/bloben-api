@@ -7,8 +7,12 @@ import { UpdateUserEmailConfigRequest } from '../../../bloben-interface/userEmai
 import { createCommonResponse } from '../../../utils/common';
 import { createTransport } from 'nodemailer';
 import { env } from '../../../index';
-import { getSmtpCredentials } from '../../../service/EmailService';
+import {
+  getImapCredentials,
+  getSmtpCredentials,
+} from '../../../service/EmailService';
 import { throwError } from '../../../utils/errorCodes';
+import ImapService from '../../../service/ImapService';
 import UserEmailConfigEntity from '../../../data/entity/UserEmailConfig';
 import UserEmailConfigRepository from '../../../data/repository/UserEmailConfigRepository';
 import logger from '../../../utils/logger';
@@ -25,30 +29,33 @@ export const updateUserEmailConfig = async (
   }
 
   const data = await CryptoAes.encrypt({
-    smtpPort: body.smtpPort,
-    smtpHost: body.smtpHost,
-    smtpEmail: body.smtpEmail,
-    smtpUsername: body.smtpUsername,
-    smtpPassword: body.smtpPassword,
+    smtp: body.smtp ? body.smtp : null,
+    imap: body.imap ? body.imap : null,
   });
 
   // validate config
   try {
-    const nodemailerTransport = createTransport(
-      getSmtpCredentials({
-        smtpPort: body.smtpPort,
-        smtpHost: body.smtpHost,
-        smtpEmail: body.smtpEmail,
-        smtpUsername: body.smtpUsername,
-        smtpPassword: body.smtpPassword,
-      })
-    );
-    const isValid = await nodemailerTransport.verify();
+    if (body.smtp) {
+      const nodemailerTransport = createTransport(
+        getSmtpCredentials(body.smtp)
+      );
+      const isValid = await nodemailerTransport.verify();
 
-    nodemailerTransport.close();
+      nodemailerTransport.close();
 
-    if (!isValid) {
-      throw throwError(409, 'Cannot connect to email server', req);
+      if (!isValid) {
+        throw throwError(409, 'Cannot connect to email server SMTP', req);
+      }
+    }
+
+    if (body.imap) {
+      const isValidImap = ImapService.validateImapAccountData(
+        getImapCredentials(body.imap)
+      );
+
+      if (!isValidImap) {
+        throw throwError(409, 'Cannot connect to email server IMAP', req);
+      }
     }
   } catch (e: any) {
     logger.error('Cannot connect to email server', e, [
@@ -61,7 +68,12 @@ export const updateUserEmailConfig = async (
   let userEmailConfig = await UserEmailConfigRepository.findByUserID(user.id);
 
   if (!userEmailConfig) {
-    userEmailConfig = new UserEmailConfigEntity(user.id, data);
+    userEmailConfig = new UserEmailConfigEntity(
+      user.id,
+      data,
+      body.imapSyncingInterval,
+      !!body.imap
+    );
 
     await UserEmailConfigRepository.getRepository().save(userEmailConfig);
   } else {
@@ -72,6 +84,8 @@ export const updateUserEmailConfig = async (
       },
       {
         data,
+        hasImap: !!body.imap,
+        imapSyncingInterval: body.imapSyncingInterval || 15,
       }
     );
   }

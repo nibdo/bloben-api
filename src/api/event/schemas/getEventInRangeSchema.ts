@@ -7,6 +7,7 @@ export const getEventInRangeSchema = Joi.object({
   query: Joi.object({
     rangeFrom: Joi.date().iso().required(),
     rangeTo: Joi.date().iso().required(),
+    isDark: Joi.boolean().optional().default(false),
   }),
   body: Joi.object(),
 });

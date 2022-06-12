@@ -35,7 +35,7 @@ export default class CalendarSettingsEntity {
   @Column({ name: 'hour_height', nullable: false, default: 40 })
   hourHeight: number;
 
-  @Column({ name: 'default_calendar_id', nullable: true })
+  @Column({ type: 'uuid', name: 'default_calendar_id', nullable: true })
   defaultCalendarID: string;
 
   @Column({ name: 'timezone', nullable: true })

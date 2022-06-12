@@ -42,6 +42,9 @@ export default class WebcalCalendarEntity {
   @Column({ name: 'is_hidden', default: false })
   isHidden: boolean;
 
+  @Column({ name: 'user_mailto', nullable: true })
+  userMailto: string;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 
@@ -82,6 +85,7 @@ export default class WebcalCalendarEntity {
       this.user = user;
       this.syncFrequency = body.syncFrequency;
       this.alarms = body.alarms;
+      this.userMailto = body.userMailto;
     }
   }
 
@@ -90,5 +94,6 @@ export default class WebcalCalendarEntity {
     this.color = body.color;
     this.name = body.name;
     this.syncFrequency = body.syncFrequency;
+    this.userMailto = body.userMailto;
   };
 }
