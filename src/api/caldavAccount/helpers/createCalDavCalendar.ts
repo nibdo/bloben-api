@@ -1,10 +1,23 @@
 import { AccountWithCalendars } from '../../../data/repository/CalDavAccountRepository';
 import { DAVCalendar } from 'tsdav';
+import { DateTime } from 'luxon';
 import { GetCalDavCalendar } from '../../../bloben-interface/calDavCalendar/calDavCalendar';
 import { QueryRunner } from 'typeorm';
 import CalDavAccountEntity from '../../../data/entity/CalDavAccount';
 import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
 import CalDavTaskSettingsEntity from '../../../data/entity/CalDavTaskSettings';
+import logger from '../../../utils/logger';
+
+const parseCalDavCalendarTimezone = (timezone: string) => {
+  const dateWithZone = DateTime.now().setZone(timezone);
+
+  if (dateWithZone.isValid) {
+    return timezone;
+  }
+
+  logger.debug(`Invalid timezone: ${timezone}`);
+  return null;
+};
 
 /**
  * Internal function
@@ -24,7 +37,7 @@ export const createCalDavCalendar = async (
 
   // calDavCalendar.principalUrl = data.principalUrl;
   calDavCalendar.displayName = data.displayName;
-  calDavCalendar.timezone = data.timezone;
+  calDavCalendar.timezone = parseCalDavCalendarTimezone(data.timezone);
   calDavCalendar.ctag = data.ctag;
   calDavCalendar.data = JSON.stringify(data);
   calDavCalendar.calDavAccount = calDavAccountEnt;
@@ -56,7 +69,7 @@ export const updateCalDavCalendar = async (
 
   const dataToUpdate: any = {
     displayName: data.displayName,
-    timezone: data.timezone,
+    timezone: parseCalDavCalendarTimezone(data.timezone),
     ctag: data.ctag,
     data: JSON.stringify(data),
     calDavAccount: calDavAccountEnt,
@@ -78,7 +91,7 @@ export const updateCalDavCalendar = async (
     url: data.url,
     color: dataToUpdate.color,
     components: data.components,
-    timezone: data.timezone,
+    timezone: parseCalDavCalendarTimezone(data.timezone),
     calDavAccountID: calDavAccount.id,
     alarms: [],
   };
