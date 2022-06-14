@@ -31,6 +31,7 @@ import { forEach } from 'lodash';
 import { formatToIcalDateString } from '../../../utils/luxonHelper';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
+import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../utils/errorCodes';
 import { v4 } from 'uuid';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
@@ -494,7 +495,10 @@ export const updateRepeatedCalDavEvent = async (
               userID,
               attendeesItem.event,
               attendeesItem.icalString,
-              attendeesItem.event.attendees,
+              removeOrganizerFromAttendees(
+                attendeesItem.event.organizer,
+                attendeesItem.event.attendees
+              ),
               CALENDAR_METHOD.REQUEST,
               body.inviteMessage
             )

@@ -9,6 +9,10 @@ import { map } from 'lodash';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import LuxonHelper from '../../../utils/luxonHelper';
 
+interface Query {
+  isDark: string;
+}
+
 /**
  * Get events for initial view
  * @param req
@@ -19,7 +23,7 @@ export const getCachedEvents = async (
   res: Response
 ): Promise<EventResult[]> => {
   const { userID } = res.locals;
-
+  const { isDark } = req.query as unknown as Query;
   const { rangeFrom, rangeTo } = getCurrentRangeForSync();
 
   const rangeFromDateTime: DateTime = LuxonHelper.parseToDateTime(
@@ -42,13 +46,18 @@ export const getCachedEvents = async (
   );
 
   const calDavEventsNormal = map(normalEvents, (event) =>
-    formatEventRawToResult(event)
+    formatEventRawToResult(event, isDark === 'true')
   );
   const calDavEventsRepeated = map(repeatedEvents, (event) =>
-    formatEventRawToResult(event)
+    formatEventRawToResult(event, isDark === 'true')
   );
 
-  const webCalEvents = await getWebcalEvents(userID, rangeFrom, rangeTo);
+  const webCalEvents = await getWebcalEvents(
+    userID,
+    rangeFrom,
+    rangeTo,
+    isDark === 'true'
+  );
 
   return [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
 };

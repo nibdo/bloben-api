@@ -4,7 +4,7 @@ import * as EventController from '../event/EventController';
 import { RATE_LIMIT } from '../../utils/enums';
 import { USER_ROLE } from '../user/UserEnums';
 import { authMiddleware } from '../../middleware/authMiddleware';
-import { emptySchema } from '../../common/schemas/emptySchema';
+import { getCachedEventsSchema } from './schemas/getCachedEventsSchema';
 import { getEventsSchema } from './schemas/getEventsSchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
@@ -18,7 +18,7 @@ EventRoutes.get(
     rateLimiterMiddleware(RATE_LIMIT.GET_EVENTS),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER, USER_ROLE.DEMO]),
-    validationMiddleware(emptySchema),
+    validationMiddleware(getCachedEventsSchema),
   ],
   EventController.getCachedEvents
 );

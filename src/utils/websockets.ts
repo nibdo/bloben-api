@@ -23,6 +23,13 @@ const handleJoinRoom = async (socket: any) => {
   const socketSession: SocketSession = await getSocketSession(socket);
 
   if (socketSession?.userID) {
+    await redisClient.set(
+      `${REDIS_PREFIX.WAS_ACTIVE}_${socketSession.userID}`,
+      true,
+      'EX',
+      60 * 60
+    ); // 1 hour
+
     socket.join(`${SOCKET_ROOM_NAMESPACE.USER_ID}${socketSession.userID}`);
   }
 };

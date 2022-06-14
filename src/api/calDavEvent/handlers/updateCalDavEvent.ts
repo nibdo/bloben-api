@@ -23,6 +23,7 @@ import { forEach } from 'lodash';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
 import { parseAlarmDuration } from '../../../utils/caldavAlarmHelper';
+import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventAlarmEntity from '../../../data/entity/CalDavEventAlarmEntity';
@@ -226,7 +227,10 @@ export const updateCalDavEvent = async (
           userID,
           eventTemp,
           body.iCalString,
-          eventTemp.props.attendee,
+          removeOrganizerFromAttendees(
+            eventTemp.organizer,
+            eventTemp.attendees
+          ),
           CALENDAR_METHOD.REQUEST,
           body.inviteMessage
         )
