@@ -4,6 +4,7 @@ import { syncCalDavCronJobConnectedUsers } from './cronJobs/syncCalDavCronJobCon
 
 import { CronJob } from 'cron';
 import { calculateRepeatedReminders } from './cronJobs/calculateRepatedReminders';
+import { calculateWebcalAlarms } from './cronJobs/calculateWebcalAlarms';
 import { getImapEmails } from './cronJobs/getImapEmails';
 import { groupLogsCronJob } from './cronJobs/groupLogsCronJob';
 import { resetEmailDailyLimit } from './cronJobs/resetEmailDailyLimit';
@@ -52,6 +53,12 @@ export const initCronJobs = () => {
     calculateRepeatedReminders
   );
   calculateRepeatedRemindersJob.start();
+
+  const calculateWebcalReminders = new CronJob(
+    '5 4 * * *',
+    calculateWebcalAlarms
+  );
+  calculateWebcalReminders.start();
 
   const getImapEmailsJob = new CronJob('*/30 * * * *', getImapEmails);
   getImapEmailsJob.start();

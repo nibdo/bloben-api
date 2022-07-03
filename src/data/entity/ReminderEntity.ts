@@ -10,6 +10,7 @@ import {
 
 import { DateTime } from 'luxon';
 import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
+import WebcalEventEntity from './WebcalEventEntity';
 
 export enum REMINDER_STATUS {
   INITIALIZED = 'INITIALIZED',
@@ -53,21 +54,28 @@ export default class ReminderEntity {
   )
   @JoinColumn({ name: 'caldav_event_alarm_id', referencedColumnName: 'id' })
   caldavEventAlarm: CalDavEventAlarmEntity;
-  //
-  // @ManyToOne(() => WebcalEventEntity, {
-  //   onDelete: 'CASCADE',
-  //   nullable: true,
-  // })
-  // @JoinColumn({ name: 'webcal_event_id', referencedColumnName: 'id' })
-  // webcalEvent: WebcalEventEntity;
+
+  @ManyToOne(() => WebcalEventEntity, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'webcal_event_id', referencedColumnName: 'id' })
+  webcalEvent: WebcalEventEntity;
 
   constructor(
     alarm?: CalDavEventAlarmEntity,
     dateString?: string,
-    userID?: string
+    userID?: string,
+    webcalEvent?: WebcalEventEntity
   ) {
     if (alarm) {
       this.caldavEventAlarm = alarm;
+      this.sendAt = DateTime.fromISO(dateString).toJSDate();
+      this.userID = userID;
+    }
+
+    if (webcalEvent) {
+      this.webcalEvent = webcalEvent;
       this.sendAt = DateTime.fromISO(dateString).toJSDate();
       this.userID = userID;
     }
