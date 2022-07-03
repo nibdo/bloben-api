@@ -10,6 +10,8 @@ import {
 import { DateTime } from 'luxon';
 import { EventJSON } from 'ical-js-parser';
 import { formatDTEndValue, formatDTStartValue } from '../../utils/davHelper';
+import { map } from 'lodash';
+import { removeArtifacts } from '../../utils/common';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 import WebcalEventExceptionEntity from './WebcalEventExceptionEntity';
 
@@ -114,8 +116,17 @@ export default class WebcalEventEntity {
       this.endAt = formatDTEndValue(data, isAllDay);
       this.timezoneEndAt = this.timezoneStartAt;
       this.externalID = data.uid;
-      this.organizer = data.organizer as any;
-      this.attendees = data.attendee as any;
+      this.organizer = data.organizer
+        ? ({
+            ...data.organizer,
+            mailto: removeArtifacts(data.organizer.mailto),
+          } as any)
+        : null;
+      this.attendees = map(data.attendee, (item) => ({
+        ...item,
+        CN: removeArtifacts(item.CN),
+        mailto: removeArtifacts(item.mailto),
+      })) as any;
       this.description = data.description;
       this.location = data.location;
       this.updatedAt = DateTime.fromISO(data.lastModified?.value)
