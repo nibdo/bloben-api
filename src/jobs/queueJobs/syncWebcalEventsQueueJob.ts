@@ -16,7 +16,10 @@ import {
 import { forEach } from 'lodash';
 import { getUserIDFromWsRoom } from '../../utils/common';
 import { io } from '../../app';
-import { webcalSyncBullQueue } from '../../service/BullQueue';
+import {
+  webcalRemindersBullQueue,
+  webcalSyncBullQueue,
+} from '../../service/BullQueue';
 import AxiosService from '../../service/AxiosService';
 import ICalParser, { ICalJSON } from 'ical-js-parser';
 import WebcalCalendarEntity from '../../data/entity/WebcalCalendarEntity';
@@ -245,6 +248,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           }
         );
       }
+
+      await webcalRemindersBullQueue.add(BULL_QUEUE.WEBCAL_REMINDER, {
+        webcalCalendarID: webcalCalendar.id,
+      });
     }
   } catch (e) {
     logger.error(`Error checking webcal calendars`, e, [
