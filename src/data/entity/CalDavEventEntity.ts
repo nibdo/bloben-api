@@ -9,7 +9,8 @@ import {
 
 import { CalDavEventObj } from '../../utils/davHelper';
 import { DateTime } from 'luxon';
-import { validateStringDate } from '../../utils/common';
+import { map } from 'lodash';
+import { removeArtifacts, validateStringDate } from '../../utils/common';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
 import CalDavEventExceptionEntity from './CalDavEventExceptionEntity';
@@ -165,8 +166,19 @@ export default class CalDavEventEntity {
       this.calendar = calendar;
       this.href = item.href;
       this.exdates = item.exdates || [];
-      this.attendees = item.attendees || [];
-      this.organizer = item.organizer;
+      this.attendees = item.attendees
+        ? map(item.attendees, (attendee) => ({
+            ...attendee,
+            CN: removeArtifacts(attendee.CN),
+            mailto: removeArtifacts(attendee.mailto),
+          }))
+        : [];
+      this.organizer = item.organizer
+        ? ({
+            ...item.organizer,
+            mailto: removeArtifacts(item.organizer?.mailto),
+          } as any)
+        : null;
       this.valarms = item.valarms || [];
       this.createdAt = item.created
         ? DateTime.fromISO(item.created).toUTC().toJSDate()
