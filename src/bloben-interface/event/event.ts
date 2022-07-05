@@ -220,3 +220,12 @@ export interface UpdatePartstatStatusRequest {
   sendInvite?: boolean;
   inviteMessage?: string;
 }
+
+export interface SearchEventsResponse {
+  id: string;
+  summary: string;
+  startAt: string;
+  endAt: string;
+  timezoneStartAt: string | null;
+  type: EVENT_TYPE;
+}
