@@ -118,7 +118,7 @@ interface WebCalEventFormatted {
   };
 }
 
-const formatWebCalEventRaw = (
+export const formatWebCalEventRaw = (
   webCalEventRaw: WebCalEventRaw
 ): WebCalEventFormatted => ({
   id: webCalEventRaw.id,
@@ -145,6 +145,78 @@ const formatWebCalEventRaw = (
     userMailto: webCalEventRaw.userMailto,
   },
 });
+
+export const getWebcalEventByID = async (
+  userID: string,
+  id: string
+): Promise<EventResult> => {
+  const normalEventsRaw: WebCalEventRaw[] =
+    await WebcalEventRepository.getRepository().query(
+      `
+    SELECT 
+        DISTINCT ON (we.id)
+        we.id as id,
+        we.start_at    as "startAt",
+        we.end_at      as "endAt",
+        we.timezone_start_at as "timezoneStartAt",
+        we.summary     as summary,
+        we.description as description,
+        we.location    as location,
+        we.sequence    as sequence,
+        we.organizer   as organizer,
+        we.attendees   as attendees,
+        we.all_day     as "allDay",
+        we.is_repeated as "isRepeated",
+        we.r_rule      as "rRule",
+        we.created_at  as "createdAt",
+        we.updated_at  as "updatedAt",
+        we.external_id as "externalID",
+        wc.id          as "calendarID",
+        wc.color       as "color",
+        wc.user_mailto as "userMailto"
+    FROM webcal_events we
+    INNER JOIN webcal_calendars wc on we.external_calendar_id = wc.id
+    WHERE 
+        we.is_repeated IS FALSE
+        AND we.deleted_at IS NULL
+        AND wc.deleted_at IS NULL
+        AND wc.is_hidden IS FALSE
+        AND wc.user_id = $1
+        AND we.id = $2
+  `,
+      [userID, id]
+    );
+
+  if (!normalEventsRaw.length) {
+    return null;
+  }
+
+  const event = normalEventsRaw[0];
+
+  return {
+    id: event.id,
+    externalID: event.externalID,
+    internalID: event.id,
+    summary: event.summary,
+    description: event.description,
+    location: event.location,
+    organizer: event.organizer,
+    attendees: event.attendees,
+    props: null,
+    allDay: event.allDay,
+    calendarID: event.calendarID,
+    color: event.color,
+    startAt: event.startAt.toISOString(),
+    endAt: event.endAt.toISOString(),
+    timezoneEndAt: event.timezoneStartAt,
+    timezoneStartAt: event.timezoneStartAt,
+    isRepeated: event.isRepeated,
+    rRule: event.rRule,
+    type: EVENT_TYPE.WEBCAL,
+    createdAt: event.createdAt.toISOString(),
+    updatedAt: event.updatedAt.toISOString(),
+  };
+};
 
 export const getWebcalEvents = async (
   userID: string,
