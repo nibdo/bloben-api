@@ -12,6 +12,7 @@ import { EventJSON } from 'ical-js-parser';
 import { formatDTEndValue, formatDTStartValue } from '../../utils/davHelper';
 import { map } from 'lodash';
 import { removeArtifacts } from '../../utils/common';
+import ReminderEntity from './ReminderEntity';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 import WebcalEventExceptionEntity from './WebcalEventExceptionEntity';
 
@@ -97,6 +98,9 @@ export default class WebcalEventEntity {
   )
   @JoinColumn({ name: 'external_calendar_id', referencedColumnName: 'id' })
   webcalCalendar: WebcalCalendarEntity;
+
+  @OneToMany(() => ReminderEntity, (reminder) => reminder.webcalEvent)
+  reminders: ReminderEntity[];
 
   public setData = (
     data: EventJSON,
