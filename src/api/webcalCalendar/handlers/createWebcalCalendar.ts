@@ -13,7 +13,10 @@ import { CreateWebcalCalendarRequest } from '../../../bloben-interface/webcalCal
 
 import { io } from '../../../app';
 import { throwError } from '../../../utils/errorCodes';
-import { webcalSyncBullQueue } from '../../../service/BullQueue';
+import {
+  webcalRemindersBullQueue,
+  webcalSyncBullQueue,
+} from '../../../service/BullQueue';
 import WebcalCalendarEntity from '../../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../../data/repository/WebcalCalendarRepository';
 
@@ -57,6 +60,12 @@ export const createWebcalCalendar = async (
     SOCKET_CHANNEL.SYNC,
     JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
   );
+
+  if (webcalCalendar.alarms) {
+    await webcalRemindersBullQueue.add(BULL_QUEUE.WEBCAL_REMINDER, {
+      webcalCalendarID: webcalCalendar.id,
+    });
+  }
 
   return createCommonResponse('Webcalendar created');
 };
