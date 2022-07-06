@@ -151,6 +151,8 @@ const LuxonHelper = {
     DateTime.fromISO(dateString).setZone(timezone).toString(),
   toHumanDate: (dateString: string): string =>
     DateTime.fromISO(dateString).toFormat('d LLL yyyy hh:mm'),
+  toHumanDate2: (dateString: string): string =>
+    DateTime.fromISO(dateString).toFormat('d LLL hh:mm'),
 };
 
 export default LuxonHelper;
