@@ -137,8 +137,8 @@ const handleWebcalReminders = async (connection: Connection) => {
         SOCKET_CHANNEL.SYNC,
         JSON.stringify({
           type: SOCKET_MSG_TYPE.NOTIFICATIONS,
-          title: formatEventTitle(item),
-          body: formatEventBody(item),
+          title: `Reminder: ${item.summary}`,
+          body: `Reminder: ${item.summary}`,
         })
       );
 
