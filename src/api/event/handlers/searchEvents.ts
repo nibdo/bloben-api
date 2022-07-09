@@ -2,11 +2,11 @@ import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { Request, Response } from 'express';
 import { SearchEventsResponse } from '../../../bloben-interface/event/event';
-import { map, orderBy } from 'lodash';
+import { map, sortBy } from 'lodash';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import WebcalEventRepository from '../../../data/repository/WebcalEventRepository';
 
-interface SearchResult {
+export interface SearchResult {
   id: string;
   summary: string;
   startAt: string;
@@ -84,7 +84,7 @@ export const searchEvents = async (
     type: EVENT_TYPE.WEBCAL,
   }));
 
-  return orderBy([...caldavResultFormatted, ...webcalResultFormatted], (item) =>
+  return sortBy([...caldavResultFormatted, ...webcalResultFormatted], (item) =>
     DateTime.fromISO(item.startAt).valueOf()
   );
 };

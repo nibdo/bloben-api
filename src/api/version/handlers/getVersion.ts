@@ -9,8 +9,9 @@ export const getVersion = async (): Promise<GetVersion> => {
   let lastVersion = await RedisService.getLastVersion();
 
   if (!lastVersion) {
-    const serverSettings =
-      await ServerSettingsRepository.getRepository().findOne();
+    const serverSettingsAll =
+      await ServerSettingsRepository.getRepository().find();
+    const serverSettings = serverSettingsAll?.[0];
 
     if (serverSettings.checkNewVersion) {
       const response = await axios.get('https://bloben.com/version.txt');

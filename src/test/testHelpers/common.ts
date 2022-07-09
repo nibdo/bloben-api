@@ -35,6 +35,6 @@ export const getTestReminder = async (id: string) => {
   const connection = await getConnection();
 
   return connection.manager.findOne(ReminderEntity, {
-    id,
+    where: { id },
   });
 };

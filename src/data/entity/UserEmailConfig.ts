@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   OneToOne,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -11,7 +12,10 @@ import UserEntity from './UserEntity';
 
 @Entity('user_email_config')
 export default class UserEmailConfigEntity {
-  @OneToOne(() => UserEntity, { primary: true, onDelete: 'CASCADE' })
+  @PrimaryColumn({ type: 'uuid', name: 'user_id' })
+  userID: string;
+
+  @OneToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: UserEntity;
 
@@ -37,13 +41,13 @@ export default class UserEmailConfigEntity {
   updatedAt: Date;
 
   constructor(
-    user: UserEntity,
+    userID: string,
     data: string,
     syncingInterval: number,
     hasImap: boolean
   ) {
-    if (user) {
-      this.user = user;
+    if (userID) {
+      this.userID = userID;
       this.data = data;
       this.imapSyncingInterval = syncingInterval;
       this.hasImap = hasImap;

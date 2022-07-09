@@ -14,6 +14,7 @@ import CalDavAccountEntity from './CalDavAccount';
 import CalDavEventEntity from './CalDavEventEntity';
 import CalDavTaskEntity from './CalDavTaskEntity';
 import CalDavTaskSettingsEntity from './CalDavTaskSettings';
+import SharedLinkCalendarEntity from './SharedLinkCalendars';
 
 @Entity('caldav_calendars')
 export default class CalDavCalendarEntity {
@@ -87,4 +88,11 @@ export default class CalDavCalendarEntity {
     (taskSettings) => taskSettings.calendar
   )
   taskSettings: CalDavTaskSettingsEntity[];
+
+  @OneToMany(
+    () => SharedLinkCalendarEntity,
+    (calendar) => calendar.calDavCalendar
+  )
+  @JoinColumn({ name: 'caldav_calendar_id', referencedColumnName: 'id' })
+  sharedLinkCalendar: SharedLinkCalendarEntity;
 }

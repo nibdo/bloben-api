@@ -6,6 +6,7 @@ module.exports = {
   verbose: true,
   spec: [
     './src/test/integration/app/*/*/*.test.ts',
+    './src/test/integration/app/*/*/*/*.test.ts',
     './src/test/integration/app/jobs/*/*.test.ts',
   ],
 };

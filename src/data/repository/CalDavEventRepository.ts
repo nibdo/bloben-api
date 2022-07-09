@@ -112,6 +112,30 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
     return resultCalDavEvents;
   };
 
+  public static getPublicEventsInRange = async (
+    sharedCalDavCalendarIDs: string[],
+    rangeFrom: string,
+    rangeTo: string
+  ) => {
+    const resultCalDavEvents: CalDavEventsRaw[] =
+      await CalDavEventRepository.getRepository().query(
+        `
+      SELECT 
+        ${CalDavEventRepository.calDavEventRawProps}
+      FROM 
+        caldav_events e
+        INNER JOIN caldav_calendars c on c.id = e.caldav_calendar_id
+      WHERE 
+        c.id = ANY($1)
+        AND e.is_repeated = FALSE
+        AND (e.start_at, e.end_at) OVERLAPS (CAST($2 AS timestamp), CAST($3 AS timestamp))
+  `,
+        [sharedCalDavCalendarIDs, rangeFrom, rangeTo]
+      );
+
+    return resultCalDavEvents;
+  };
+
   public static getEventByID = async (userID: string, id: string) => {
     const resultCalDavEvents: CalDavEventsRaw[] =
       await CalDavEventRepository.getRepository().query(
@@ -154,6 +178,27 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         AND e.is_repeated = TRUE
   `,
         [userID]
+      );
+
+    return repeatedEvents;
+  };
+
+  public static getPublicRepeatedEvents = async (
+    calDavCalendarIDs: string[]
+  ) => {
+    const repeatedEvents: CalDavEventsRaw[] =
+      await CalDavEventRepository.getRepository().query(
+        `
+      SELECT 
+        ${CalDavEventRepository.calDavEventRawProps}
+      FROM 
+        caldav_events e
+        INNER JOIN caldav_calendars c ON c.id = e.caldav_calendar_id
+      WHERE 
+        c.id = ANY($1)
+        AND e.is_repeated = TRUE
+  `,
+        [calDavCalendarIDs]
       );
 
     return repeatedEvents;
