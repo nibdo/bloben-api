@@ -1,12 +1,14 @@
 import { DateTime } from 'luxon';
+import { RRule } from 'rrule';
 import { cloneDeep, find, forEach, groupBy, map, uniq } from 'lodash';
 import { formatToRRule } from '../../../utils/common';
 import { v4 } from 'uuid';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import CalDavEventExceptionRepository from '../../../data/repository/CalDavEventExceptionRepository';
-import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
+import CalDavEventRepository, {
+  CalDavEventsRaw,
+} from '../../../data/repository/CalDavEventRepository';
 import LuxonHelper from '../../../utils/luxonHelper';
-import RRule from 'rrule';
 import WebcalEventEntity from '../../../data/entity/WebcalEventEntity';
 
 const isException = (date: Date, event: any): boolean => {
@@ -103,13 +105,23 @@ export const getOccurrences = (
 };
 
 export const getRepeatedEvents = async (
-  userID: string,
+  userID: string | null,
   rangeFromDateTime: DateTime,
-  rangeToDateTime: DateTime
+  rangeToDateTime: DateTime,
+  sharedIDs?: string[]
 ) => {
-  const repeatedEventEntities = await CalDavEventRepository.getRepeatedEvents(
-    userID
-  );
+  let repeatedEventEntities: CalDavEventsRaw[] = [];
+
+  if (userID) {
+    repeatedEventEntities = await CalDavEventRepository.getRepeatedEvents(
+      userID
+    );
+  } else if (sharedIDs) {
+    repeatedEventEntities = await CalDavEventRepository.getPublicRepeatedEvents(
+      sharedIDs
+    );
+  }
+
   let repeatedEventsResult = [];
 
   forEach(repeatedEventEntities, (event) => {

@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CreateWebcalCalendarRequest } from '../../bloben-interface/webcalCalendar/webcalCalendar';
+import SharedLinkCalendarEntity from './SharedLinkCalendars';
 import UserEntity from './UserEntity';
 import WebcalEventEntity from './WebcalEventEntity';
 
@@ -67,6 +68,13 @@ export default class WebcalCalendarEntity {
     (webcalEvent) => webcalEvent.webcalCalendar
   )
   webcalEvents: WebcalEventEntity[];
+
+  @OneToMany(
+    () => SharedLinkCalendarEntity,
+    (sharedLink) => sharedLink.webcalCalendar
+  )
+  @JoinColumn({ name: 'webcal_calendar_id', referencedColumnName: 'id' })
+  sharedLinkCalendar: SharedLinkCalendarEntity;
 
   public onSuccess = () => {
     this.lastSyncAt = new Date();

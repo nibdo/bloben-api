@@ -24,7 +24,7 @@ export const createBullQueue = (queueName: BULL_QUEUE) => {
   return new Queue(queueName, {
     connection: {
       host: env.redis.host,
-      port: env.redis.port,
+      port: Number(env.redis.port),
     },
   });
 };
@@ -38,7 +38,7 @@ export const createCalDavSyncBullWorker = async () => {
     {
       connection: {
         host: env.redis.host,
-        port: env.redis.port,
+        port: Number(env.redis.port),
       },
     }
   );
@@ -52,7 +52,7 @@ export const createEmailBullWorker = async () => {
     {
       connection: {
         host: env.redis.host,
-        port: env.redis.port,
+        port: Number(env.redis.port),
       },
     }
   );
@@ -66,7 +66,7 @@ export const createCalDavTaskSyncBullWorker = async () => {
     {
       connection: {
         host: env.redis.host,
-        port: env.redis.port,
+        port: Number(env.redis.port),
       },
     }
   );
@@ -81,7 +81,7 @@ export const createWebcalSyncBullWorker = async () => {
     {
       connection: {
         host: env.redis.host,
-        port: env.redis.port,
+        port: Number(env.redis.port),
       },
     }
   );
@@ -96,7 +96,7 @@ export const createEmailInviteBullWorker = async () => {
     {
       connection: {
         host: env.redis.host,
-        port: env.redis.port,
+        port: Number(env.redis.port),
       },
     }
   );
@@ -111,7 +111,7 @@ export const createWebcalRemindersBullQueue = async () => {
     {
       connection: {
         host: env.redis.host,
-        port: env.redis.port,
+        port: Number(env.redis.port),
       },
     }
   );

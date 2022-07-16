@@ -186,13 +186,11 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             }
           }
 
-          webcalCalendarEntity.onSuccess();
-
           await queryRunner.manager.update(
             WebcalCalendarEntity,
             { id: webcalCalendar.id },
             {
-              attempt: webcalCalendarEntity.attempt,
+              attempt: 0,
               lastSyncAt: new Date(),
             }
           );
@@ -223,11 +221,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             [LOG_TAG.QUEUE, LOG_TAG.WEBCAL]
           );
 
-          webcalCalendarEntity.onFail();
           await WebcalCalendarRepository.getRepository().update(
             webcalCalendarEntity.id,
             {
-              attempt: webcalCalendarEntity.attempt,
+              attempt: webcalCalendarEntity.attempt + 1,
               lastSyncAt: new Date(),
             }
           );

@@ -13,6 +13,7 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from './enums';
+import { RRule } from 'rrule';
 import { Range } from '../bloben-interface/interface';
 import { cloneDeep, find, forEach, map } from 'lodash';
 import {
@@ -38,7 +39,6 @@ import CalDavEventRepository, {
 } from '../data/repository/CalDavEventRepository';
 import ICalParser, { DateTimeObject, EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
-import RRule from 'rrule';
 
 import { ATTENDEE_PARTSTAT } from '../bloben-interface/enums';
 import logger from './logger';
@@ -859,6 +859,22 @@ export const formatInviteData = (
       method: method,
       // @ts-ignore
       recipients: map(attendees, 'mailto'),
+    },
+  };
+};
+
+export const formatGeneralEmailData = (
+  userID: string,
+  recipients: any[],
+  subject: string,
+  body: string
+) => {
+  return {
+    userID,
+    email: {
+      subject,
+      body,
+      recipients,
     },
   };
 };

@@ -12,6 +12,7 @@ import { CALENDAR_METHOD } from '../../../utils/ICalHelper';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DateTime } from 'luxon';
+import { RRule } from 'rrule';
 import { UpdateCalDavEventRequest } from '../../../bloben-interface/event/event';
 import { createCommonResponse, formatToRRule } from '../../../utils/common';
 import {
@@ -31,7 +32,6 @@ import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import CalendarSettingsRepository from '../../../data/repository/CalendarSettingsRepository';
 import LuxonHelper from '../../../utils/luxonHelper';
-import RRule from 'rrule';
 import ReminderEntity from '../../../data/entity/ReminderEntity';
 import logger from '../../../utils/logger';
 
