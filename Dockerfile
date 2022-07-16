@@ -1,4 +1,4 @@
-FROM node:16.14.2-stretch-slim
+FROM node:16.16.0-bullseye-slim
 
 ENV NODE_ENV development
 
