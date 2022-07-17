@@ -41,7 +41,7 @@ EventRoutes.get(
   [
     rateLimiterMiddleware(RATE_LIMIT.SEARCH_EVENTS),
     authMiddleware,
-    roleMiddleware([USER_ROLE.USER]),
+    roleMiddleware([USER_ROLE.USER, USER_ROLE.DEMO]),
     validationMiddleware(searchEventsSchema),
   ],
   EventController.searchEvents

@@ -19,6 +19,7 @@ import { initBullQueue } from './service/BullQueue';
 import { initCronJobs } from './jobs/init';
 import { initWebsockets } from './utils/websockets';
 import AdminRoutes from './routes/adminRoutes';
+import PublicRouter from './routes/publicRoutes';
 import helmet from 'helmet';
 
 dotenv.config();
@@ -62,6 +63,8 @@ const createBlobenApp = () => {
   BlobenApp.use(session(createSessionConfig(redisStore, redisClientOriginal)));
 
   BlobenApp.use('/api', Router);
+  BlobenApp.use(`/api/${API_VERSIONS.V1}/public`, PublicRouter);
+
   BlobenApp.use(errorMiddleware);
 
   return BlobenApp;

@@ -11,7 +11,7 @@ import { corsOptions } from '../../config/cors';
 import { createRedisConfig } from '../../config/redis';
 import { createSessionConfig } from '../../config/session';
 import {getTestDemoUser, getTestUser} from './getTestUser';
-import { io } from '../../app';
+import {BlobenApp, io} from '../../app';
 import {env, redisClient} from '../../index';
 import Router from '../../routes';
 import UserEntity from '../../data/entity/UserEntity';
@@ -23,6 +23,7 @@ import asyncRedis from 'async-redis';
 import { initBullQueue } from '../../service/BullQueue';
 import { loadEnv } from '../../config/env';
 import AdminRoutes from '../../routes/adminRoutes';
+import PublicRouter from "../../routes/publicRoutes";
 
 loadEnv();
 
@@ -131,6 +132,8 @@ export const createTestServer = () => {
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());
   TestBlobenApp.use('/api', Router);
+  TestBlobenApp.use(`/api/${API_VERSIONS.V1}/public`, PublicRouter);
+
   TestBlobenApp.use(errorMiddleware);
 
   return TestBlobenApp;

@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   OneToOne,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -12,7 +13,10 @@ import UserEntity from './UserEntity';
 
 @Entity('calendar_settings')
 export default class CalendarSettingsEntity {
-  @OneToOne(() => UserEntity, { primary: true, onDelete: 'CASCADE' })
+  @PrimaryColumn({ type: 'uuid', name: 'user_id' })
+  userID: string;
+
+  @OneToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: UserEntity;
 

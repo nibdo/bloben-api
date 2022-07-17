@@ -10,8 +10,9 @@ export const patchServerSettings = async (
 ): Promise<CommonResponse> => {
   const body: PatchServerSettings = req.body;
 
-  const serverSettings =
-    await ServerSettingsRepository.getRepository().findOne();
+  const serverSettingsAll =
+    await ServerSettingsRepository.getRepository().find();
+  const serverSettings = serverSettingsAll?.[0];
 
   if (!serverSettings) {
     throw throwError(404, 'Server settings not found');

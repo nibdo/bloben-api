@@ -2,11 +2,11 @@ import { QueryRunner, getConnection } from 'typeorm';
 
 import { DateTime } from 'luxon';
 import { LOG_TAG, TIMEZONE } from '../../utils/enums';
+import { RRule } from 'rrule';
 import { forEach, map } from 'lodash';
 import { formatToRRule } from '../../utils/common';
 import CalDavEventAlarmEntity from '../../data/entity/CalDavEventAlarmEntity';
 import LuxonHelper from '../../utils/luxonHelper';
-import RRule from 'rrule';
 import ReminderEntity from '../../data/entity/ReminderEntity';
 import logger from '../../utils/logger';
 

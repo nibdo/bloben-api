@@ -3,8 +3,9 @@ import ServerSettingsRepository from '../../data/repository/ServerSettingsReposi
 import logger from '../../utils/logger';
 
 export const resetEmailDailyLimit = async (): Promise<void> => {
-  const serverSettings =
-    await ServerSettingsRepository.getRepository().findOne();
+  const serverSettingsAll =
+    await ServerSettingsRepository.getRepository().find();
+  const serverSettings = serverSettingsAll?.[0];
   logger.info(
     `Resetting email daily limit after ${serverSettings.innerEmailCounter} emails sent`,
     [LOG_TAG.CRON, LOG_TAG.EMAIL]

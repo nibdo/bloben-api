@@ -50,8 +50,9 @@ export const sendEmailInvite = async (
     throw throwError(409, 'Too many recipients in email');
   }
 
-  const serverSettings =
-    await ServerSettingsRepository.getRepository().findOne();
+  const serverSettingsAll =
+    await ServerSettingsRepository.getRepository().find();
+  const serverSettings = serverSettingsAll?.[0];
 
   await ServerSettingsRepository.getRepository().update(serverSettings.id, {
     innerEmailCounter: serverSettings.innerEmailCounter + 1,
@@ -77,11 +78,13 @@ export const sendEmailInvite = async (
       subject: emailInvite.subject,
       text: emailInvite.body,
       method: emailInvite.method,
-      icalEvent: {
-        filename: 'invite.ics',
-        method: emailInvite.method,
-        content: emailInvite.ical,
-      },
+      icalEvent: emailInvite?.ical
+        ? {
+            filename: 'invite.ics',
+            method: emailInvite.method,
+            content: emailInvite.ical,
+          }
+        : undefined,
     };
 
     // handle test cases
