@@ -32,6 +32,9 @@ export enum REDIS_PREFIX {
   DAV_CLIENT = 'davClient',
   DOCKER_LAST_VERSION = 'dockerLastVersion',
   WAS_ACTIVE = 'wasActive',
+  PUBLIC_CALENDAR_CACHE = 'publicCalendarCache',
+  PUBLIC_EVENTS_CACHE = 'publicEventsCache',
+  PUBLIC_SHARED_LINK = 'publicSharedLink',
 }
 
 export enum WEBSOCKET_PREFIX {

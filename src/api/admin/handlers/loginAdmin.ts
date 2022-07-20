@@ -16,8 +16,10 @@ export const loginAdmin = async (req: Request): Promise<any> => {
 
   const user: UserEntity | undefined =
     await UserRepository.getRepository().findOne({
-      username: username as string,
-      role: ROLE.ADMIN,
+      where: {
+        username: username as string,
+        role: ROLE.ADMIN,
+      },
     });
 
   if (!user) {

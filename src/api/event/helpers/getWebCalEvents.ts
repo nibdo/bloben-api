@@ -409,3 +409,195 @@ export const getWebcalEvents = async (
     style: parseWebcalStyle(event, isDark),
   }));
 };
+
+export const getSharedWebcalEvents = async (
+  calendarIDs: string[],
+  rangeFrom: string,
+  rangeTo: string,
+  isDark: boolean
+): Promise<EventResult[]> => {
+  let result: WebCalEventFormatted[] = [];
+
+  const rangeFromDateTime: DateTime = LuxonHelper.parseToDateTime(
+    rangeFrom as string
+  );
+  const rangeToDateTime: DateTime = LuxonHelper.parseToDateTime(
+    rangeTo as string
+  );
+
+  const normalEventsRaw: WebCalEventRaw[] =
+    await WebcalEventRepository.getRepository().query(
+      `
+    SELECT 
+        DISTINCT ON (we.id)
+        we.id as id,
+        we.start_at    as "startAt",
+        we.end_at      as "endAt",
+        we.timezone_start_at as "timezoneStartAt",
+        we.summary     as summary,
+        we.description as description,
+        we.location    as location,
+        we.sequence    as sequence,
+        we.organizer   as organizer,
+        we.attendees   as attendees,
+        we.all_day     as "allDay",
+        we.is_repeated as "isRepeated",
+        we.r_rule      as "rRule",
+        we.created_at  as "createdAt",
+        we.updated_at  as "updatedAt",
+        we.external_id as "externalID",
+        wc.id          as "calendarID",
+        wc.color       as "color",
+        wc.user_mailto as "userMailto"
+    FROM webcal_events we
+    INNER JOIN webcal_calendars wc on we.external_calendar_id = wc.id
+    WHERE 
+        we.is_repeated IS FALSE
+        AND we.deleted_at IS NULL
+        AND wc.deleted_at IS NULL
+        AND wc.is_hidden IS FALSE
+        AND wc.id = ANY($1)
+        AND (we.start_at, we.end_at) 
+            OVERLAPS 
+            (CAST($2 AS timestamp), CAST($3 AS timestamp));
+  `,
+      [calendarIDs, rangeFrom, rangeTo]
+    );
+
+  const normalEvents = map(normalEventsRaw, formatWebCalEventRaw);
+
+  const repeatedEventsRaw: WebCalEventRaw[] =
+    await WebcalEventRepository.getRepository().query(
+      `SELECT
+                we.id as id,
+                we.summary as summary,
+                we.start_at as "startAt",
+                we.end_at as "endAt",
+                we.timezone_start_at as "timezoneStartAt",
+                we.description as description,
+                we.location as location,
+                we.sequence as sequence,
+                we.organizer as organizer,
+                we.attendees as attendees,
+                we.all_day as "allDay",
+                we.is_repeated as "isRepeated",
+                we.r_rule as "rRule",
+                we.created_at as "createdAt",
+                we.updated_at as "updatedAt",
+                we.deleted_at as "deletedAt",
+                we.external_id as "externalID",
+                wc.id as "calendarID",
+                wc.color as color,
+                wc.user_mailto as "userMailto"
+            FROM 
+                webcal_events we
+            LEFT JOIN 
+                webcal_calendars wc ON we.external_calendar_id = wc.id
+            WHERE 
+                wc.id = ANY($1)
+                AND we.is_repeated = TRUE 
+                AND we.deleted_at IS NULL
+                AND wc.is_hidden IS FALSE
+                `,
+      [calendarIDs]
+    );
+
+  const exceptions: WebCalExceptionRaw[] =
+    await WebcalEventExceptionRepository.getRepository().query(
+      `SELECT
+                we.exception_date as "exceptionDate",
+                we.external_id as "externalID"
+            FROM 
+                webcal_event_exceptions we
+            LEFT JOIN
+                webcal_calendars wc ON we.webcal_calendar_id = wc.id
+            WHERE 
+                wc.id = ANY($1) 
+                AND wc.is_hidden IS FALSE
+                AND wc.deleted_at IS NULL
+                `,
+      [calendarIDs]
+    );
+
+  const groupedExceptions: { [key: string]: WebCalExceptionRaw[] } = groupBy(
+    exceptions,
+    'externalID'
+  );
+
+  const groupedRepeatedEvents: { [key: string]: WebCalEventRaw[] } = groupBy(
+    repeatedEventsRaw,
+    'id'
+  );
+
+  const repeatedEvents: WebCalEventFormatted[] = [];
+
+  forEach(groupedRepeatedEvents, (eventResult) => {
+    let event: WebCalEventFormatted;
+
+    forEach(eventResult, (item) => {
+      // store only first main item
+      if (!event) {
+        event = formatWebCalEventRaw(item);
+      }
+    });
+
+    repeatedEvents.push(event);
+  });
+
+  let repeatedEventsResult: WebCalEventFormatted[] = [];
+
+  // process exceptions
+  forEach(repeatedEvents, (event) => {
+    const eventExceptions = groupedExceptions[event.externalID];
+    const eventExceptionDates = map(eventExceptions, (exception) =>
+      exception.exceptionDate?.toISOString()
+    );
+
+    let repeatedEvents = getOccurrences(
+      event,
+      rangeFromDateTime,
+      rangeToDateTime
+    );
+
+    // remove dates colliding with exceptions
+    if (eventExceptions && eventExceptions.length) {
+      repeatedEvents = filter(repeatedEvents, (event) => {
+        if (!eventExceptionDates.includes(event.startAt.toISOString())) {
+          return event;
+        }
+      });
+    }
+
+    repeatedEventsResult = [...repeatedEventsResult, ...repeatedEvents];
+  });
+
+  result = [...result, ...normalEvents, ...repeatedEventsResult];
+
+  return map(result, (event) => ({
+    id: event.id,
+    externalID: event.externalID,
+    internalID: event.id,
+    summary: event.summary,
+    description: event.description,
+    location: event.location,
+    sequence: event.sequence,
+    organizer: event.organizer,
+    attendees: event.attendees,
+    alarms: [],
+    props: null,
+    // alarms: event.alarms ? event.alarms : [],
+    allDay: event.allDay,
+    calendarID: event.webCalCalendar.id,
+    color: event.webCalCalendar.color,
+    startAt: event.startAt.toISOString(),
+    endAt: event.endAt.toISOString(),
+    timezoneEndAt: event.timezoneStartAt,
+    timezoneStartAt: event.timezoneStartAt,
+    isRepeated: event.isRepeated,
+    rRule: event.rRule,
+    type: EVENT_TYPE.WEBCAL,
+    createdAt: event.createdAt.toISOString(),
+    updatedAt: event.updatedAt.toISOString(),
+    style: parseWebcalStyle(event, isDark),
+  }));
+};

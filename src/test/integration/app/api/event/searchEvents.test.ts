@@ -27,14 +27,14 @@ describe(`Search events [GET] ${PATH}`, async function () {
     assert.equal(status, 401);
   });
 
-  it('Should get status 403 demo user', async function () {
+  it('Should get status 200 demo user', async function () {
     const response: any = await request(createTestServerWithSession(true)).get(
       `${PATH('abc')}`
     );
 
     const { status } = response;
 
-    assert.equal(status, 403);
+    assert.equal(status, 200);
   });
 
   it('Should get status 200 no result', async function () {

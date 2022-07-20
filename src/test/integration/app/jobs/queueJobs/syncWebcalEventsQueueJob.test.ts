@@ -149,7 +149,7 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
 
     const webcalEvents = await WebcalEventRepository.getRepository().find({
       where: {
-        webcalCalendar,
+        externalCalendarID: webcalCalendar.id,
       },
     });
 
@@ -174,7 +174,7 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
 
     const webcalEvents = await WebcalEventRepository.getRepository().find({
       where: {
-        webcalCalendar,
+        externalCalendarID: webcalCalendar.id,
       },
     });
 
@@ -194,7 +194,7 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
         });
     const webcalEvents = await WebcalEventRepository.getRepository().find({
       where: {
-        webcalCalendar,
+        externalCalendarID: webcalCalendar.id,
       },
     });
     const webcalEventA = await WebcalEventRepository.getRepository().findOne({

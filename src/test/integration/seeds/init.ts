@@ -5,8 +5,9 @@ import { calDavEvents } from './4-calDavEvents';
 import { adminUserSeed } from './0-adminUser-seed';
 import { webcal } from './6-webcal';
 import { calDavTasks } from './7-calDavTasks';
-import {calDavTaskSettings} from "./8-calDavTaskSettings";
-import {userEmailConfig} from "./9-userEmailConfig";
+import { calDavTaskSettings } from './8-calDavTaskSettings';
+import { userEmailConfig } from './9-userEmailConfig';
+import { sharedCalendar } from './10-sharedCalendar';
 
 export const initSeeds = async () => {
   try {
@@ -15,10 +16,12 @@ export const initSeeds = async () => {
     await new deletedUser().up();
     const { calDavAccount, calDavCalendar } = await new calDavCalendars().up();
     const { event, repeatedEvent } = await new calDavEvents().up();
-    await new webcal().up();
+    const { webcalCalendar } = await new webcal().up();
     const { task } = await new calDavTasks().up();
     const { taskSettings } = await new calDavTaskSettings().up();
     await new userEmailConfig().up();
+    const { sharedLink, sharedLinkDisabled, sharedLinkExpired } =
+      await new sharedCalendar().up();
 
     return {
       user,
@@ -28,7 +31,11 @@ export const initSeeds = async () => {
       event,
       repeatedEvent,
       task,
-      taskSettings
+      taskSettings,
+      webcalCalendar,
+      sharedLink,
+      sharedLinkDisabled,
+      sharedLinkExpired,
     };
   } catch (e) {
     console.log(e);
@@ -37,4 +44,4 @@ export const initSeeds = async () => {
 
 export const initUserSeed = async () => {
   await new userSeed().up();
-}
+};

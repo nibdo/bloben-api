@@ -22,7 +22,7 @@ export const updateUserEmailConfig = async (
   res: Response
 ): Promise<CommonResponse> => {
   const body: UpdateUserEmailConfigRequest = req.body;
-  const { user } = res.locals;
+  const { userID } = res.locals;
 
   if (!env.encryptionPassword) {
     throw throwError(409, 'Missing database password', req);
@@ -65,11 +65,11 @@ export const updateUserEmailConfig = async (
     throw throwError(409, 'Cannot connect to email server', req);
   }
 
-  let userEmailConfig = await UserEmailConfigRepository.findByUserID(user.id);
+  let userEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
 
   if (!userEmailConfig) {
     userEmailConfig = new UserEmailConfigEntity(
-      user.id,
+      userID,
       data,
       body.imapSyncingInterval,
       !!body.imap
@@ -80,7 +80,7 @@ export const updateUserEmailConfig = async (
     userEmailConfig.data = data;
     await UserEmailConfigRepository.getRepository().update(
       {
-        user,
+        userID,
       },
       {
         data,

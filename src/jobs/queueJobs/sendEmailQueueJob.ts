@@ -50,7 +50,7 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
       return;
     }
 
-    logger.info(`Sending event invite to ${email.recipients.toString()}`, [
+    logger.info(`Sending email to ${email.recipients.toString()}`, [
       LOG_TAG.QUEUE,
       LOG_TAG.EMAIL,
     ]);

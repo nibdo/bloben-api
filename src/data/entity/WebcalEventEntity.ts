@@ -91,6 +91,9 @@ export default class WebcalEventEntity {
   @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
+  @Column({ type: 'uuid', name: 'external_calendar_id' })
+  externalCalendarID: string;
+
   @ManyToOne(
     () => WebcalCalendarEntity,
     (webcalCalendar) => webcalCalendar.webcalEvents,
@@ -105,7 +108,8 @@ export default class WebcalEventEntity {
   public setData = (
     data: EventJSON,
     defaultTimezone: string,
-    webcalCalendar?: WebcalCalendarEntity
+    webcalCalendar?: WebcalCalendarEntity,
+    webcalCalendarID?: string
   ) => {
     if (data !== null && webcalCalendar !== null && data?.dtstart) {
       const isAllDay = data?.dtstart?.value?.length === '20220318'.length;
@@ -142,6 +146,10 @@ export default class WebcalEventEntity {
       this.allDay = data.dtstart.isAllDay ? data.dtstart.isAllDay : false;
       if (webcalCalendar) {
         this.webcalCalendar = webcalCalendar;
+      }
+
+      if (webcalCalendarID) {
+        this.externalCalendarID = webcalCalendarID;
       }
 
       return this;
