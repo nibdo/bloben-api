@@ -80,7 +80,7 @@ export const duplicateMultipleCalDavEvents = async (
     );
 
     forEach(body.dates, (date) => {
-      let startAtNew = DateTime.fromISO(date);
+      let startAtNew = DateTime.fromFormat(date, 'dd-MM-yyyy');
 
       startAtNew = startAtNew.set({
         hour: originalStartAt.hour,
@@ -145,7 +145,7 @@ export const duplicateMultipleCalDavEvents = async (
 
     // force sync
     await syncCalDavQueueJob({
-      data: { userID, calendarID: event.calendarID },
+      data: { userID },
     } as Job);
 
     const response = createCommonResponse(

@@ -157,14 +157,9 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
   }
 
   public static getCalDavAccountsForSync = async (
-    userID?: string,
-    calendarID?: string
+    userID?: string
   ): Promise<AccountWithCalendars[]> => {
     const parameters: any = userID ? [userID] : undefined;
-
-    if (calendarID) {
-      parameters.push(calendarID);
-    }
 
     const calDavAccountsRaw: AccountRaw[] =
       await CalDavAccountRepository.getRepository().query(
@@ -189,7 +184,6 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         ca.deleted_at IS NULL
         AND cc.deleted_at IS NULL
         ${userID ? 'AND ca.user_id = $1' : ''}
-        ${calendarID ? 'AND cc.id = $2' : ''}
         AND (cc.last_update_at IS NULL OR now() >= cc.last_update_at) 
   `,
         parameters

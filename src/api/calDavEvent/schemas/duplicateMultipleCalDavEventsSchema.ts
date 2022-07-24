@@ -6,7 +6,7 @@ export const duplicateMultipleCalDavEventsSchema = Joi.object({
     eventID: Joi.string().required(),
   }),
   body: Joi.object().keys({
-    dates: Joi.array().items(Joi.date().iso()).min(1).required(),
+    dates: Joi.array().items(Joi.string()).min(1).required(),
     sendInvite: Joi.boolean().optional(),
     inviteMessage: Joi.string().optional().allow(null),
   }),
