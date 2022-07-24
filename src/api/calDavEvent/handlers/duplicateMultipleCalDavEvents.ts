@@ -163,7 +163,7 @@ export const duplicateMultipleCalDavEvents = async (
       if (item.attendees?.length && body.sendInvite) {
         const icalString = find(
           iCalStrings,
-          (itemIcal) => item.id === itemIcal.id
+          (itemIcal) => item.externalID === itemIcal.id
         );
 
         if (icalString) {
