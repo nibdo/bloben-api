@@ -229,3 +229,9 @@ export interface SearchEventsResponse {
   timezoneStartAt: string | null;
   type: EVENT_TYPE;
 }
+
+export interface DuplicateMultipleCalDavEventsBody {
+  dates: string[];
+  sendInvite?: boolean;
+  inviteMessage?: string;
+}

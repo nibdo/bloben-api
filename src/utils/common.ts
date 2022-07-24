@@ -177,7 +177,44 @@ export const parseToDateTime = (
   if (deviceTimezone) {
     result = thisDate.setZone(zone).setZone(deviceTimezone);
   } else {
-    result = thisDate.setZone(zone);
+    if (zone) {
+      result = thisDate.setZone(zone);
+    }
+  }
+
+  return result;
+};
+
+export const parseToDateTimeFromJsDate = (
+  date: Date,
+  zone: string,
+  deviceTimezone?: string
+): DateTime => {
+  const FLOATING_DATETIME = 'floating'; // fixed datetime without timezone
+  const UTC_TIMEZONE = 'UTC';
+
+  const isFloatingDatetime: boolean = zone === FLOATING_DATETIME;
+
+  // Adjust date with timezone so when converted to UTC it represents correct value with fixed time
+  if (isFloatingDatetime) {
+    const dateFloating: DateTime = DateTime.fromJSDate(date, {
+      zone: UTC_TIMEZONE,
+    });
+
+    return dateFloating.toUTC();
+  }
+
+  const thisDate: DateTime = DateTime.fromJSDate(date);
+
+  let result;
+
+  // Adjust datetime to device timezone
+  if (deviceTimezone) {
+    result = thisDate.setZone(zone).setZone(deviceTimezone);
+  } else {
+    if (zone) {
+      result = thisDate.setZone(zone);
+    }
   }
 
   return result;
