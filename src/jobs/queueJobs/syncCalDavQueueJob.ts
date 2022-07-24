@@ -25,10 +25,7 @@ export const syncCalDavQueueJob = async (job: Job): Promise<void> => {
 
   // get calDav accounts
   const calDavAccounts: any =
-    await CalDavAccountRepository.getCalDavAccountsForSync(
-      data.userID,
-      data.calendarID
-    );
+    await CalDavAccountRepository.getCalDavAccountsForSync(data.userID);
 
   // group by userID
   const groupedByUserID: any = groupBy(calDavAccounts, 'userID');
