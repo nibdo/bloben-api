@@ -93,6 +93,12 @@ const LuxonHelper = {
 
     return dateBDateTime.diff(dateADateTime, 'minutes').minutes;
   },
+  getDiffInHours: (dateA: Date, dateB: Date) => {
+    const dateADateTime: DateTime = DateTime.fromJSDate(dateA);
+    const dateBDateTime: DateTime = DateTime.fromJSDate(dateB);
+
+    return dateBDateTime.diff(dateADateTime, 'hours').hours;
+  },
   getDiffInMinutes2: (dateA: string, dateB: string) => {
     const dateADateTime: DateTime = DateTime.fromISO(dateA);
     const dateBDateTime: DateTime = DateTime.fromISO(dateB);

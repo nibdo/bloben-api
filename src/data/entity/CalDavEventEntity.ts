@@ -114,6 +114,9 @@ export default class CalDavEventEntity {
   @Column({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
 
+  @Column({ type: 'uuid', name: 'caldav_calendar_id' })
+  calendarID: string;
+
   @ManyToOne(() => CalDavCalendarEntity, (calendar) => calendar.events, {
     onDelete: 'CASCADE',
   })
