@@ -3,7 +3,7 @@ import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { NextFunction, Request, Response } from 'express';
 import { SearchEventsResponse } from '../../../bloben-interface/event/event';
 import { SearchResult } from '../../event/handlers/searchEvents';
-import { map, sortBy } from 'lodash';
+import { map } from 'lodash';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import SharedLinkRepository from '../../../data/repository/SharedLinkRepository';
 import WebcalEventRepository from '../../../data/repository/WebcalEventRepository';
@@ -40,6 +40,7 @@ export const searchPublicEvents = async (
         cc.deleted_at IS NULL
         AND cc.id = ANY($1)
         AND ce.summary ILIKE $2
+    ORDER BY ce.start_at DESC
     LIMIT 50    
   `,
       [sharedCalDavCalendarIDs, `%${summary}%`]
@@ -61,7 +62,8 @@ export const searchPublicEvents = async (
         we.deleted_at IS NULL
         AND wc.deleted_at IS NULL
         AND wc.id = ANY($1)
-        AND we.summary ILIKE $2        
+        AND we.summary ILIKE $2
+    ORDER BY we.start_at DESC
     LIMIT 50
   `,
       [sharedWebcalCalendarIDs, `%${summary}%`]
@@ -86,10 +88,7 @@ export const searchPublicEvents = async (
       type: EVENT_TYPE.WEBCAL,
     }));
 
-    const response: SearchEventsResponse[] = sortBy(
-      [...caldavResultFormatted, ...webcalResultFormatted],
-      (item) => DateTime.fromISO(item.startAt).valueOf()
-    );
+    const response: SearchEventsResponse[] = [...caldavResultFormatted, ...webcalResultFormatted];
 
     return res.json(response);
   } catch (error) {

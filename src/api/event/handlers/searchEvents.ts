@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { Request, Response } from 'express';
 import { SearchEventsResponse } from '../../../bloben-interface/event/event';
-import { map, sortBy } from 'lodash';
+import { map } from 'lodash';
 import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import WebcalEventRepository from '../../../data/repository/WebcalEventRepository';
 
@@ -38,6 +38,7 @@ export const searchEvents = async (
         AND ca.deleted_at IS NULL
         AND ca.user_id = $1
         AND ce.summary ILIKE $2
+    ORDER BY ce.start_at DESC
     LIMIT 50    
   `,
     [userID, `%${summary}%`]
@@ -59,7 +60,8 @@ export const searchEvents = async (
         we.deleted_at IS NULL
         AND wc.deleted_at IS NULL
         AND wc.user_id = $1
-        AND we.summary ILIKE $2        
+        AND we.summary ILIKE $2
+    ORDER BY we.start_at DESC
     LIMIT 50
   `,
     [userID, `%${summary}%`]
@@ -84,7 +86,5 @@ export const searchEvents = async (
     type: EVENT_TYPE.WEBCAL,
   }));
 
-  return sortBy([...caldavResultFormatted, ...webcalResultFormatted], (item) =>
-    DateTime.fromISO(item.startAt).valueOf()
-  );
+  return [...caldavResultFormatted, ...webcalResultFormatted];
 };
