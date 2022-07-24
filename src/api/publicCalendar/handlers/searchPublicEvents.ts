@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { NextFunction, Request, Response } from 'express';
 import { SearchEventsResponse } from '../../../bloben-interface/event/event';
@@ -88,7 +87,10 @@ export const searchPublicEvents = async (
       type: EVENT_TYPE.WEBCAL,
     }));
 
-    const response: SearchEventsResponse[] = [...caldavResultFormatted, ...webcalResultFormatted];
+    const response: SearchEventsResponse[] = [
+      ...caldavResultFormatted,
+      ...webcalResultFormatted,
+    ];
 
     return res.json(response);
   } catch (error) {
