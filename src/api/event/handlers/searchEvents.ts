@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import { EVENT_TYPE } from '../../../bloben-interface/enums';
 import { Request, Response } from 'express';
 import { SearchEventsResponse } from '../../../bloben-interface/event/event';

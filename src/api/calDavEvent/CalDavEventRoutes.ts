@@ -7,6 +7,8 @@ import { authMiddleware } from '../../middleware/authMiddleware';
 import { createCalDavEventSchema } from './schemas/createCalDavEventSchema';
 import { deleteCalDavEventSchema } from './schemas/deleteCalDavEventSchema';
 import { deleteRepeatedCalDavEventSchema } from './schemas/deleteRepeatedCalDavEventSchema';
+import { duplicateMultipleCalDavEvents } from './handlers/duplicateMultipleCalDavEvents';
+import { duplicateMultipleCalDavEventsSchema } from './schemas/duplicateMultipleCalDavEventsSchema';
 import { getCalDavEventSchema } from './schemas/getCalDavEventSchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
@@ -98,6 +100,17 @@ CalDavEventRoutes.patch(
     validationMiddleware(updatePartstatStatusSchema),
   ],
   CalDavEventController.updatePartstatStatus
+);
+
+CalDavEventRoutes.post(
+  '/:eventID/duplicate',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+    validationMiddleware(duplicateMultipleCalDavEventsSchema),
+  ],
+  duplicateMultipleCalDavEvents
 );
 
 export default CalDavEventRoutes;
