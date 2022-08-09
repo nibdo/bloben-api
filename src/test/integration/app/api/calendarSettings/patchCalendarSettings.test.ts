@@ -8,13 +8,25 @@ import {
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
 import {invalidUUID} from "../../../../testHelpers/common";
+import {
+  createTestCalendarCalendar
+} from "../../../../e2e/calDAV/calDavServerTestHelper";
+import {
+  createDummyCalDavEvent, createDummyCalDavEventWithAlarm,
+  createDummyCalDavEventWithAttendees, createDummyCalDavEventWithRepeatedAlarm
+} from "../../../seeds/4-calDavEvents";
+import {DateTime} from "luxon";
 
 const PATH = '/api/v1/calendar-settings';
 
 describe(`Patch calendar settings [PATCH] ${PATH}`, async function () {
-  it('Should get status 401', async function () {
-    await initUserSeed();
+  let calendarID
+  beforeEach(async () => {
+    const { calDavCalendar } = await initSeeds();
+    calendarID = calDavCalendar.id
+  });
 
+  it('Should get status 401', async function () {
     const server: any = createTestServer();
 
     const response: any = await request(server).patch(PATH).send({
@@ -27,8 +39,6 @@ describe(`Patch calendar settings [PATCH] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    await initUserSeed();
-
     const server: any = createTestServerWithSession();
 
     const response: any = await request(server).patch(PATH).send({
@@ -41,9 +51,7 @@ describe(`Patch calendar settings [PATCH] ${PATH}`, async function () {
     assert.equal(status, 200);
   });
 
-  it('Should get status 200', async function () {
-    await initUserSeed();
-
+  it('Should get status 404', async function () {
     const server: any = createTestServerWithSession();
 
     const response: any = await request(server).patch(PATH).send({
@@ -52,12 +60,10 @@ describe(`Patch calendar settings [PATCH] ${PATH}`, async function () {
 
     const { status } = response;
 
-    assert.equal(status, 200);
+    assert.equal(status, 404);
   });
 
   it('Should get status 403 forbidden', async function () {
-    await initUserSeed();
-
     const server: any = createTestServerWithSession(true);
 
     const response: any = await request(server).patch(PATH).send({
@@ -67,5 +73,17 @@ describe(`Patch calendar settings [PATCH] ${PATH}`, async function () {
     const { status } = response;
 
     assert.equal(status, 403);
+  });
+
+  it('Should get status 200 calendar', async function () {
+    const server: any = createTestServerWithSession();
+
+    const response: any = await request(server).patch(PATH).send({
+      defaultCalendarID: calendarID,
+    });
+
+    const { status } = response;
+
+    assert.equal(status, 200);
   });
 });

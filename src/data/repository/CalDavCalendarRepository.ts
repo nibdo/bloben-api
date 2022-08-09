@@ -36,14 +36,16 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
     const result: any = await getRepository(CalDavCalendarEntity).query(
       `
       SELECT 
-        id,
-        url as "url"
+        c.id as id,
+        c.url as "url"
       FROM 
-        caldav_calendars
+        caldav_calendars c
+      INNER JOIN caldav_accounts ca ON ca.id = c.caldav_account_id
       WHERE
-        id = $1
-        AND user_id = $2
-        AND deleted_at IS NULL;
+        c.id = $1
+        AND ca.user_id = $2
+        AND c.deleted_at IS NULL
+        AND ca.deleted_at IS NULL;
     `,
       [id, userID]
     );

@@ -4,7 +4,11 @@ import { BULL_QUEUE, LOG_TAG } from '../../../utils/enums';
 import { CommonResponse } from '../../../bloben-interface/interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { CreateCalDavAccountRequest } from '../../../bloben-interface/calDavAccount/calDavAccount';
-import { calDavSyncBullQueue } from '../../../service/BullQueue';
+import { DAV_ACCOUNT_TYPE } from '../../../bloben-interface/enums';
+import {
+  calDavSyncBullQueue,
+  cardDavBullQueue,
+} from '../../../service/BullQueue';
 import { createAccount } from 'tsdav';
 import { createAuthHeader, createDavClient } from '../../../service/davService';
 import { createCommonResponse } from '../../../utils/common';
@@ -20,7 +24,7 @@ export const createCalDavAccount = async (
   const { user } = res.locals;
   const body: CreateCalDavAccountRequest = req.body;
 
-  const { username, password, url } = body;
+  const { username, password, url, accountType } = body;
 
   let connection: Connection | null;
   let queryRunner: QueryRunner | null;
@@ -29,7 +33,8 @@ export const createCalDavAccount = async (
   const existingAccount = await CalDavAccountRepository.getByUrlAndUsername(
     username,
     url,
-    user.id
+    user.id,
+    accountType
   );
 
   if (existingAccount) {
@@ -43,19 +48,19 @@ export const createCalDavAccount = async (
     });
     await client.login();
   } catch (e) {
-    logger.error('Cannot connect to calDav server', e, [
+    logger.error('Cannot connect to Dav server', e, [
       LOG_TAG.REST,
       LOG_TAG.CALDAV,
     ]);
 
-    throw throwError(409, 'Cannot connect to calDAV server');
+    throw throwError(409, 'Cannot connect to Dav server');
   }
 
   try {
     const responseAccount = await createAccount({
       account: {
         serverUrl: url,
-        accountType: 'caldav',
+        accountType,
       },
       headers: {
         authorization: createAuthHeader(username, password),
@@ -91,16 +96,19 @@ export const createCalDavAccount = async (
     await queryRunner.commitTransaction();
     await queryRunner.release();
 
-    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID: user.id });
+    if (accountType === DAV_ACCOUNT_TYPE.CALDAV) {
+      await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, {
+        userID: user.id,
+      });
+    } else {
+      await cardDavBullQueue.add(BULL_QUEUE.CARDDAV_SYNC, { userID: user.id });
+    }
 
-    return createCommonResponse('CalDav account created', {
+    return createCommonResponse('Account created', {
       id: calDavAccount.id,
     });
   } catch (e) {
-    logger.error('Create calDav account error', e, [
-      LOG_TAG.REST,
-      LOG_TAG.CALDAV,
-    ]);
+    logger.error('Create  account error', e, [LOG_TAG.REST, LOG_TAG.CALDAV]);
     if (queryRunner) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();

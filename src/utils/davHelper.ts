@@ -1,5 +1,7 @@
 import {
+  AccountWithAddressBooks,
   AccountWithCalendars,
+  AddressBook,
   CalendarFromAccount,
 } from '../data/repository/CalDavAccountRepository';
 import { CALENDAR_METHOD } from './ICalHelper';
@@ -15,7 +17,7 @@ import {
 } from './enums';
 import { RRule } from 'rrule';
 import { Range } from '../bloben-interface/interface';
-import { cloneDeep, find, forEach, map } from 'lodash';
+import { cloneDeep, find, forEach, keyBy, map } from 'lodash';
 import {
   createCalDavCalendar,
   updateCalDavCalendar,
@@ -41,6 +43,12 @@ import ICalParser, { DateTimeObject, EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 
 import { ATTENDEE_PARTSTAT } from '../bloben-interface/enums';
+import { VcardParsed, parseFromVcardString } from './vcardParser';
+import CalendarSettingsRepository from '../data/repository/CalendarSettingsRepository';
+import CardDavAddressBook from '../data/entity/CardDavAddressBook';
+import CardDavAddressBookRepository from '../data/repository/CardDavAddressBookRepository';
+import CardDavContact from '../data/entity/CardDavContact';
+import CardDavContactRepository from '../data/repository/CardDavContactRepository';
 import logger from './logger';
 
 export interface CalDavEventObj {
@@ -751,6 +759,15 @@ export const syncCalDavEvents = async (userID: string, calDavAccounts: any) => {
   return wasChanged;
 };
 
+export const syncAllCardDav = async (
+  userID: string,
+  calDavAccounts: AccountWithAddressBooks[]
+) => {
+  for (const calDavAccount of calDavAccounts) {
+    await syncCardDav(calDavAccount);
+  }
+};
+
 export const removeSupportedProps = (originalItem: EventJSON) => {
   const item = cloneDeep(originalItem);
   delete item.begin;
@@ -937,4 +954,182 @@ export const formatRecurringCancelInviteData = (
       recipients: map(attendees, 'mailto'),
     },
   };
+};
+
+export interface ParsedContact {
+  data: VcardParsed;
+  etag: string;
+  url: string;
+}
+
+export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
+  const addressBooks: AddressBook[] = calDavAccount.addressBooks;
+
+  const client = createDavClient(calDavAccount.url, {
+    username: calDavAccount.username,
+    password: calDavAccount.password,
+  });
+  await client.login();
+
+  // fetch address book
+  const serverAddressBooks = await client.fetchAddressBooks({
+    account: JSON.parse(calDavAccount.data),
+  });
+
+  const serverBooksKeyed = keyBy(serverAddressBooks, 'url');
+  const localBooksKeyed = keyBy(addressBooks, 'url');
+
+  const promises: any = [];
+
+  for (const item of serverAddressBooks) {
+    const existingAddressBook =
+      await CardDavAddressBookRepository.findByUserIdAndUrl(
+        calDavAccount.userID,
+        item.url
+      );
+
+    if (!existingAddressBook) {
+      const newAddressBook = new CardDavAddressBook(item, calDavAccount.id);
+      promises.push(
+        CardDavAddressBookRepository.getRepository().save(newAddressBook)
+      );
+    } else {
+      if (existingAddressBook.ctag !== item.ctag) {
+        promises.push(
+          CardDavAddressBookRepository.getRepository().update(
+            existingAddressBook.id,
+            {
+              url: item.url,
+              resourceType: item.resourcetype,
+              displayName: item.displayName,
+              ctag: item.ctag,
+              data: item,
+            }
+          )
+        );
+      }
+    }
+  }
+
+  forEach(localBooksKeyed, (item) => {
+    if (!serverBooksKeyed[item.url]) {
+      promises.push(
+        CardDavAddressBookRepository.getRepository().query(
+          `
+        DELETE from carddav_address_books WHERE id = $1
+      `,
+          [item.id]
+        )
+      );
+    }
+  });
+
+  await Promise.all(promises);
+
+  // set new default address book id
+  if (!addressBooks.length) {
+    const newDefaultAddressBook =
+      await CardDavAddressBookRepository.findFirstByUserID(
+        calDavAccount.userID
+      );
+
+    if (newDefaultAddressBook) {
+      await CalendarSettingsRepository.getRepository().update(
+        calDavAccount.userID,
+        {
+          defaultAddressBookID: newDefaultAddressBook.id,
+        }
+      );
+    }
+  }
+
+  // get vcards
+  const addressBooksNew = await CardDavAddressBookRepository.findAllByUserID(
+    calDavAccount.userID
+  );
+
+  for (const addressBook of addressBooksNew) {
+    const vcards = await client.fetchVCards({
+      addressBook: addressBook.data,
+    });
+
+    const parsedServerContacts: ParsedContact[] = map(vcards, (item) => {
+      const parsedResult = parseFromVcardString(item.data);
+
+      return {
+        data: parsedResult,
+        etag: item.etag,
+        url: item.url,
+      };
+    });
+
+    const existingContacts = await CardDavContactRepository.findByUserIdAndUrls(
+      calDavAccount.userID,
+      map(parsedServerContacts, 'url')
+    );
+
+    // urls
+    const toDelete: any[] = [];
+    const toInsert: string[] = [];
+    const toUpdate: string[] = [];
+
+    const localContactsKeyed = keyBy(existingContacts, 'url');
+    const serverContactsKeyed = keyBy(parsedServerContacts, 'url');
+
+    forEach(parsedServerContacts, (serverContact) => {
+      // check if exists
+      const existingLocalContact = localContactsKeyed[serverContact.url];
+      if (existingLocalContact) {
+        if (existingLocalContact.etag !== serverContact.etag) {
+          toUpdate.push(existingLocalContact.url);
+        }
+      } else {
+        toInsert.push(serverContact.url);
+      }
+    });
+
+    // check if local is to delete
+    forEach(existingContacts, (existingContact) => {
+      if (!serverContactsKeyed[existingContact.url]) {
+        toDelete.push(existingContact);
+      }
+    });
+
+    // handle inserts
+    const promises: any = [];
+    forEach(toInsert, (url) => {
+      const item = serverContactsKeyed[url];
+
+      const newContact = new CardDavContact(item, addressBook.id);
+
+      promises.push(CardDavContactRepository.getRepository().save(newContact));
+    });
+
+    // handle updates
+    forEach(toUpdate, (url) => {
+      const item = serverContactsKeyed[url];
+      const localItem = localContactsKeyed[url];
+
+      promises.push(
+        CardDavContactRepository.getRepository().update(localItem.id, {
+          etag: item.etag,
+          fullName: item.data?.fullName,
+          emails: item.data?.emails,
+        })
+      );
+    });
+
+    // handle deletes
+    forEach(toDelete, (item) => {
+      promises.push(
+        CardDavContactRepository.getRepository().query(
+          `
+        DELETE FROM carddav_contacts WHERE id = $1`,
+          [item.id]
+        )
+      );
+    });
+
+    await Promise.all(promises);
+  }
 };

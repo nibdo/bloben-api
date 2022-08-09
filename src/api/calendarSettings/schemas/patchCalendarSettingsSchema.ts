@@ -17,6 +17,8 @@ export const calendarSettingsSchema = Joi.object().keys({
   defaultCalendarID: Joi.string().uuid().optional(),
   timezone: Joi.string().optional(),
   showWeekNumbers: Joi.boolean().optional(),
+  defaultAddressBookID: Joi.string().uuid().optional(),
+  saveContactsAuto: Joi.boolean().optional(),
 });
 
 export const patchCalendarSettingsSchema = Joi.object({

@@ -14,6 +14,7 @@ import { io } from '../../../../../app';
 import { formatTodoJsonToCalDavTodo } from '../../../../../utils/davHelperTodo';
 import CalDavTaskEntity from '../../../../../data/entity/CalDavTaskEntity';
 import CalDavTaskRepository from '../../../../../data/repository/CalDavTaskRepository';
+import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
 const tsdav = require('tsdav');
 
 const createTestIcalString = (id: string, summary?: string) =>
@@ -53,6 +54,7 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
       username: 'username1',
       password: 'aaabbbb',
       url: accountUrl,
+      accountType: DAV_ACCOUNT_TYPE.CALDAV,
     },
     user
   );

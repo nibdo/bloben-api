@@ -30,14 +30,26 @@ const fallbackToMKCOL = async (
   let urlParsed = url;
 
   const hasHttps = urlParsed.includes('https://');
+  const hasHttp = urlParsed.includes('http://');
+
   if (hasHttps) {
     urlParsed = urlParsed.slice('https://'.length);
   }
+  if (hasHttp) {
+    urlParsed = urlParsed.slice('http://'.length);
+  }
+
+  let firstPart = '';
+
+  if (hasHttp) {
+    firstPart = 'http://';
+  }
+  if (hasHttps) {
+    firstPart = 'https://';
+  }
 
   return fetch(
-    `${
-      hasHttps ? 'https://' : ''
-    }${username}:${password}@${urlParsed}/${username}/${id}/`,
+    `${firstPart}${username}:${password}@${urlParsed}/${username}/${id}/`,
     {
       headers: {
         'Content-Type': 'text/xml;charset=UTF-8',

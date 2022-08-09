@@ -33,6 +33,7 @@ export const createDummyWebcal = async (data: {
       syncFrequency: data.syncFrequency,
       url: WEBCAL_MOCK_URL_SUCCESS,
       alarms: [],
+      userMailto: null,
     },
     user
   );

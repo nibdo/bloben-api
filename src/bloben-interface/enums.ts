@@ -69,3 +69,8 @@ export enum ATTENDEE_ROLE {
   REQ_PARTICIPANT = 'REQ-PARTICIPANT',
   OPT_PARTICIPANT = 'OPT-PARTICIPANT',
 }
+
+export enum DAV_ACCOUNT_TYPE {
+  CALDAV = 'caldav',
+  CARDDAV = 'carddav',
+}
