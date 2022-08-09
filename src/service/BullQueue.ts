@@ -6,6 +6,7 @@ import { processEmailEventJob } from '../jobs/queueJobs/processEmailEventJob';
 import { sendEmailQueueJob } from '../jobs/queueJobs/sendEmailQueueJob';
 import { syncCalDavQueueJob } from '../jobs/queueJobs/syncCalDavQueueJob';
 import { syncCalDavTaskQueueJob } from '../jobs/queueJobs/syncCalDavTaskQueueJob';
+import { syncCardDavQueueJob } from '../jobs/queueJobs/syncCardDavQueueJob';
 import { syncWebcalEventsQueueJob } from '../jobs/queueJobs/syncWebcalEventsQueueJob';
 
 export let calDavSyncBullWorker;
@@ -19,6 +20,8 @@ export let emailInviteBullQueue;
 export let emailInviteBullWorker;
 export let webcalRemindersBullQueue;
 export let webcalRemindersBullWorker;
+export let cardDavBullWorker;
+export let cardDavBullQueue;
 
 export const createBullQueue = (queueName: BULL_QUEUE) => {
   return new Queue(queueName, {
@@ -117,6 +120,21 @@ export const createWebcalRemindersBullQueue = async () => {
   );
 };
 
+export const createCardDavBullQueue = async () => {
+  return new Worker(
+    BULL_QUEUE.CARDDAV_SYNC,
+    async (job) => {
+      await syncCardDavQueueJob(job);
+    },
+    {
+      connection: {
+        host: env.redis.host,
+        port: Number(env.redis.port),
+      },
+    }
+  );
+};
+
 export const initBullQueue = async () => {
   calDavSyncBullQueue = createBullQueue(BULL_QUEUE.CALDAV_SYNC);
   calDavSyncBullWorker = await createCalDavSyncBullWorker();
@@ -135,4 +153,7 @@ export const initBullQueue = async () => {
 
   webcalRemindersBullQueue = createBullQueue(BULL_QUEUE.WEBCAL_REMINDER);
   webcalRemindersBullWorker = await createWebcalRemindersBullQueue();
+
+  cardDavBullQueue = createBullQueue(BULL_QUEUE.CARDDAV_SYNC);
+  cardDavBullWorker = await createCardDavBullQueue();
 };

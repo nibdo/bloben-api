@@ -1,23 +1,30 @@
-import { Connection, MigrationInterface, getConnection } from "typeorm";
-import { forEach } from "lodash";
+import {Connection, getConnection, MigrationInterface} from "typeorm";
+import {forEach} from "lodash";
 
-import { testUserData } from "./1-user-seed";
+import {testUserData} from "./1-user-seed";
 import UserEntity from "../../../data/entity/UserEntity";
-import { CreateCalDavAccountRequest } from "../../../bloben-interface/calDavAccount/calDavAccount";
+import {
+  CreateCalDavAccountRequest
+} from "../../../bloben-interface/calDavAccount/calDavAccount";
 import CalDavAccountEntity from "../../../data/entity/CalDavAccount";
 import CalDavCalendarEntity from "../../../data/entity/CalDavCalendar";
-import {CALDAV_COMPONENTS} from "../../../bloben-interface/enums";
+import {
+  CALDAV_COMPONENTS,
+  DAV_ACCOUNT_TYPE
+} from "../../../bloben-interface/enums";
 
 export const testAccountsData: CreateCalDavAccountRequest[] = [
   {
     username: "username1",
     password: "aaabbbb",
     url: "http://localhost:1000",
+    accountType: DAV_ACCOUNT_TYPE.CALDAV
   },
   {
     username: "username2",
     password: "aaabbbb",
     url: "http://localhost:2000",
+    accountType: DAV_ACCOUNT_TYPE.CALDAV
   },
 ];
 
@@ -46,6 +53,7 @@ export class calDavCalendars implements MigrationInterface {
       const newCalendar = new CalDavCalendarEntity();
       newAccount.principalUrl = `http://${testUserData.username}`;
       newAccount.url = `http://${testUserData.username}`;
+      newAccount.accountType = DAV_ACCOUNT_TYPE.CALDAV
 
       newCalendar.url = `http://${testUserData.username}`;
       newCalendar.calDavAccount = newAccount;

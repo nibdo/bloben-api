@@ -14,18 +14,22 @@ import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DateTime } from 'luxon';
 import { RRule } from 'rrule';
 import { UpdateCalDavEventRequest } from '../../../bloben-interface/event/event';
+import { cardDavBullQueue, emailBullQueue } from '../../../service/BullQueue';
 import { createCommonResponse, formatToRRule } from '../../../utils/common';
 import {
   createEventFromCalendarObject,
   formatInviteData,
 } from '../../../utils/davHelper';
-import { emailBullQueue } from '../../../service/BullQueue';
 import { forEach } from 'lodash';
+import {
+  handleCreateContact,
+  removeOrganizerFromAttendees,
+} from './createCalDavEvent';
 import { io } from '../../../app';
 import { loginToCalDav } from '../../../service/davService';
 import { parseAlarmDuration } from '../../../utils/caldavAlarmHelper';
-import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../utils/errorCodes';
+import { v4 } from 'uuid';
 import CalDavAccountRepository from '../../../data/repository/CalDavAccountRepository';
 import CalDavEventAlarmEntity from '../../../data/entity/CalDavEventAlarmEntity';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
@@ -235,6 +239,35 @@ export const updateCalDavEvent = async (
           body.inviteMessage
         )
       );
+    }
+
+    if (event.attendees?.length) {
+      const settings = await CalendarSettingsRepository.findByUserID(userID);
+
+      if (settings?.saveContactsAuto && settings?.defaultAddressBookID) {
+        const carddavPromises: any = [];
+        forEach(
+          removeOrganizerFromAttendees(
+            eventTemp.organizer,
+            eventTemp.attendees
+          ),
+          (attendee) => {
+            carddavPromises.push(
+              handleCreateContact(
+                userID,
+                settings.defaultAddressBookID,
+                v4(),
+                attendee.mailto,
+                attendee.CN
+              )
+            );
+          }
+        );
+
+        await Promise.all(carddavPromises);
+
+        await cardDavBullQueue.add(BULL_QUEUE.CARDDAV_SYNC, { userID });
+      }
     }
 
     // delete previous event if calendar was changed

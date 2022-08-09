@@ -16,7 +16,8 @@ export const getCalDavAccounts = async (
         c.id as id, 
         c.username as username, 
         c.url as url,
-        c.principal_url as "principalUrl"
+        c.principal_url as "principalUrl",
+        c.account_type as "accountType"
       FROM 
         caldav_accounts c
       WHERE
@@ -32,5 +33,6 @@ export const getCalDavAccounts = async (
     password: '*******',
     url: account.url,
     principalUrl: account.principalUrl,
+    accountType: account.accountType,
   }));
 };

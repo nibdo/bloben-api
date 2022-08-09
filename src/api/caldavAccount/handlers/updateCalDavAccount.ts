@@ -20,7 +20,7 @@ export const updateCalDavAccount = async (
   const { password } = body;
 
   const calDavAccount: CalDavAccount | null =
-    await CalDavAccountRepository.getByID(id, userID);
+    await CalDavAccountRepository.getByIDAllTypes(id, userID);
 
   if (!calDavAccount) {
     throw throwError(404, 'Account not found', req);
