@@ -8,6 +8,8 @@ import { calDavTasks } from './7-calDavTasks';
 import { calDavTaskSettings } from './8-calDavTaskSettings';
 import { userEmailConfig } from './9-userEmailConfig';
 import { sharedCalendar } from './10-sharedCalendar';
+import { carddavAddressBooks } from './11-cardDavAddressBooks';
+import { cardDavContacts } from './12-cardDavContacts';
 
 export const initSeeds = async () => {
   try {
@@ -22,6 +24,9 @@ export const initSeeds = async () => {
     await new userEmailConfig().up();
     const { sharedLink, sharedLinkDisabled, sharedLinkExpired } =
       await new sharedCalendar().up();
+    const { cardDavAccount, cardDavAddressBook } =
+      await new carddavAddressBooks().up();
+    const { contact } = await new cardDavContacts().up();
 
     return {
       user,
@@ -36,6 +41,9 @@ export const initSeeds = async () => {
       sharedLink,
       sharedLinkDisabled,
       sharedLinkExpired,
+      cardDavAccount,
+      cardDavAddressBook,
+      contact,
     };
   } catch (e) {
     console.log(e);

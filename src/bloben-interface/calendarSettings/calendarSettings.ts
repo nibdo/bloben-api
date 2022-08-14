@@ -8,6 +8,8 @@ export interface PatchCalendarSettingsRequest {
   defaultCalendarID?: string;
   timezone?: string;
   showWeekNumbers?: boolean;
+  defaultAddressBookID?: string;
+  saveContactsAuto?: boolean;
 }
 
 export interface CalendarSettingsResponse {
@@ -15,7 +17,9 @@ export interface CalendarSettingsResponse {
   startOfWeek: string;
   defaultView: CALENDAR_VIEW;
   hourHeight: number;
-  defaultCalendarID: string;
+  defaultCalendarID: string | null;
   timezone: string;
   showWeekNumbers: boolean;
+  defaultAddressBookID: string | null;
+  saveContactsAuto: boolean;
 }

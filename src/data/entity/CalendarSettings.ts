@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import { CALENDAR_VIEW } from 'kalend-layout';
+import CardDavAddressBook from './CardDavAddressBook';
 import UserEntity from './UserEntity';
 
 @Entity('calendar_settings')
@@ -41,6 +42,16 @@ export default class CalendarSettingsEntity {
 
   @Column({ type: 'uuid', name: 'default_calendar_id', nullable: true })
   defaultCalendarID: string;
+
+  @Column({ type: 'uuid', name: 'default_address_book_id', nullable: true })
+  defaultAddressBookID: string;
+
+  @Column({ type: 'boolean', name: 'save_contacts_auto', default: true })
+  saveContactsAuto: boolean;
+
+  @OneToOne(() => CardDavAddressBook)
+  @JoinColumn({ name: 'default_address_book_id', referencedColumnName: 'id' })
+  defaultAddressBook: CardDavAddressBook;
 
   @Column({ name: 'timezone', nullable: true })
   timezone: string;

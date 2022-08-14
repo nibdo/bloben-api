@@ -1,7 +1,7 @@
 import {
   calDavSyncBullQueue,
   calDavSyncBullWorker,
-  calDavTaskSyncBullQueue,
+  calDavTaskSyncBullQueue, cardDavBullQueue,
   emailBullQueue,
   emailBullWorker,
   webcalSyncBullQueue,
@@ -26,4 +26,6 @@ export const mockBullQueue = () => {
   emailBullQueue = mockFunc;
   // @ts-ignore
   emailBullWorker = mockFunc;
+  // @ts-ignore
+  cardDavBullQueue = mockFunc
 };

@@ -1,24 +1,29 @@
-import { ImportMock } from 'ts-mock-imports';
-import { DAVCalendarObject } from 'tsdav';
+import {ImportMock} from 'ts-mock-imports';
+import {DAVCalendarObject} from 'tsdav';
 import AdminUsersService from '../../../../../api/adminUsers/AdminUsersService';
-import { testUserData } from '../../../seeds/1-user-seed';
+import {testUserData} from '../../../seeds/1-user-seed';
 import UserRepository from '../../../../../data/repository/UserRepository';
 import CalDavAccountEntity from '../../../../../data/entity/CalDavAccount';
 import CalDavCalendarEntity from '../../../../../data/entity/CalDavCalendar';
-import CalDavAccountRepository from '../../../../../data/repository/CalDavAccountRepository';
-import CalDavCalendarRepository from '../../../../../data/repository/CalDavCalendarRepository';
+import CalDavAccountRepository
+  from '../../../../../data/repository/CalDavAccountRepository';
+import CalDavCalendarRepository
+  from '../../../../../data/repository/CalDavCalendarRepository';
 import CalDavEventEntity from '../../../../../data/entity/CalDavEventEntity';
-import { forEach } from 'lodash';
-import ICalParser, { EventJSON } from 'ical-js-parser';
-import { formatEventJsonToCalDavEvent } from '../../../../../utils/davHelper';
-import { generateRandomString } from '../../../../../utils/common';
-import CalDavEventRepository from '../../../../../data/repository/CalDavEventRepository';
-import { io } from '../../../../../app';
+import {forEach} from 'lodash';
+import ICalParser, {EventJSON} from 'ical-js-parser';
+import {formatEventJsonToCalDavEvent} from '../../../../../utils/davHelper';
+import {generateRandomString} from '../../../../../utils/common';
+import CalDavEventRepository
+  from '../../../../../data/repository/CalDavEventRepository';
+import {io} from '../../../../../app';
 import {
   testIcalStringTimeFormat,
   testIcalStringUnsupportedZone,
   testIcalStringWrongDate
 } from '../../../seeds/4-calDavEvents';
+import {DAV_ACCOUNT_TYPE} from "../../../../../bloben-interface/enums";
+
 const tsdav = require('tsdav');
 
 const createTestIcalString = (id: string, summary?: string) =>
@@ -61,6 +66,7 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
       username: 'username1',
       password: 'aaabbbb',
       url: accountUrl,
+      accountType: DAV_ACCOUNT_TYPE.CALDAV
     },
     user
   );

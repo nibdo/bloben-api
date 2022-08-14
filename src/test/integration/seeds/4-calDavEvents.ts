@@ -5,7 +5,6 @@ import {testUserData} from './1-user-seed';
 import UserEntity from '../../../data/entity/UserEntity';
 import {
   CreateCalDavEventRequest,
-  UpdateRepeatedCalDavEventRequest
 } from '../../../bloben-interface/event/event';
 import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';

@@ -11,6 +11,7 @@ import {
 
 import { CreateCalDavAccountRequest } from '../../bloben-interface/calDavAccount/calDavAccount';
 import CalDavCalendarEntity from './CalDavCalendar';
+import CardDavAddressBook from './CardDavAddressBook';
 import UserEntity from './UserEntity';
 
 @Entity('caldav_accounts')
@@ -57,12 +58,19 @@ export default class CalDavAccountEntity {
   )
   calDavCalendars: CalDavCalendarEntity[];
 
+  @OneToMany(
+    () => CardDavAddressBook,
+    (addressBook) => addressBook.calDavAccount
+  )
+  addressBooks: CardDavAddressBook[];
+
   constructor(body?: CreateCalDavAccountRequest, user?: UserEntity) {
     if (body) {
       this.username = body.username;
       this.password = body.password;
       this.url = body.url;
       this.user = user;
+      this.accountType = body.accountType;
     }
   }
 }

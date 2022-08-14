@@ -9,6 +9,8 @@ import CalDavTaskRoutes from '../api/calDavTask/CalDavTaskRoutes';
 import CalDavTaskSettingsRoutes from '../api/calDavTaskSettings/CalDavTaskSettingsRoutes';
 import CalendarRouter from '../api/calendar/CalendarRouter';
 import CalendarSettingsRouter from '../api/calendarSettings/CalendarSettingsRouter';
+import CardDavAddressBookRouter from '../api/cardDavAddressBooks/CardDavAddressBookRouter';
+import CardDavContactRouter from '../api/cardDavContact/CardDavContactRouter';
 import EventRoutes from '../api/event/EventRoutes';
 import SocketRouter from '../api/socket/SocketRoutes';
 import SyncRouter from '../api/sync/SyncRoutes';
@@ -41,5 +43,10 @@ AppRouter.use(`/${API_VERSIONS.V1}/version`, VersionRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/sync`, SyncRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/calendar-settings`, CalendarSettingsRouter);
 AppRouter.use(`/${API_VERSIONS.V1}/calendars`, CalendarRouter);
+AppRouter.use(`/${API_VERSIONS.V1}/carddav/contacts`, CardDavContactRouter);
+AppRouter.use(
+  `/${API_VERSIONS.V1}/carddav/address-books`,
+  CardDavAddressBookRouter
+);
 
 export default AppRouter;

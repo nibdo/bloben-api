@@ -10,6 +10,7 @@ import { groupLogsCronJob } from './cronJobs/groupLogsCronJob';
 import { resetEmailDailyLimit } from './cronJobs/resetEmailDailyLimit';
 import { sendNotification } from './cronJobs/sendNotification';
 import { syncCalDavTaskCronJobConnectedUsers } from './cronJobs/syncCalDavTaskCronJobConnectedUsers';
+import { syncCardDavCronJobConnectedUsers } from './cronJobs/syncCardDavCronJobConnectedUsers';
 import { webcalSyncQueueSocketJob } from './queueJobs/syncWebcalEventsQueueJob';
 
 export const initCronJobs = () => {
@@ -62,4 +63,10 @@ export const initCronJobs = () => {
 
   const getImapEmailsJob = new CronJob('*/30 * * * *', getImapEmails);
   getImapEmailsJob.start();
+
+  const syncCardDavJob = new CronJob(
+    '*/10 * * * *',
+    syncCardDavCronJobConnectedUsers
+  );
+  syncCardDavJob.start();
 };
