@@ -23,5 +23,7 @@ export const getCalendarSettings = async (
     timeFormat: calendarSettings.timeFormat,
     timezone: calendarSettings.timezone,
     showWeekNumbers: calendarSettings.showWeekNumbers,
+    defaultAddressBookID: calendarSettings.defaultAddressBookID,
+    saveContactsAuto: calendarSettings.saveContactsAuto,
   };
 };

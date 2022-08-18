@@ -1,5 +1,5 @@
 import { ImportMock } from 'ts-mock-imports';
-import { DAVAccount, DAVCalendar } from 'tsdav';
+import {DAVAccount, DAVCalendar, DAVCollection} from 'tsdav';
 import {
   testIcalString
 } from '../integration/seeds/4-calDavEvents';
@@ -23,6 +23,22 @@ export const mockTsDav = () => {
         url: 'cal',
       } as DAVCalendar,
     ];
+  });
+
+  // @ts-ignore
+  mockManager.set('createVCard', () => {
+    return {
+      status: 200,
+      etag: 'ABCDE',
+      url: 'card',
+    } as unknown as Response
+  });
+
+  // @ts-ignore
+  mockManager.set('deleteVCard', () => {
+    return {
+      status: 200,
+    } as unknown as Response
   });
 
   // @ts-ignore

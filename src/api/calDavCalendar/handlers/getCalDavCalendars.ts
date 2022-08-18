@@ -68,6 +68,7 @@ export const getCalDavCalendars = async (
       WHERE
         ca.user_id = $1
         AND c.deleted_at IS NULL
+        AND ca.account_type = 'caldav'
         ${component ? 'AND $2 = ANY(c.components)' : ''};
     `,
       parameters

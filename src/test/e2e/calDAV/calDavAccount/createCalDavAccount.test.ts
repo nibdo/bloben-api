@@ -1,7 +1,7 @@
-import {initSeeds, initUserOnlySeeds} from '../../seeds/init';
-import { createTestServerWithSession } from '../../../testHelpers/initTestServer';
+import { initUserOnlySeeds } from '../../seeds/init';
 import { CreateCalDavAccountRequest } from '../../../../bloben-interface/calDavAccount/calDavAccount';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
+import { DAV_ACCOUNT_TYPE } from '../../../../bloben-interface/enums';
 
 const request = require('supertest');
 const assert = require('assert');
@@ -20,6 +20,7 @@ describe(`[E2E] Create calDav account [POST] ${PATH}`, async function () {
         username: 'tester',
         password: 'tester1234',
         url: 'http://localhost:6080/dav.php',
+        accountType: DAV_ACCOUNT_TYPE.CALDAV,
       } as CreateCalDavAccountRequest);
 
     const { status } = response;
@@ -34,6 +35,7 @@ describe(`[E2E] Create calDav account [POST] ${PATH}`, async function () {
         username: 'tester',
         password: 'tester',
         url: 'http://localhost:6080/dav.php',
+        accountType: DAV_ACCOUNT_TYPE.CALDAV,
       } as CreateCalDavAccountRequest);
 
     const response: any = await request(createE2ETestServerWithSession())
@@ -42,6 +44,7 @@ describe(`[E2E] Create calDav account [POST] ${PATH}`, async function () {
         username: 'tester',
         password: 'tester',
         url: 'http://localhost:6080/dav.php',
+        accountType: DAV_ACCOUNT_TYPE.CALDAV,
       } as CreateCalDavAccountRequest);
 
     const { status } = response;
@@ -56,6 +59,7 @@ describe(`[E2E] Create calDav account [POST] ${PATH}`, async function () {
         username: 'tester',
         password: 'tester',
         url: 'http://localhost:6080/dav.php',
+        accountType: DAV_ACCOUNT_TYPE.CALDAV,
       } as CreateCalDavAccountRequest);
 
     const { status } = response;

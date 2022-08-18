@@ -1,4 +1,3 @@
-import { mockTsDav } from '../../../__mocks__/tsdav';
 import { initSeeds } from '../../seeds/init';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import { invalidUUID } from '../../../testHelpers/common';

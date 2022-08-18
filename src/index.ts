@@ -1,6 +1,6 @@
 import { Connection, createConnection } from 'typeorm';
+import { createClient } from 'redis';
 import dotenv from 'dotenv';
-import redis from 'redis';
 
 import { Env, loadEnv } from './config/env';
 import { LOG_TAG } from './utils/enums';
@@ -36,7 +36,7 @@ export const startServer = async (): Promise<void> => {
     // init redis
     const redisConfig: any = createRedisConfig();
     redisClient = asyncRedis.createClient(redisConfig);
-    redisClientOriginal = redis.createClient(redisConfig);
+    redisClientOriginal = createClient(redisConfig);
 
     // create app
     await createApp();
