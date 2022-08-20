@@ -1,4 +1,4 @@
-import {getConnection} from "typeorm";
+import { getConnection } from 'typeorm';
 
 export const getTestReminders = async (externalID: string) => {
   const connection = await getConnection();

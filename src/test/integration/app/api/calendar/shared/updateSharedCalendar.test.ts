@@ -1,12 +1,16 @@
 import { invalidUUID } from '../../../../../testHelpers/common';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../../seeds/init';
+import { seedCalDavCalendars } from '../../../../seeds/3-calDavCalendars';
+import { seedSharedCalendar } from '../../../../seeds/10-sharedCalendar';
+import { seedUsers } from '../../../../seeds/1-user-seed';
 
 const PATH = (id: string) => `/api/v1/calendars/shared/${id}`;
 
@@ -22,10 +26,15 @@ const testBody = {
 describe(`Update shared calendar [PUT] ${PATH}`, async function () {
   let sharedLinkID;
   let calDavCalendarID;
+  let userID;
+  let demoUserID;
   beforeEach(async () => {
-    const { sharedLink, calDavCalendar } = await initSeeds();
-    sharedLinkID = sharedLink.id;
+    [userID, demoUserID] = await seedUsers();
+    const { calDavCalendar } = await seedCalDavCalendars(userID);
+    const { sharedLink } = await seedSharedCalendar(userID);
+
     calDavCalendarID = calDavCalendar.id;
+    sharedLinkID = sharedLink.id;
   });
 
   it('Should get status 401', async function () {
@@ -39,7 +48,7 @@ describe(`Update shared calendar [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .put(PATH(sharedLinkID))
       .send(testBody);
 
@@ -49,7 +58,7 @@ describe(`Update shared calendar [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 404', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH(invalidUUID))
       .send(testBody);
 
@@ -59,7 +68,7 @@ describe(`Update shared calendar [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH(sharedLinkID))
       .send({ ...testBody, calDavCalendars: [calDavCalendarID] });
 

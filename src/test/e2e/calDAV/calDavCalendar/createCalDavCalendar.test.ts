@@ -1,9 +1,11 @@
-import { initSeeds } from '../../seeds/init';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import { invalidUUID } from '../../../testHelpers/common';
+import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = '/api/v1/caldav-calendars';
 
@@ -14,14 +16,16 @@ const testBody = {
 };
 
 describe(`[E2E] Create calDav calendar [POST] ${PATH}`, async function () {
+  let userID;
   let accountID;
   beforeEach(async () => {
-    const { calDavAccount } = await initSeeds();
-    accountID = calDavAccount.id;
+    const { userData } = await seedUsersE2E();
+    userID = userData.user.id;
+    accountID = userData.calDavAccount.id;
   });
 
   it('Should get status 404', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send({ ...testBody, accountID: invalidUUID });
 
@@ -31,7 +35,7 @@ describe(`[E2E] Create calDav calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send({ ...testBody, accountID });
 

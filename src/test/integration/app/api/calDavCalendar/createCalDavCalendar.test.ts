@@ -1,13 +1,16 @@
-import {mockTsDav} from "../../../../__mocks__/tsdav";
+import { mockTsDav } from '../../../../__mocks__/tsdav';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
-import {invalidUUID} from "../../../../testHelpers/common";
+import { invalidUUID } from '../../../../testHelpers/common';
+import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/caldav-calendars';
 
@@ -19,15 +22,19 @@ const testBody = {
 
 describe(`Create calDav calendar [POST] ${PATH}`, async function () {
   let accountID;
+  let userID;
+  let demoUserID;
+
   beforeEach(async () => {
-    const { calDavAccount } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const { calDavAccount } = await seedCalDavCalendars(userID);
     accountID = calDavAccount.id;
   });
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer())
-        .post(PATH)
-        .send(testBody);
+      .post(PATH)
+      .send(testBody);
 
     const { status } = response;
 
@@ -35,9 +42,9 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
-        .post(PATH)
-        .send(testBody);
+    const response: any = await request(createTestServerWithSession(demoUserID))
+      .post(PATH)
+      .send(testBody);
 
     const { status } = response;
 
@@ -45,11 +52,11 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 404', async function () {
-    mockTsDav()
+    mockTsDav();
 
-    const response: any = await request(createTestServerWithSession())
-        .post(PATH)
-        .send({ ...testBody, accountID: invalidUUID });
+    const response: any = await request(createTestServerWithSession(userID))
+      .post(PATH)
+      .send({ ...testBody, accountID: invalidUUID });
 
     const { status } = response;
 
@@ -57,11 +64,11 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    mockTsDav()
+    mockTsDav();
 
-    const response: any = await request(createTestServerWithSession())
-        .post(PATH)
-        .send({ ...testBody, accountID });
+    const response: any = await request(createTestServerWithSession(userID))
+      .post(PATH)
+      .send({ ...testBody, accountID });
 
     const { status } = response;
 

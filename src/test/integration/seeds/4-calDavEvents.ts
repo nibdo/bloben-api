@@ -1,18 +1,15 @@
-import {Connection, getConnection, MigrationInterface} from 'typeorm';
-import {forEach} from 'lodash';
+import { Connection, getConnection } from 'typeorm';
+import { forEach } from 'lodash';
 
-import {testUserData} from './1-user-seed';
-import UserEntity from '../../../data/entity/UserEntity';
-import {
-  CreateCalDavEventRequest,
-} from '../../../bloben-interface/event/event';
-import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
+import { CreateCalDavEventRequest } from '../../../bloben-interface/event/event';
+import { DAVCalendarObject } from 'tsdav';
+import { DateTime } from 'luxon';
+import { formatEventJsonToCalDavEvent } from '../../../utils/davHelper';
+import { seedCalDavCalendars } from './3-calDavCalendars';
+import { v4 } from 'uuid';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
-import ICalParser, {EventJSON} from 'ical-js-parser';
-import {formatEventJsonToCalDavEvent} from '../../../utils/davHelper';
-import {DAVCalendarObject} from 'tsdav';
-import {v4} from 'uuid';
-import {DateTime} from 'luxon';
+import ICalParser, { EventJSON } from 'ical-js-parser';
+import UserEntity from '../../../data/entity/UserEntity';
 
 export const createDummyCalDavEvent = (
   calendarID: string,
@@ -289,51 +286,45 @@ export const testEventsData: CreateCalDavEventRequest[] = [
   },
 ];
 
-export class calDavEvents implements MigrationInterface {
-  public async up(): Promise<{
-    event: CalDavEventEntity;
-    repeatedEvent: CalDavEventEntity;
-  }> {
-    // @ts-ignore
-    const connection: Connection = await getConnection();
+export const seedCalDavEvents = async (
+  userID: string
+): Promise<{
+  event: CalDavEventEntity;
+  repeatedEvent: CalDavEventEntity;
+}> => {
+  // @ts-ignore
+  const connection: Connection = await getConnection();
 
-    const [user, calendar] = await Promise.all([
-      connection.manager.findOne(UserEntity, {
-        where: {
-          username: testUserData.username,
-        },
-      }),
-      connection.manager.findOne(CalDavCalendarEntity, {
-        where: {
-          url: `http://${testUserData.username}`,
-        },
-      }),
-    ]);
+  const user: UserEntity | undefined = await connection.manager.findOne(
+    UserEntity,
+    {
+      where: {
+        id: userID,
+      },
+    }
+  );
 
-    const events: CalDavEventEntity[] = [];
+  const { calDavCalendar } = await seedCalDavCalendars(userID);
 
-    forEach(testEventsData, (event) => {
-      const icalJS = ICalParser.toJSON(event.iCalString);
-      const eventJSON: EventJSON = icalJS.events[0];
-      const eventObj = formatEventJsonToCalDavEvent(
-        eventJSON,
-        {
-          data: '',
-          etag: '123',
-          url: `http://${testUserData.username}`,
-        } as DAVCalendarObject,
-        calendar
-      );
+  const events: CalDavEventEntity[] = [];
 
-      events.push(new CalDavEventEntity(eventObj));
-    });
+  forEach(testEventsData, (event) => {
+    const icalJS = ICalParser.toJSON(event.iCalString);
+    const eventJSON: EventJSON = icalJS.events[0];
+    const eventObj = formatEventJsonToCalDavEvent(
+      eventJSON,
+      {
+        data: '',
+        etag: '123',
+        url: `http://${user.username}`,
+      } as DAVCalendarObject,
+      calDavCalendar
+    );
 
-    await connection.manager.save(events);
+    events.push(new CalDavEventEntity(eventObj));
+  });
 
-    return { event: events[0], repeatedEvent: events[2] };
-  }
+  await connection.manager.save(events);
 
-  public async down(): Promise<void> {
-    return Promise.resolve();
-  }
-}
+  return { event: events[0], repeatedEvent: events[2] };
+};

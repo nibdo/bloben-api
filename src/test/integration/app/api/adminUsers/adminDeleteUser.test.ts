@@ -1,14 +1,13 @@
-import { initSeeds } from '../../../seeds/init';
-
-import request from 'supertest';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 import { createAdminTestServerWithSession } from '../../../../testHelpers/initTestServer';
-import {
-  createAdminToken,
-  createWrongAdminToken,
-} from '../../../../testHelpers/getTestUser';
+import { createWrongAdminToken } from '../../../../testHelpers/getTestUser';
 import { invalidUUID } from '../../../../testHelpers/common';
+import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = (id: string) => `/api/v1/admin/users/${id}`;
 
@@ -19,10 +18,10 @@ describe(`Delete user admin [DELETE] ${PATH}`, async function () {
   let wrongToken;
 
   beforeEach(async () => {
-    const { user, admin } = await initSeeds();
-    userID = user.id;
-    adminID = admin.id;
-    token = await createAdminToken();
+    [userID] = await seedUsers();
+    const { id, jwtToken } = await seedAdminUser();
+    token = jwtToken;
+    adminID = id;
     wrongToken = await createWrongAdminToken();
   });
 

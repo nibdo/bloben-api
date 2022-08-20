@@ -1,23 +1,24 @@
-import { createCalDavCalendar } from '../../../api/calDavCalendar/handlers/createCalDavCalendar';
-import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
 import {
   CALDAV_COMPONENTS,
   EVENT_TYPE,
   REPEATED_EVENT_CHANGE_TYPE,
 } from '../../../bloben-interface/enums';
 import { CALDAV_TEST_ACCOUNT } from '../seeds/1-user-caldav-seed';
-import CalDavAccountEntity from '../../../data/entity/CalDavAccount';
-import CalDavCalendarRepository from '../../../data/repository/CalDavCalendarRepository';
-import { createCalDavEvent } from '../../../api/calDavEvent/handlers/createCalDavEvent';
-import { v4 } from 'uuid';
-import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 import {
-  CreateCalDavEventRequest, DeleteRepeatedCalDavEventRequest,
+  CreateCalDavEventRequest,
+  DeleteRepeatedCalDavEventRequest,
   UpdateRepeatedCalDavEventRequest,
 } from '../../../bloben-interface/event/event';
 import { DateTime } from 'luxon';
-import {DateTimeObject} from "ical-js-parser";
-import {formatIcalDate} from "../../../utils/davHelper";
+import { DateTimeObject } from 'ical-js-parser';
+import { createCalDavCalendar } from '../../../api/calDavCalendar/handlers/createCalDavCalendar';
+import { createCalDavEvent } from '../../../api/calDavEvent/handlers/createCalDavEvent';
+import { formatIcalDate } from '../../../utils/davHelper';
+import { v4 } from 'uuid';
+import CalDavAccountEntity from '../../../data/entity/CalDavAccount';
+import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
+import CalDavCalendarRepository from '../../../data/repository/CalDavCalendarRepository';
+import CalDavEventRepository from '../../../data/repository/CalDavEventRepository';
 
 export const createDummyCalDavEvent = (
   calendarID: string,
@@ -60,7 +61,7 @@ export const formatIcalStringDatesUtc = (date: DateTime) => {
   };
 };
 export const formatIcalStringDates = (date: DateTime) => {
-  const dateEnd = date.plus({hour: 1}).setZone('Europe/Berlin')
+  const dateEnd = date.plus({ hour: 1 }).setZone('Europe/Berlin');
 
   return {
     startAt: formatIcalDate(date.toString(), 'Europe/Berlin'),
@@ -228,15 +229,15 @@ export const createRepeatedTestCalDavEvent = async (
 };
 
 export const createDeleteRepeatedEventBodyJSON = (
-    calendarID: string,
-    id: string,
-    externalID: string,
-    url: string,
-    etag: string,
-    type: REPEATED_EVENT_CHANGE_TYPE,
-    recurrenceID?: DateTimeObject,
-    exDates?: any,
-    iCalString?: string
+  calendarID: string,
+  id: string,
+  externalID: string,
+  url: string,
+  etag: string,
+  type: REPEATED_EVENT_CHANGE_TYPE,
+  recurrenceID?: DateTimeObject,
+  exDates?: any,
+  iCalString?: string
 ): DeleteRepeatedCalDavEventRequest => {
   return {
     calendarID,
@@ -246,9 +247,9 @@ export const createDeleteRepeatedEventBodyJSON = (
     id,
     recurrenceID,
     type,
-    url
-  }
-}
+    url,
+  };
+};
 
 export const createRepeatedEventBodyJSON = (
   calendarID: string,

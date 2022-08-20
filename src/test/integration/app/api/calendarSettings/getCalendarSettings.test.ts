@@ -1,19 +1,25 @@
-import {initSeeds, initUserSeed} from "../../../seeds/init";
-
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/calendar-settings';
 
 describe(`Get calendar settings [GET] ${PATH}`, async function () {
-  it('Should get status 401', async function () {
-    await initUserSeed()
+  let userID;
+  let demoUserID;
 
+  beforeEach(async () => {
+    [userID, demoUserID] = await seedUsers();
+  });
+
+  it('Should get status 401', async function () {
     const server: any = createTestServer();
 
     const response: any = await request(server).get(PATH).send();
@@ -24,9 +30,7 @@ describe(`Get calendar settings [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    await initSeeds()
-
-    const server: any = createTestServerWithSession();
+    const server: any = createTestServerWithSession(userID);
 
     const response: any = await request(server).get(PATH).send();
 
@@ -36,9 +40,7 @@ describe(`Get calendar settings [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200 demo user', async function () {
-    await initUserSeed()
-
-    const server: any = createTestServerWithSession(true);
+    const server: any = createTestServerWithSession(demoUserID);
 
     const response: any = await request(server).get(PATH).send();
 

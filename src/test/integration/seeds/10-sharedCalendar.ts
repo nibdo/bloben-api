@@ -1,17 +1,11 @@
-import {
-  Connection,
-  MigrationInterface,
-  QueryRunner,
-  getConnection,
-} from 'typeorm';
+import { Connection, getConnection } from 'typeorm';
 
-import UserEntity from '../../../data/entity/UserEntity';
-import { testUserData } from './1-user-seed';
-import { PostSharedLinkRequest } from '../../../bloben-interface/calendar/shared/calendarShared';
-import { calDavCalendars } from './3-calDavCalendars';
-import SharedLinkEntity from '../../../data/entity/SharedLink';
-import SharedLinkCalendarEntity from '../../../data/entity/SharedLinkCalendars';
 import { DateTime } from 'luxon';
+import { PostSharedLinkRequest } from '../../../bloben-interface/calendar/shared/calendarShared';
+import { seedCalDavCalendars } from './3-calDavCalendars';
+import SharedLinkCalendarEntity from '../../../data/entity/SharedLinkCalendars';
+import SharedLinkEntity from '../../../data/entity/SharedLink';
+import UserEntity from '../../../data/entity/UserEntity';
 
 export const sharedCalendarTestData: PostSharedLinkRequest = {
   name: 'Shared calendar',
@@ -22,19 +16,19 @@ export const sharedCalendarTestData: PostSharedLinkRequest = {
   settings: {},
 };
 
-export const createSharedCalendarTestData = async () => {
+export const createSharedCalendarTestData = async (userID: string) => {
   const connection: Connection = await getConnection();
 
   const user: UserEntity | undefined = await connection.manager.findOne(
     UserEntity,
     {
       where: {
-        username: testUserData.username,
+        id: userID,
       },
     }
   );
 
-  const { calDavCalendar } = await new calDavCalendars().up();
+  const { calDavCalendar } = await seedCalDavCalendars(userID);
 
   const sharedLink = new SharedLinkEntity(sharedCalendarTestData, user);
 
@@ -50,19 +44,19 @@ export const createSharedCalendarTestData = async () => {
   return sharedLink;
 };
 
-export const createSharedCalendarDisabledTestData = async () => {
+export const createSharedCalendarDisabledTestData = async (userID: string) => {
   const connection: Connection = await getConnection();
 
   const user: UserEntity | undefined = await connection.manager.findOne(
     UserEntity,
     {
       where: {
-        username: testUserData.username,
+        id: userID,
       },
     }
   );
 
-  const { calDavCalendar } = await new calDavCalendars().up();
+  const { calDavCalendar } = await seedCalDavCalendars(userID);
 
   const sharedLink = new SharedLinkEntity(sharedCalendarTestData, user);
   sharedLink.isEnabled = false;
@@ -79,19 +73,19 @@ export const createSharedCalendarDisabledTestData = async () => {
   return sharedLink;
 };
 
-export const createSharedCalendarExpiredTestData = async () => {
+export const createSharedCalendarExpiredTestData = async (userID: string) => {
   const connection: Connection = await getConnection();
 
   const user: UserEntity | undefined = await connection.manager.findOne(
     UserEntity,
     {
       where: {
-        username: testUserData.username,
+        id: userID,
       },
     }
   );
 
-  const { calDavCalendar } = await new calDavCalendars().up();
+  const { calDavCalendar } = await seedCalDavCalendars(userID);
 
   const sharedLink = new SharedLinkEntity(
     {
@@ -113,18 +107,16 @@ export const createSharedCalendarExpiredTestData = async () => {
   return sharedLink;
 };
 
-export class sharedCalendar implements MigrationInterface {
-  public async up(): Promise<{
-    sharedLink: SharedLinkEntity;
-    sharedLinkExpired: SharedLinkEntity;
-    sharedLinkDisabled: SharedLinkEntity;
-  }> {
-    return {
-      sharedLink: await createSharedCalendarTestData(),
-      sharedLinkExpired: await createSharedCalendarExpiredTestData(),
-      sharedLinkDisabled: await createSharedCalendarDisabledTestData(),
-    };
-  }
-
-  public async down(queryRunner: QueryRunner): Promise<void> {}
-}
+export const seedSharedCalendar = async (
+  userID: string
+): Promise<{
+  sharedLink: SharedLinkEntity;
+  sharedLinkExpired: SharedLinkEntity;
+  sharedLinkDisabled: SharedLinkEntity;
+}> => {
+  return {
+    sharedLink: await createSharedCalendarTestData(userID),
+    sharedLinkExpired: await createSharedCalendarExpiredTestData(userID),
+    sharedLinkDisabled: await createSharedCalendarDisabledTestData(userID),
+  };
+};

@@ -1,7 +1,12 @@
 import WebcalEventRepository from '../../../../../data/repository/WebcalEventRepository';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
-import { initDatabase } from '../../../../testHelpers/initDatabase';
+import { DateTime } from 'luxon';
+import {
+  WEBCAL_MOCK_URL_FAIL,
+  mockAxios,
+} from '../../../../__mocks__/AxiosService';
 import {
   createDummyWebcal,
   createWebcalUserFail,
@@ -12,12 +17,6 @@ import {
   syncWebcalEventsQueueJob,
 } from '../../../../../jobs/queueJobs/syncWebcalEventsQueueJob';
 import WebcalCalendarRepository from '../../../../../data/repository/WebcalCalendarRepository';
-import {
-  mockAxios,
-  WEBCAL_MOCK_URL_FAIL,
-  WEBCAL_MOCK_URL_SUCCESS,
-} from '../../../../__mocks__/AxiosService';
-import { DateTime } from 'luxon';
 
 describe(`syncWebcalEventsJob [JOB]`, async function () {
   let successUserID: string;
@@ -27,8 +26,6 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
   let webcalCalendarFailID: string;
 
   beforeEach(async () => {
-    await initDatabase();
-
     const resultSuccess = await createWebcalUserSuccess();
     successUserID = resultSuccess.user.id;
     webcalCalendarSuccessID = resultSuccess.webcalCalendar.id;
@@ -48,7 +45,7 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
     const webcalCalendar =
       await WebcalCalendarRepository.getRepository().findOne({
         where: {
-          url: WEBCAL_MOCK_URL_FAIL,
+          id: webcalCalendarFailID,
         },
       });
 
@@ -143,7 +140,7 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
     const webcalCalendar =
       await WebcalCalendarRepository.getRepository().findOne({
         where: {
-          url: WEBCAL_MOCK_URL_SUCCESS,
+          id: webcalCalendarSuccessID,
         },
       });
 
@@ -168,7 +165,7 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
     const webcalCalendar =
       await WebcalCalendarRepository.getRepository().findOne({
         where: {
-          url: WEBCAL_MOCK_URL_SUCCESS,
+          id: webcalCalendarSuccessID,
         },
       });
 
@@ -187,11 +184,11 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
     } as any);
 
     const webcalCalendar =
-        await WebcalCalendarRepository.getRepository().findOne({
-          where: {
-            url: WEBCAL_MOCK_URL_SUCCESS,
-          },
-        });
+      await WebcalCalendarRepository.getRepository().findOne({
+        where: {
+          id: webcalCalendarSuccessID,
+        },
+      });
     const webcalEvents = await WebcalEventRepository.getRepository().find({
       where: {
         externalCalendarID: webcalCalendar.id,
@@ -216,8 +213,10 @@ describe(`syncWebcalEventsJob [JOB]`, async function () {
     assert.equal(webcalEvents.length, 1);
     assert.equal(webcalEventA, undefined);
     assert.equal(webcalEventB, undefined);
-    assert.equal(webcalEventC.startAt.toISOString(), '2022-02-28T08:00:00.000Z');
+    assert.equal(
+      webcalEventC.startAt.toISOString(),
+      '2022-02-28T08:00:00.000Z'
+    );
     assert.equal(webcalEventC.endAt.toISOString(), '2022-02-28T08:45:00.000Z');
-
   });
 });

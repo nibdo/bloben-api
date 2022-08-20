@@ -1,19 +1,24 @@
-import { initSeeds } from '../../../seeds/init';
-
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
+import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = (summary: string) => `/api/v1/events/search?summary=${summary}`;
 
 describe(`Search events [GET] ${PATH}`, async function () {
-  let summary = '';
+  let userID;
+  let demoUserID;
+  let summary;
   beforeEach(async () => {
-    const { event } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const { event } = await seedCalDavEvents(userID);
     summary = event.summary;
   });
 
@@ -28,9 +33,9 @@ describe(`Search events [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true)).get(
-      `${PATH('abc')}`
-    );
+    const response: any = await request(
+      createTestServerWithSession(demoUserID)
+    ).get(`${PATH('abc')}`);
 
     const { status } = response;
 
@@ -38,9 +43,9 @@ describe(`Search events [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200 no result', async function () {
-    const response: any = await request(createTestServerWithSession()).get(
-      `${PATH('abc123')}`
-    );
+    const response: any = await request(
+      createTestServerWithSession(userID)
+    ).get(`${PATH('abc123')}`);
 
     const { status, body } = response;
 
@@ -49,9 +54,9 @@ describe(`Search events [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200 found event', async function () {
-    const response: any = await request(createTestServerWithSession()).get(
-      `${PATH(summary)}`
-    );
+    const response: any = await request(
+      createTestServerWithSession(userID)
+    ).get(`${PATH(summary)}`);
 
     const { status, body } = response;
 

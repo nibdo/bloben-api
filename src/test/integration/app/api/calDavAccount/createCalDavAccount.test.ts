@@ -1,28 +1,31 @@
 import { CreateCalDavAccountRequest } from '../../../../../bloben-interface/calDavAccount/calDavAccount';
+import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
+import { ImportMock } from 'ts-mock-imports';
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
 import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { ImportMock } from 'ts-mock-imports';
-import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = '/api/v1/caldav-accounts';
 
 describe(`Create calDav account [POST] ${PATH}`, async function () {
-  let mockManager;
+  let userID;
+  let demoUserID;
 
   before(async () => {
-    mockManager = initCalDavMock();
+    initCalDavMock();
   });
 
   beforeEach(async () => {
-    await initSeeds();
+    [userID, demoUserID] = await seedUsers();
   });
 
   it('Should get status 401', async function () {
@@ -41,7 +44,7 @@ describe(`Create calDav account [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 already exists', async function () {
-    await request(createTestServerWithSession())
+    await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         username: 'abecede',
@@ -50,7 +53,7 @@ describe(`Create calDav account [POST] ${PATH}`, async function () {
         accountType: DAV_ACCOUNT_TYPE.CALDAV,
       } as CreateCalDavAccountRequest);
 
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         username: 'abecede',
@@ -66,9 +69,9 @@ describe(`Create calDav account [POST] ${PATH}`, async function () {
 
   it('Should get status 409 cannot connect to calDav server', async function () {
     ImportMock.restore();
-    mockManager = mockTsDavUnauthorized();
+    mockTsDavUnauthorized();
 
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         username: 'abecede',
@@ -82,11 +85,11 @@ describe(`Create calDav account [POST] ${PATH}`, async function () {
     assert.equal(status, 409);
 
     ImportMock.restore();
-    mockManager = mockTsDav();
+    mockTsDav();
   });
 
   it('Should get status 403 Forbidden', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .post(PATH)
       .send({
         username: 'abecede',
@@ -101,7 +104,7 @@ describe(`Create calDav account [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         username: 'abecede',
@@ -115,18 +118,18 @@ describe(`Create calDav account [POST] ${PATH}`, async function () {
     assert.equal(status, 200);
   });
 
-    it('Should get status 200', async function () {
-        const response: any = await request(createTestServerWithSession())
-            .post(PATH)
-            .send({
-                username: 'abecede',
-                password: 'fefefefaasfaf',
-                url: 'http://localhost',
-                accountType: DAV_ACCOUNT_TYPE.CARDDAV,
-            } as CreateCalDavAccountRequest);
+  it('Should get status 200', async function () {
+    const response: any = await request(createTestServerWithSession(userID))
+      .post(PATH)
+      .send({
+        username: 'abecede',
+        password: 'fefefefaasfaf',
+        url: 'http://localhost',
+        accountType: DAV_ACCOUNT_TYPE.CARDDAV,
+      } as CreateCalDavAccountRequest);
 
-        const { status } = response;
+    const { status } = response;
 
-        assert.equal(status, 200);
-    });
+    assert.equal(status, 200);
+  });
 });

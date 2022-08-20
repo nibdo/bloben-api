@@ -1,27 +1,25 @@
-import { invalidUUID } from '../../../../testHelpers/common';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const assert = require('assert');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const request = require('supertest');
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
+import { invalidUUID } from '../../../../testHelpers/common';
 import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedWebcal } from '../../../seeds/6-webcal';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
-const PATH = (id: string) => `/api/v1/caldav-calendars/${id}`;
+const PATH = (id: string) => `/api/v1/webcal/calendars/${id}`;
 
-describe(`Patch calDav calendar [PATCH] ${PATH}`, async function () {
-  let calendarID;
+describe(`Patch calendar [PATCH] ${PATH}`, async function () {
+  let calendarID: string;
   let userID;
   let demoUserID;
-
   beforeEach(async () => {
     [userID, demoUserID] = await seedUsers();
-    const { calDavCalendar } = await seedCalDavCalendars(userID);
-    calendarID = calDavCalendar.id;
+    const webcalCalendar = await seedWebcal(userID);
+    calendarID = webcalCalendar.id;
   });
 
   it('Should get status 401', async function () {
@@ -35,19 +33,6 @@ describe(`Patch calDav calendar [PATCH] ${PATH}`, async function () {
 
     assert.equal(status, 401);
   });
-
-  it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(demoUserID))
-      .patch(PATH(calendarID))
-      .send({
-        isHidden: true,
-      });
-
-    const { status } = response;
-
-    assert.equal(status, 403);
-  });
-
   it('Should get status 404', async function () {
     const response: any = await request(createTestServerWithSession(userID))
       .patch(PATH(invalidUUID))
@@ -58,6 +43,18 @@ describe(`Patch calDav calendar [PATCH] ${PATH}`, async function () {
     const { status } = response;
 
     assert.equal(status, 404);
+  });
+
+  it('Should get status 403 demo', async function () {
+    const response: any = await request(createTestServerWithSession(demoUserID))
+      .patch(PATH(calendarID))
+      .send({
+        isHidden: true,
+      });
+
+    const { status } = response;
+
+    assert.equal(status, 403);
   });
 
   it('Should get status 200', async function () {
