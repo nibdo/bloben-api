@@ -1,20 +1,19 @@
-import { ImportMock } from 'ts-mock-imports';
 import { DAVCalendarObject } from 'tsdav';
-import AdminUsersService from '../../../../../api/adminUsers/AdminUsersService';
-import { testUserData } from '../../../seeds/1-user-seed';
-import UserRepository from '../../../../../data/repository/UserRepository';
-import CalDavAccountEntity from '../../../../../data/entity/CalDavAccount';
-import CalDavCalendarEntity from '../../../../../data/entity/CalDavCalendar';
-import CalDavAccountRepository from '../../../../../data/repository/CalDavAccountRepository';
-import CalDavCalendarRepository from '../../../../../data/repository/CalDavCalendarRepository';
+import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
+import { ImportMock } from 'ts-mock-imports';
 import { forEach } from 'lodash';
-import ICalParser, { TodoJSON } from 'ical-js-parser';
+import { formatTodoJsonToCalDavTodo } from '../../../../../utils/davHelperTodo';
 import { generateRandomString } from '../../../../../utils/common';
 import { io } from '../../../../../app';
-import { formatTodoJsonToCalDavTodo } from '../../../../../utils/davHelperTodo';
+import { seedUserWithEntity } from '../../../seeds/1-user-seed';
+import CalDavAccountEntity from '../../../../../data/entity/CalDavAccount';
+import CalDavAccountRepository from '../../../../../data/repository/CalDavAccountRepository';
+import CalDavCalendarEntity from '../../../../../data/entity/CalDavCalendar';
+import CalDavCalendarRepository from '../../../../../data/repository/CalDavCalendarRepository';
 import CalDavTaskEntity from '../../../../../data/entity/CalDavTaskEntity';
 import CalDavTaskRepository from '../../../../../data/repository/CalDavTaskRepository';
-import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
+import ICalParser, { TodoJSON } from 'ical-js-parser';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const tsdav = require('tsdav');
 
 const createTestIcalString = (id: string, summary?: string) =>
@@ -43,12 +42,8 @@ export const todoToDeleteID = 'bebdce1a-f576-2b38-9ac7-e301ab32d6f9';
 const etagToKeep = 'FGHBAFJi123';
 
 const prepareData = async (accountUrl: string, calendarUrl: string) => {
-  await AdminUsersService.adminCreateUser({
-    body: testUserData,
-    // @ts-ignore
-    session: {},
-  });
-  const user = await UserRepository.findByUsername(testUserData.username);
+  const { user } = await seedUserWithEntity();
+
   const newAccount = new CalDavAccountEntity(
     {
       username: 'username1',
@@ -101,6 +96,7 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
   ImportMock.restore();
 
   // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   io = {
     to: () => {
       return {

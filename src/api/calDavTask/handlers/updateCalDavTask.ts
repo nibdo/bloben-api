@@ -38,13 +38,13 @@ export const updateCalDavTask = async (
   );
 
   if (!calDavAccount) {
-    throw throwError('404', 'Account not found');
+    throw throwError(404, 'Account not found');
   }
 
   const task = await CalDavTaskRepository.getByID(body.id, userID);
 
   if (!task) {
-    throw throwError('404', 'Task not found');
+    throw throwError(404, 'Task not found');
   }
 
   const client = await loginToCalDav(calDavAccount);

@@ -1,20 +1,23 @@
-const request = require('supertest');
-const assert = require('assert');
+import { seedUsers } from '../../../seeds/1-user-seed';
+
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
-import { initCalDavMock } from '../../../../__mocks__/calDavMock';
-import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { ImportMock } from 'ts-mock-imports';
-import { invalidUUID } from '../../../../testHelpers/common';
+import { seedContacts } from '../../../seeds/12-cardDavContacts';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = (text: string) => `/api/v1/carddav/contacts/search?text=${text}`;
 
 describe(`Search carddav contact [GET] ${PATH}`, async function () {
+  let userID;
+
   beforeEach(async () => {
-    await initSeeds()
+    [userID] = await seedUsers();
+    await seedContacts(userID);
   });
 
   it('Should get status 401', async function () {
@@ -28,7 +31,7 @@ describe(`Search carddav contact [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .get(PATH('contact'))
       .send();
 
@@ -38,9 +41,9 @@ describe(`Search carddav contact [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
-        .get(PATH(''))
-        .send();
+    const response: any = await request(createTestServerWithSession(userID))
+      .get(PATH(''))
+      .send();
 
     const { status } = response;
 

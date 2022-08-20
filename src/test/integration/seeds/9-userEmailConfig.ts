@@ -1,10 +1,7 @@
-import { Connection, MigrationInterface, getConnection } from 'typeorm';
-
-import { testUserData } from './1-user-seed';
-import UserEntity from '../../../data/entity/UserEntity';
-import UserEmailConfigEntity from '../../../data/entity/UserEmailConfig';
 import { CryptoAes } from '../../../utils/CryptoAes';
 import { UserEmailConfigData } from '../../../bloben-interface/userEmailConfig/userEmailConfig';
+import UserEmailConfigEntity from '../../../data/entity/UserEmailConfig';
+import UserEmailConfigRepository from '../../../data/repository/UserEmailConfigRepository';
 
 export const userEmailConfigData: UserEmailConfigData = {
   imapSyncingInterval: 15,
@@ -15,29 +12,13 @@ export const userEmailConfigData: UserEmailConfigData = {
     smtpPort: 100,
     smtpUsername: 'asfasf',
   },
-  imap: null
+  imap: null,
 };
 
-export class userEmailConfig implements MigrationInterface {
-  public async up(): Promise<void> {
-    const connection: Connection = await getConnection();
+export const seedUserEmailConfig = async (userID: string) => {
+  const data = await CryptoAes.encrypt(userEmailConfigData);
 
-    const [user] = await Promise.all([
-      connection.manager.findOne(UserEntity, {
-        where: {
-          username: testUserData.username,
-        },
-      }),
-    ]);
+  const emailConfig = new UserEmailConfigEntity(userID, data, 15, false);
 
-    const data = await CryptoAes.encrypt(userEmailConfigData);
-
-    const emailConfig = new UserEmailConfigEntity(user, data, 15, false);
-
-    await connection.manager.save(emailConfig);
-  }
-
-  public async down(): Promise<void> {
-    return Promise.resolve();
-  }
-}
+  await UserEmailConfigRepository.getRepository().save(emailConfig);
+};

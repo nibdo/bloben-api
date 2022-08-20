@@ -6,10 +6,10 @@ import {
   vcalToUpdateID,
 } from './syncCardDavQueueJob.seed';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
-import { initDatabase } from '../../../../testHelpers/initDatabase';
-import { todoToUpdateID } from './syncCalDavTodoQueueJob.seed';
 import { syncCardDavQueueJob } from '../../../../../jobs/queueJobs/syncCardDavQueueJob';
+import { todoToUpdateID } from './syncCalDavTodoQueueJob.seed';
 import CardDavContactRepository from '../../../../../data/repository/CardDavContactRepository';
 
 describe(`syncCardDavQueueJob [QUEUE]`, async function () {
@@ -17,7 +17,6 @@ describe(`syncCardDavQueueJob [QUEUE]`, async function () {
   const accountUrl = 'http://localhost:3000';
 
   beforeEach(async () => {
-    await initDatabase();
     const user = await initSyncCardDavQueueJobData(accountUrl);
 
     userID = user.id;
@@ -71,12 +70,20 @@ describe(`syncCardDavQueueJob [QUEUE]`, async function () {
       data: { userID },
     } as any);
 
-    const item = await CardDavContactRepository.getRepository().findOne({
-      where: {
-        externalID: vcalToDeleteID,
-      },
-    });
+    const items = await CardDavContactRepository.getRepository().query(
+      `
+      SELECT 
+        c.id
+      FROM carddav_contacts c
+      INNER JOIN carddav_address_books ab ON c.carddav_address_book_id = ab.id
+      INNER JOIN caldav_accounts ca ON ca.id = ab.caldav_account_id
+      WHERE
+        c.external_id = $1
+        AND ca.user_id = $2
+    `,
+      [vcalToDeleteID, userID]
+    );
 
-    assert.notEqual(item.deletedAt, null);
+    assert.notEqual(items.length, 0);
   });
 });

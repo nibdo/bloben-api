@@ -2,16 +2,19 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import {initSeeds} from "../../../seeds/init";
+import { seedUsers } from '../../../seeds/1-user-seed';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = '/api/v1/users/login';
 
 describe(`Get session [GET] ${PATH}`, async function () {
+  let userID;
   beforeEach(async () => {
-    await initSeeds();
+    [userID] = await seedUsers();
   });
 
   it('Should get status 200 not logged', async function () {
@@ -24,9 +27,9 @@ describe(`Get session [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200 logged', async function () {
-    const response: any = await request(createTestServerWithSession()).get(
-      PATH
-    );
+    const response: any = await request(
+      createTestServerWithSession(userID)
+    ).get(PATH);
 
     const { status, body } = response;
 

@@ -1,7 +1,9 @@
+/* eslint-disable */
 import {
   calDavSyncBullQueue,
   calDavSyncBullWorker,
-  calDavTaskSyncBullQueue, cardDavBullQueue,
+  calDavTaskSyncBullQueue,
+  cardDavBullQueue,
   emailBullQueue,
   emailBullWorker,
   webcalSyncBullQueue,
@@ -9,9 +11,11 @@ import {
 } from '../../service/BullQueue';
 
 export const mockBullQueue = () => {
-  const mockFunc = {add: async (key: string, data: any) => {
+  const mockFunc = {
+    add: async (key: string, data: any) => {
       return Promise.resolve();
-    }}
+    },
+  };
   // @ts-ignore
   calDavSyncBullWorker = mockFunc;
   // @ts-ignore
@@ -27,5 +31,5 @@ export const mockBullQueue = () => {
   // @ts-ignore
   emailBullWorker = mockFunc;
   // @ts-ignore
-  cardDavBullQueue = mockFunc
+  cardDavBullQueue = mockFunc;
 };

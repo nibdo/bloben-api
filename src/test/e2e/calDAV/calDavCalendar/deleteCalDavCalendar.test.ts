@@ -1,27 +1,30 @@
-import { initSeeds } from '../../seeds/init';
-import { createTestCalendarCalendar } from '../calDavServerTestHelper';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
-import {invalidUUID} from "../../../testHelpers/common";
+import { createTestCalendarCalendar } from '../calDavServerTestHelper';
+import { invalidUUID } from '../../../testHelpers/common';
+import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = (id: string) => `/api/v1/caldav-calendars/${id}`;
 
 describe(`[E2E] Delete calDav calendar [DELETE] ${PATH}`, async function () {
   let calendarID;
+  let userID;
   beforeEach(async () => {
-    const { calDavAccount, user } = await initSeeds();
+    const { userData } = await seedUsersE2E();
+    userID = userData.user.id;
     const calDavCalendar = await createTestCalendarCalendar(
-      user.id,
-      calDavAccount
+      userData.user.id,
+      userData.calDavAccount
     );
-
     calendarID = calDavCalendar.id;
   });
 
   it('Should get status 404', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .delete(PATH(invalidUUID))
       .send();
 
@@ -31,7 +34,7 @@ describe(`[E2E] Delete calDav calendar [DELETE] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .delete(PATH(calendarID))
       .send();
 

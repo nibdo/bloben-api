@@ -1,14 +1,13 @@
-import { initSeeds } from '../../../seeds/init';
-
-import request from 'supertest';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
-import { createAdminTestServerWithSession } from '../../../../testHelpers/initTestServer';
-import {
-  createAdminToken,
-  createWrongAdminToken,
-} from '../../../../testHelpers/getTestUser';
 import { DEFAULT_ADMIN_PASSWORD } from '../../../../../data/migrations/1630862365000-admin';
+import { createAdminTestServerWithSession } from '../../../../testHelpers/initTestServer';
+import { createWrongAdminToken } from '../../../../testHelpers/getTestUser';
+import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/admin/change-password';
 
@@ -16,8 +15,9 @@ describe(`Change password admin [POST] ${PATH}`, async function () {
   let token;
   let wrongToken;
   beforeEach(async () => {
-    await initSeeds();
-    token = await createAdminToken();
+    await seedUsers();
+    const { jwtToken } = await seedAdminUser();
+    token = jwtToken;
     wrongToken = await createWrongAdminToken();
   });
 

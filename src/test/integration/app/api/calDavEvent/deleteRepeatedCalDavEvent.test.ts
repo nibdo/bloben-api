@@ -1,18 +1,19 @@
-import Joi from 'joi';
-
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
+import { ImportMock } from 'ts-mock-imports';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../../bloben-interface/enums';
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
-import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { ImportMock } from 'ts-mock-imports';
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../../bloben-interface/enums';
-import CalDavEventEntity from '../../../../../data/entity/CalDavEventEntity';
 import { invalidUUID } from '../../../../testHelpers/common';
+import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
+import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
+import { seedUsers } from '../../../seeds/1-user-seed';
+import CalDavEventEntity from '../../../../../data/entity/CalDavEventEntity';
 
 const PATH = '/api/v1/caldav-events/repeated';
 
@@ -30,14 +31,17 @@ const createBaseBody = (calDavEvent: CalDavEventEntity) => {
 };
 
 describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
-  let mockManager;
   let calDavEvent;
+  let userID;
+  let demoUserID;
+
   before(async () => {
-    mockManager = initCalDavMock();
+    initCalDavMock();
   });
 
   beforeEach(async () => {
-    const { repeatedEvent } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const { repeatedEvent } = await seedCalDavEvents(userID);
     calDavEvent = repeatedEvent;
   });
 
@@ -52,7 +56,7 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
   });
 
   it('Should get status 404', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .delete(PATH)
       .send({ ...createBaseBody(calDavEvent), id: invalidUUID });
 
@@ -63,9 +67,9 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
 
   it('Should get status 409 cannot connect to calDav server', async function () {
     ImportMock.restore();
-    mockManager = mockTsDavUnauthorized();
+    mockTsDavUnauthorized();
 
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .delete(PATH)
       .send(createBaseBody(calDavEvent));
 
@@ -74,11 +78,11 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
     assert.equal(status, 409);
 
     ImportMock.restore();
-    mockManager = mockTsDav();
+    mockTsDav();
   });
 
   it('Should get status 403 forbidden', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .delete(PATH)
       .send(createBaseBody(calDavEvent));
 
@@ -88,7 +92,7 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
   });
 
   it('Should get status 200 single', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .delete(PATH)
       .send(createBaseBody(calDavEvent));
 
@@ -98,7 +102,7 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
   });
 
   it('Should get status 200 all', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .delete(PATH)
       .send(createBaseBody(calDavEvent));
 

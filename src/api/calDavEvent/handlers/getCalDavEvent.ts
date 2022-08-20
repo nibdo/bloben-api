@@ -25,7 +25,7 @@ export const getCalDavEvent = async (
   );
 
   if (!calDavAccount) {
-    throw throwError('404', 'Account not found');
+    throw throwError(404, 'Account not found');
   }
 
   const client = await loginToCalDav(calDavAccount);

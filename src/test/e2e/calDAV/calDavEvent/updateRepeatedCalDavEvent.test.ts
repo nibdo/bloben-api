@@ -1,19 +1,21 @@
-import { invalidUUID } from '../../../testHelpers/common';
-import { UpdateRepeatedCalDavEventRequest } from '../../../../bloben-interface/event/event';
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../bloben-interface/enums';
-import { formatIcalStringDates } from '../calDavServerTestHelper';
-import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
-import { initSeeds } from '../../seeds/init';
 import { DateTime } from 'luxon';
-import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
-import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
-import { createTestCalendarCalendar } from '../../../testHelpers/calDavServerTestHelper';
-import { createRepeatedTestCalDavEvent } from '../calDavServerTestHelper';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../bloben-interface/enums';
+import { UpdateRepeatedCalDavEventRequest } from '../../../../bloben-interface/event/event';
+import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import { createRepeatedEventBodyJSON } from '../calDavServerTestHelper';
+import { createRepeatedTestCalDavEvent } from '../calDavServerTestHelper';
+import { createTestCalendarCalendar } from '../../../testHelpers/calDavServerTestHelper';
+import { formatIcalStringDates } from '../calDavServerTestHelper';
+import { invalidUUID } from '../../../testHelpers/common';
+import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
+import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import { v4 } from 'uuid';
+import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = '/api/v1/caldav-events/repeated';
 
@@ -33,7 +35,6 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
   let eventData;
   let calendarID;
   let calendarID2;
-  let userID;
   let accountID;
 
   const baseDateTime = DateTime.now()
@@ -45,22 +46,21 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
     })
     .toUTC();
 
+  let userID;
   beforeEach(async () => {
-    const { calDavAccount, user } = await initSeeds();
-    userID = user.id;
-    accountID = calDavAccount.id;
-
+    const { userData } = await seedUsersE2E();
+    userID = userData.user.id;
     const calDavCalendar = await createTestCalendarCalendar(
-      user.id,
-      calDavAccount
+      userData.user.id,
+      userData.calDavAccount
     );
     const calDavCalendar2 = await createTestCalendarCalendar(
-      user.id,
-      calDavAccount
+      userData.user.id,
+      userData.calDavAccount
     );
     eventData = await createRepeatedTestCalDavEvent(
-      user.id,
-      calDavAccount,
+      userData.user.id,
+      userData.calDavAccount,
       calDavCalendar.id,
       baseDateTime
     );
@@ -79,7 +79,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
         REPEATED_EVENT_CHANGE_TYPE.ALL
       )
     );
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -100,7 +100,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -130,7 +130,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -169,7 +169,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -199,15 +199,17 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
     const { status } = response;
 
     assert.equal(status, 409);
-    assert.equal(response.body.message, 'Attendees can be changed only for' +
-        ' all instances')
+    assert.equal(
+      response.body.message,
+      'Attendees can be changed only for' + ' all instances'
+    );
   });
 
   it('Should get status 200 single with one recurrence', async function () {
@@ -227,7 +229,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -325,7 +327,7 @@ END:VCALENDAR`;
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -450,7 +452,7 @@ END:VCALENDAR`;
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -591,7 +593,7 @@ END:VCALENDAR`;
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -724,7 +726,7 @@ END:VCALENDAR`;
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 
@@ -821,7 +823,7 @@ END:VCALENDAR`;
       )
     );
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .put(PATH)
       .send(body);
 

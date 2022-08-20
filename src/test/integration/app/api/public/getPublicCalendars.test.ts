@@ -1,10 +1,12 @@
-import { initSeeds } from '../../../seeds/init';
-
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 import { createTestServer } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
+import { seedSharedCalendar } from '../../../seeds/10-sharedCalendar';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = (id: string) => `/api/v1/public/calendars/${id}`;
 
@@ -13,8 +15,9 @@ describe(`Get public calendars [GET] ${PATH}`, async function () {
   let sharedLinkDisabledID;
   let sharedLinkExpiredID;
   beforeEach(async () => {
+    const [userID] = await seedUsers();
     const { sharedLink, sharedLinkExpired, sharedLinkDisabled } =
-      await initSeeds();
+      await seedSharedCalendar(userID);
 
     sharedLinkID = sharedLink.id;
     sharedLinkDisabledID = sharedLinkDisabled.id;

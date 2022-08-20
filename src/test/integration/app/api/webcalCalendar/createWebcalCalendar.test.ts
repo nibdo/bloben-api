@@ -1,12 +1,16 @@
-const request = require('supertest');
-const assert = require('assert');
-
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
+import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedWebcal } from '../../../seeds/6-webcal';
 
-const PATH = `/v1/webcal/calendars`;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
+
+const PATH = `/api/v1/webcal/calendars`;
 
 const data: any = {
   name: 'Test cal',
@@ -22,6 +26,13 @@ const data: any = {
 };
 
 describe(`Create webcal calendar [POST] ${PATH}`, async function () {
+  let userID;
+  let demoUserID;
+  beforeEach(async () => {
+    [userID, demoUserID] = await seedUsers();
+    await seedWebcal(userID);
+  });
+
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer())
       .post(PATH)
@@ -31,8 +42,19 @@ describe(`Create webcal calendar [POST] ${PATH}`, async function () {
 
     assert.equal(status, 401);
   });
+
+  it('Should get status 403 demo', async function () {
+    const response: any = await request(createTestServerWithSession(demoUserID))
+      .post(PATH)
+      .send(data);
+
+    const { status } = response;
+
+    assert.equal(status, 403);
+  });
+
   it('Should get status 409 already exists', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({ ...data, url: 'http://localhost:3000' });
 
@@ -40,8 +62,9 @@ describe(`Create webcal calendar [POST] ${PATH}`, async function () {
 
     assert.equal(status, 409);
   });
+
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send(data);
 

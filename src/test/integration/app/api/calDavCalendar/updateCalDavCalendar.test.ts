@@ -1,19 +1,26 @@
-import {invalidUUID} from "../../../../testHelpers/common";
+import { invalidUUID } from '../../../../testHelpers/common';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
+import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = (id: string) => `/api/v1/caldav-calendars/${id}`;
 
 describe(`Update calDav calendar [PUT] ${PATH}`, async function () {
   let calendarID;
+  let userID;
+  let demoUserID;
+
   beforeEach(async () => {
-    const { calDavCalendar } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const { calDavCalendar } = await seedCalDavCalendars(userID);
     calendarID = calDavCalendar.id;
   });
 
@@ -31,7 +38,7 @@ describe(`Update calDav calendar [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .put(PATH(calendarID))
       .send({
         color: 'indigo',
@@ -44,7 +51,7 @@ describe(`Update calDav calendar [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 404', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH(invalidUUID))
       .send({
         color: 'indigo',
@@ -57,7 +64,7 @@ describe(`Update calDav calendar [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH(calendarID))
       .send({
         color: 'indigo',

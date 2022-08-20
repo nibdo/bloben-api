@@ -1,9 +1,8 @@
-import { mockRedisService } from '../__mocks__/RedisService';
+import { ImportMock } from 'ts-mock-imports';
 import { initDatabase } from '../testHelpers/initDatabase';
-import { closeConnection } from '../testHelpers/closeConnection';
 import { mockBullQueue } from '../__mocks__/bullQueue';
+import { mockRedisService } from '../__mocks__/RedisService';
 import { mockSocketio } from '../__mocks__/socketio';
-import {ImportMock} from "ts-mock-imports";
 
 export const mochaHooks = function () {
   return {
@@ -16,6 +15,7 @@ export const mochaHooks = function () {
 
       let count = 1;
       let isConnected = false;
+      // eslint-disable-next-line no-async-promise-executor
       return new Promise(async (resolve: any, reject: any) => {
         while (count < 10 && !isConnected) {
           try {
@@ -24,6 +24,7 @@ export const mochaHooks = function () {
 
             resolve();
           } catch (e) {
+            // eslint-disable-next-line no-console
             console.log(e);
             if (count >= 10) {
               reject();
@@ -37,11 +38,8 @@ export const mochaHooks = function () {
         }
       });
     },
-    async beforeEach() {
-      await initDatabase();
-    },
     async afterAll() {
-      await closeConnection();
+      // await closeConnection();
     },
   };
 };

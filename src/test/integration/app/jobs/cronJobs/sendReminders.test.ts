@@ -1,18 +1,22 @@
-import { REMINDER_STATUS } from '../../../../../data/entity/ReminderEntity';
-
-const assert = require('assert');
-import { initDatabase } from '../../../../testHelpers/initDatabase';
-import { initSeeds } from '../../../seeds/init';
-import { createTestReminder, getTestReminder } from '../../../../testHelpers/common';
 import { DateTime } from 'luxon';
+import { REMINDER_STATUS } from '../../../../../data/entity/ReminderEntity';
+import {
+  createTestReminder,
+  getTestReminder,
+} from '../../../../testHelpers/common';
+import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
+import { seedUserWithEntity } from '../../../seeds/1-user-seed';
 import { sendNotification } from '../../../../../jobs/cronJobs/sendNotification';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
 
 describe(`sendReminders [JOB]`, async function () {
   let eventData;
   let userData;
+
   beforeEach(async () => {
-    await initDatabase();
-    const { user, event } = await initSeeds();
+    const { user } = await seedUserWithEntity();
+    const { event } = await seedCalDavEvents(user.id);
     eventData = event;
     userData = user;
   });
