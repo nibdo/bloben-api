@@ -1,29 +1,25 @@
-import {ImportMock} from 'ts-mock-imports';
-import {DAVCalendarObject} from 'tsdav';
-import AdminUsersService from '../../../../../api/adminUsers/AdminUsersService';
-import {testUserData} from '../../../seeds/1-user-seed';
-import UserRepository from '../../../../../data/repository/UserRepository';
-import CalDavAccountEntity from '../../../../../data/entity/CalDavAccount';
-import CalDavCalendarEntity from '../../../../../data/entity/CalDavCalendar';
-import CalDavAccountRepository
-  from '../../../../../data/repository/CalDavAccountRepository';
-import CalDavCalendarRepository
-  from '../../../../../data/repository/CalDavCalendarRepository';
-import CalDavEventEntity from '../../../../../data/entity/CalDavEventEntity';
-import {forEach} from 'lodash';
-import ICalParser, {EventJSON} from 'ical-js-parser';
-import {formatEventJsonToCalDavEvent} from '../../../../../utils/davHelper';
-import {generateRandomString} from '../../../../../utils/common';
-import CalDavEventRepository
-  from '../../../../../data/repository/CalDavEventRepository';
-import {io} from '../../../../../app';
+import { DAVCalendarObject } from 'tsdav';
+import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
+import { ImportMock } from 'ts-mock-imports';
+import { forEach } from 'lodash';
+import { formatEventJsonToCalDavEvent } from '../../../../../utils/davHelper';
+import { generateRandomString } from '../../../../../utils/common';
+import { io } from '../../../../../app';
+import { seedUserWithEntity } from '../../../seeds/1-user-seed';
 import {
   testIcalStringTimeFormat,
   testIcalStringUnsupportedZone,
-  testIcalStringWrongDate
+  testIcalStringWrongDate,
 } from '../../../seeds/4-calDavEvents';
-import {DAV_ACCOUNT_TYPE} from "../../../../../bloben-interface/enums";
+import CalDavAccountEntity from '../../../../../data/entity/CalDavAccount';
+import CalDavAccountRepository from '../../../../../data/repository/CalDavAccountRepository';
+import CalDavCalendarEntity from '../../../../../data/entity/CalDavCalendar';
+import CalDavCalendarRepository from '../../../../../data/repository/CalDavCalendarRepository';
+import CalDavEventEntity from '../../../../../data/entity/CalDavEventEntity';
+import CalDavEventRepository from '../../../../../data/repository/CalDavEventRepository';
+import ICalParser, { EventJSON } from 'ical-js-parser';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const tsdav = require('tsdav');
 
 const createTestIcalString = (id: string, summary?: string) =>
@@ -55,18 +51,13 @@ export const eventToDeleteID = 'bebdce1a-f576-4b38-9ac7-e301ab32d6f9';
 const etagToKeep = 'FGHBAFJi123';
 
 const prepareData = async (accountUrl: string, calendarUrl: string) => {
-  await AdminUsersService.adminCreateUser({
-    body: testUserData,
-    // @ts-ignore
-    session: {},
-  });
-  const user = await UserRepository.findByUsername(testUserData.username);
+  const { user } = await seedUserWithEntity();
   const newAccount = new CalDavAccountEntity(
     {
       username: 'username1',
       password: 'aaabbbb',
       url: accountUrl,
-      accountType: DAV_ACCOUNT_TYPE.CALDAV
+      accountType: DAV_ACCOUNT_TYPE.CALDAV,
     },
     user
   );
@@ -126,6 +117,7 @@ const prepareMock = (accountUrl: string) => {
   ImportMock.restore();
 
   // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   io = {
     to: () => {
       return {
@@ -184,24 +176,24 @@ const prepareMock = (accountUrl: string) => {
     }));
 
     events.push({
-        data: testIcalStringWrongDate,
-        etag: '221xv1v87sd4v7sd8v1sd7v',
-        url: `${accountUrl}/asfasf/asfasfasf242`,
-      })
+      data: testIcalStringWrongDate,
+      etag: '221xv1v87sd4v7sd8v1sd7v',
+      url: `${accountUrl}/asfasf/asfasfasf242`,
+    });
 
     events.push({
       data: testIcalStringUnsupportedZone,
       etag: '221xv1v87sd4v7sd38v1sd7v',
       url: `${accountUrl}/asfasf/asfasfasf2412`,
-    })
+    });
 
     events.push({
       data: testIcalStringTimeFormat,
       etag: '221xv1v87sd4v7sd38v21sd7v',
       url: `${accountUrl}/asfasf/asfasf1asf2412`,
-    })
+    });
 
-    return events
+    return events;
   });
 
   return mockManager;

@@ -1,18 +1,20 @@
-import {initSeeds} from "../../../seeds/init";
-
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = `/api/v1/timezones`;
 
 describe(`Get timezones [GET] ${PATH}`, async function () {
+  let userID;
   beforeEach(async () => {
-    await initSeeds();
+    [userID] = await seedUsers();
   });
 
   it('Should get status 401', async function () {
@@ -23,9 +25,9 @@ describe(`Get timezones [GET] ${PATH}`, async function () {
     assert.equal(status, 401);
   });
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession()).get(
-      PATH
-    );
+    const response: any = await request(
+      createTestServerWithSession(userID)
+    ).get(PATH);
 
     const { status } = response;
 

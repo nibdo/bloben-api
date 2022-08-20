@@ -1,9 +1,9 @@
 import { Connection, MigrationInterface, getConnection } from 'typeorm';
 
+import { AdminCreateUserRequest } from '../../../bloben-interface/admin/admin';
 import { TEST_USER_PASSWORD } from './1-user-seed';
+import AdminUsersService from '../../../api/adminUsers/AdminUsersService';
 import UserEntity from '../../../data/entity/UserEntity';
-import {AdminCreateUserRequest} from "../../../bloben-interface/admin/admin";
-import AdminUsersService from "../../../api/adminUsers/AdminUsersService";
 
 const userData: AdminCreateUserRequest = {
   username: 'deleted_user',
@@ -20,8 +20,8 @@ export class deletedUser implements MigrationInterface {
       UserEntity,
       {
         where: {
-          username: userData.username
-        }
+          username: userData.username,
+        },
       }
     );
 

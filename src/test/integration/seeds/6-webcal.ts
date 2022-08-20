@@ -1,15 +1,9 @@
-import {
-  Connection,
-  MigrationInterface,
-  QueryRunner,
-  getConnection,
-} from 'typeorm';
+import { Connection, getConnection } from 'typeorm';
 
+import { CreateWebcalCalendarRequest } from '../../../bloben-interface/webcalCalendar/webcalCalendar';
 import UserEntity from '../../../data/entity/UserEntity';
 import WebcalCalendarEntity from '../../../data/entity/WebcalCalendarEntity';
 import WebcalEventEntity from '../../../data/entity/WebcalEventEntity';
-import { testUserData } from './1-user-seed';
-import { CreateWebcalCalendarRequest } from '../../../bloben-interface/webcalCalendar/webcalCalendar';
 
 export const webcalTestData: CreateWebcalCalendarRequest = {
   name: 'Test cal',
@@ -20,14 +14,14 @@ export const webcalTestData: CreateWebcalCalendarRequest = {
   userMailto: null,
 };
 
-export const createWebcalCalendars = async () => {
+export const createWebcalCalendars = async (userID: string) => {
   const connection: Connection = await getConnection();
 
   const user: UserEntity | undefined = await connection.manager.findOne(
     UserEntity,
     {
       where: {
-        username: testUserData.username,
+        id: userID,
       },
     }
   );
@@ -62,10 +56,6 @@ export const createWebcalCalendars = async () => {
   return webcalCalendar;
 };
 
-export class webcal implements MigrationInterface {
-  public async up(): Promise<{ webcalCalendar: WebcalCalendarEntity }> {
-    return { webcalCalendar: await createWebcalCalendars() };
-  }
-
-  public async down(queryRunner: QueryRunner): Promise<void> {}
-}
+export const seedWebcal = async (userID): Promise<WebcalCalendarEntity> => {
+  return createWebcalCalendars(userID);
+};

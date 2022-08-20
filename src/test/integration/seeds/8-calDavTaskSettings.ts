@@ -1,15 +1,15 @@
 import { Connection, MigrationInterface, getConnection } from 'typeorm';
 
 import { testUserData } from './1-user-seed';
-import UserEntity from '../../../data/entity/UserEntity';
 import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
 import CalDavTaskSettingsEntity from '../../../data/entity/CalDavTaskSettings';
+import UserEntity from '../../../data/entity/UserEntity';
 
 export class calDavTaskSettings implements MigrationInterface {
   public async up(): Promise<{ taskSettings: CalDavTaskSettingsEntity }> {
     const connection: Connection = await getConnection();
 
-    const [user, calendar] = await Promise.all([
+    const [, calendar] = await Promise.all([
       connection.manager.findOne(UserEntity, {
         where: {
           username: testUserData.username,

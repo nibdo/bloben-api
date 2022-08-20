@@ -1,8 +1,7 @@
+import { DAVAccount, DAVCalendar } from 'tsdav';
 import { ImportMock } from 'ts-mock-imports';
-import {DAVAccount, DAVCalendar, DAVCollection} from 'tsdav';
-import {
-  testIcalString
-} from '../integration/seeds/4-calDavEvents';
+import { testIcalString } from '../integration/seeds/4-calDavEvents';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const tsdav = require('tsdav');
 
 export const mockTsDav = () => {
@@ -31,14 +30,14 @@ export const mockTsDav = () => {
       status: 200,
       etag: 'ABCDE',
       url: 'card',
-    } as unknown as Response
+    } as unknown as Response;
   });
 
   // @ts-ignore
   mockManager.set('deleteVCard', () => {
     return {
       status: 200,
-    } as unknown as Response
+    } as unknown as Response;
   });
 
   // @ts-ignore
@@ -111,7 +110,6 @@ export const mockTsDav = () => {
 
   return mockManager;
 };
-
 
 export const mockTsDavEvent = (icalString: string) => {
   ImportMock.restore();
@@ -268,13 +266,12 @@ export const mockIcalStrings = (icalStrings: string[]) => {
 
   // @ts-ignore
   mockManager.set('fetchCalendarObjects', () => {
-    return icalStrings.map(icalString => ({
-          data: icalString,
-          etag: 'ABCDE123',
-          url: 'http://localhost:8012/test',
-        })
-    )
-  })
+    return icalStrings.map((icalString) => ({
+      data: icalString,
+      etag: 'ABCDE123',
+      url: 'http://localhost:8012/test',
+    }));
+  });
 
   // @ts-ignore
   mockManager.set('deleteCalendarObject', () => {

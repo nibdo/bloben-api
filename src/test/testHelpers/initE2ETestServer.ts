@@ -18,32 +18,32 @@ import errorMiddleware from '../../middleware/errorMiddleware';
 
 const redisClientOriginal: any = redis.createClient();
 const redisStore: any = connect_redis(session);
-import asyncRedis from 'async-redis';
 import { loadEnv } from '../../config/env';
-import { testUserCalDavData } from '../e2e/seeds/1-user-caldav-seed';
+import asyncRedis from 'async-redis';
 
 loadEnv();
 
-const testSessionMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const testUser: UserEntity = await getTestUser(testUserCalDavData.username);
+export const testSessionMiddleware = (
+  id: string
+): ((req: Request, res: Response, next: NextFunction) => any) => {
+  return async (req, res, next) => {
+    const testUser: UserEntity = await getTestUser(id);
 
-  if (testUser) {
-    req.session[SESSION.USER_ID] = testUser.id;
-    req.session[SESSION.ROLE] = testUser.role;
-    req.session.save();
-  }
+    if (testUser) {
+      req.session[SESSION.USER_ID] = testUser.id;
+      req.session[SESSION.ROLE] = testUser.role;
+      req.session.save();
+    }
 
-  return next();
+    return next();
+  };
 };
 
-export const createE2ETestServerWithSession = () => {
+export const createE2ETestServerWithSession = (userID: string) => {
   loadEnv();
   const redisConfig: any = createRedisConfig();
   // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   redisClient = asyncRedis.createClient(redisConfig);
 
   const TestBlobenApp: any = Express();
@@ -55,7 +55,7 @@ export const createE2ETestServerWithSession = () => {
 
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());
-  TestBlobenApp.use(testSessionMiddleware);
+  TestBlobenApp.use(testSessionMiddleware(userID));
   TestBlobenApp.use('/api', Router);
   TestBlobenApp.use(errorMiddleware);
 

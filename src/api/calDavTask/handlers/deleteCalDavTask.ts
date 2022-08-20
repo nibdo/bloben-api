@@ -29,7 +29,7 @@ export const deleteCalDavTask = async (
   );
 
   if (!calDavAccount) {
-    throw throwError('404', 'Not found');
+    throw throwError(404, 'Not found');
   }
 
   const client = await loginToCalDav(calDavAccount);

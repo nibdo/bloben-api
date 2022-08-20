@@ -1,27 +1,33 @@
-const request = require('supertest');
+import { seedUsers } from '../../../seeds/1-user-seed';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
+import { ImportMock } from 'ts-mock-imports';
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
-import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { ImportMock } from 'ts-mock-imports';
 import { invalidUUID } from '../../../../testHelpers/common';
+import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
+import { seedCardDavAddressBooks } from '../../../seeds/11-cardDavAddressBooks';
 
 const PATH = '/api/v1/carddav/contacts';
 
 describe(`Create carddav contact [POST] ${PATH}`, async function () {
-  let mockManager;
   let addressBookID;
-
   before(async () => {
-    mockManager = initCalDavMock();
+    initCalDavMock();
   });
 
+  let userID;
+  let demoUserID;
+
   beforeEach(async () => {
-    const { cardDavAddressBook } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const { cardDavAddressBook } = await seedCardDavAddressBooks(userID);
     addressBookID = cardDavAddressBook.id;
   });
 
@@ -38,7 +44,7 @@ describe(`Create carddav contact [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 404 not found', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         addressBookID: invalidUUID,
@@ -53,9 +59,9 @@ describe(`Create carddav contact [POST] ${PATH}`, async function () {
 
   it('Should get status 409 cannot connect to calDav server', async function () {
     ImportMock.restore();
-    mockManager = mockTsDavUnauthorized();
+    mockTsDavUnauthorized();
 
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         addressBookID: addressBookID,
@@ -68,11 +74,11 @@ describe(`Create carddav contact [POST] ${PATH}`, async function () {
     assert.equal(status, 409);
 
     ImportMock.restore();
-    mockManager = mockTsDav();
+    mockTsDav();
   });
 
   it('Should get status 403 forbidden', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .post(PATH)
       .send({
         addressBookID: addressBookID,
@@ -86,7 +92,7 @@ describe(`Create carddav contact [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         addressBookID: addressBookID,

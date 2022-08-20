@@ -1,16 +1,23 @@
-const request = require('supertest');
-const assert = require('assert');
+import { seedUsers } from '../../../../seeds/1-user-seed';
+
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../../seeds/init';
+import { seedSharedCalendar } from '../../../../seeds/10-sharedCalendar';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = '/api/v1/calendars/shared';
 
 describe(`Get shared calendars [GET] ${PATH}`, async function () {
+  let userID;
+  let demoUserID;
   beforeEach(async () => {
-    await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    await seedSharedCalendar(userID);
   });
 
   it('Should get status 401', async function () {
@@ -22,7 +29,7 @@ describe(`Get shared calendars [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .get(PATH)
       .send();
 
@@ -32,7 +39,7 @@ describe(`Get shared calendars [GET] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .get(PATH)
       .send();
 

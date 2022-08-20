@@ -1,15 +1,14 @@
-import { Connection, MigrationInterface, getConnection } from 'typeorm';
+import { Connection, getConnection } from 'typeorm';
 import { forEach } from 'lodash';
 
-import { testUserData } from './1-user-seed';
-import UserEntity from '../../../data/entity/UserEntity';
 import { CreateCalDavEventRequest } from '../../../bloben-interface/event/event';
-import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
-import ICalParser, { TodoJSON } from 'ical-js-parser';
 import { DAVCalendarObject } from 'tsdav';
+import { formatTodoJsonToCalDavTodo } from '../../../utils/davHelperTodo';
+import { seedCalDavCalendars } from './3-calDavCalendars';
 import { v4 } from 'uuid';
 import CalDavTaskEntity from '../../../data/entity/CalDavTaskEntity';
-import { formatTodoJsonToCalDavTodo } from '../../../utils/davHelperTodo';
+import ICalParser, { TodoJSON } from 'ical-js-parser';
+import UserEntity from '../../../data/entity/UserEntity';
 
 export const createDummyCalDavTask = (
   calendarID: string
@@ -65,48 +64,42 @@ export const testTodosData: CreateCalDavEventRequest[] = [
   },
 ];
 
-export class calDavTasks implements MigrationInterface {
-  public async up(): Promise<{ task: CalDavTaskEntity }> {
-    // @ts-ignore
-    const connection: Connection = await getConnection();
+export const seedTasks = async (
+  userID: string
+): Promise<{ task: CalDavTaskEntity }> => {
+  // @ts-ignore
+  const connection: Connection = await getConnection();
 
-    const [user, calendar] = await Promise.all([
-      connection.manager.findOne(UserEntity, {
-        where: {
-          username: testUserData.username,
-        },
-      }),
-      connection.manager.findOne(CalDavCalendarEntity, {
-        where: {
-          url: `http://${testUserData.username}`,
-        },
-      }),
-    ]);
+  const user: UserEntity | undefined = await connection.manager.findOne(
+    UserEntity,
+    {
+      where: {
+        id: userID,
+      },
+    }
+  );
 
-    const todos: CalDavTaskEntity[] = [];
+  const { calDavCalendar } = await seedCalDavCalendars(userID);
 
-    forEach(testTodosData, (todo) => {
-      const icalJS = ICalParser.toJSON(todo.iCalString);
-      const todoJSON: TodoJSON = icalJS.todos[0];
-      const todoObj = formatTodoJsonToCalDavTodo(
-        todoJSON,
-        {
-          data: '',
-          etag: '123',
-          url: `http://${testUserData.username}`,
-        } as DAVCalendarObject,
-        calendar
-      );
+  const todos: CalDavTaskEntity[] = [];
 
-      todos.push(new CalDavTaskEntity(todoObj));
-    });
+  forEach(testTodosData, (todo) => {
+    const icalJS = ICalParser.toJSON(todo.iCalString);
+    const todoJSON: TodoJSON = icalJS.todos[0];
+    const todoObj = formatTodoJsonToCalDavTodo(
+      todoJSON,
+      {
+        data: '',
+        etag: '123',
+        url: `http://${user.username}`,
+      } as DAVCalendarObject,
+      calDavCalendar
+    );
 
-    await connection.manager.save(todos);
+    todos.push(new CalDavTaskEntity(todoObj));
+  });
 
-    return { task: todos[0] };
-  }
+  await connection.manager.save(todos);
 
-  public async down(): Promise<void> {
-    return Promise.resolve();
-  }
-}
+  return { task: todos[0] };
+};

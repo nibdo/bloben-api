@@ -1,15 +1,9 @@
-import AdminUsersService from '../../../../../api/adminUsers/AdminUsersService';
-import {
-  testUserData,
-  testUserDataWebcal,
-  testUserDataWithTwoFactor,
-} from '../../../seeds/1-user-seed';
-import UserRepository from '../../../../../data/repository/UserRepository';
-import WebcalCalendarEntity from '../../../../../data/entity/WebcalCalendarEntity';
 import {
   WEBCAL_MOCK_URL_FAIL,
   WEBCAL_MOCK_URL_SUCCESS,
 } from '../../../../__mocks__/AxiosService';
+import { seedUserWithEntity } from '../../../seeds/1-user-seed';
+import WebcalCalendarEntity from '../../../../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../../../../data/repository/WebcalCalendarRepository';
 
 export const createDummyWebcal = async (data: {
@@ -18,13 +12,7 @@ export const createDummyWebcal = async (data: {
   syncFrequency?: number;
   updatedAt?: Date | undefined;
 }) => {
-  await AdminUsersService.adminCreateUser({
-    body: testUserDataWebcal,
-    // @ts-ignore
-    session: {},
-  });
-
-  const user = await UserRepository.findByUsername(testUserDataWebcal.username);
+  const { user } = await seedUserWithEntity();
 
   const webcalCalendar = new WebcalCalendarEntity(
     {
@@ -50,13 +38,7 @@ export const createDummyWebcal = async (data: {
 };
 
 export const createWebcalUserSuccess = async () => {
-  await AdminUsersService.adminCreateUser({
-    body: testUserData,
-    // @ts-ignore
-    session: {},
-  });
-
-  const user = await UserRepository.findByUsername(testUserData.username);
+  const { user } = await seedUserWithEntity();
 
   const webcalCalendar = new WebcalCalendarEntity(
     {
@@ -65,6 +47,7 @@ export const createWebcalUserSuccess = async () => {
       syncFrequency: 1,
       url: WEBCAL_MOCK_URL_SUCCESS,
       alarms: [],
+      userMailto: null,
     },
     user
   );
@@ -75,15 +58,7 @@ export const createWebcalUserSuccess = async () => {
 };
 
 export const createWebcalUserFail = async () => {
-  await AdminUsersService.adminCreateUser({
-    body: testUserDataWithTwoFactor,
-    // @ts-ignore
-    session: {},
-  });
-
-  const user = await UserRepository.findByUsername(
-    testUserDataWithTwoFactor.username
-  );
+  const { user } = await seedUserWithEntity();
 
   const webcalCalendar = new WebcalCalendarEntity(
     {
@@ -92,6 +67,7 @@ export const createWebcalUserFail = async () => {
       syncFrequency: 1,
       url: WEBCAL_MOCK_URL_FAIL,
       alarms: [],
+      userMailto: null,
     },
     user
   );

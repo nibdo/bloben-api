@@ -1,19 +1,25 @@
-import {initSeeds} from "../../../seeds/init";
-
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
+import {
+  TEST_USER_PASSWORD,
+  seedUsers,
+  testUserData,
+} from '../../../seeds/1-user-seed';
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { testUserData } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/users/change-password';
 
 describe(`Change password [POST] ${PATH}`, async function () {
+  let userID;
+  let demoUserID;
   beforeEach(async () => {
-    await initSeeds();
+    [userID, demoUserID] = await seedUsers();
   });
 
   it('Should get status 401', async function () {
@@ -31,10 +37,10 @@ describe(`Change password [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const server: any = createTestServerWithSession();
+    const server: any = createTestServerWithSession(userID);
 
     const response: any = await request(server).post(PATH).send({
-      oldPassword: testUserData.password,
+      oldPassword: TEST_USER_PASSWORD,
       newPassword: 'sasfasfsaaasf',
       cryptoPassword: 'asdfasf',
     });
@@ -45,10 +51,10 @@ describe(`Change password [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 403 forbidden', async function () {
-    const server: any = createTestServerWithSession(true);
+    const server: any = createTestServerWithSession(demoUserID);
 
     const response: any = await request(server).post(PATH).send({
-      oldPassword: testUserData.password,
+      oldPassword: TEST_USER_PASSWORD,
       newPassword: 'sasfasfsaaasf',
       cryptoPassword: 'asdfasf',
     });
@@ -59,7 +65,7 @@ describe(`Change password [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 with wrong password', async function () {
-    const server: any = createTestServerWithSession();
+    const server: any = createTestServerWithSession(userID);
 
     const response: any = await request(server).post(PATH).send({
       oldPassword: 'sasfasfsaaasf',

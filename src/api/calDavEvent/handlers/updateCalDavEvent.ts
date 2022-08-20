@@ -142,7 +142,7 @@ export const updateCalDavEvent = async (
   const event = await CalDavEventRepository.getCalDavEventByID(userID, body.id);
 
   if (!event) {
-    throw throwError('404', 'Event not found');
+    throw throwError(404, 'Event not found');
   }
 
   let response: any;
@@ -153,7 +153,7 @@ export const updateCalDavEvent = async (
   );
 
   if (!calDavAccount) {
-    throw throwError('404', 'Account not found');
+    throw throwError(404, 'Account not found');
   }
 
   const client = await loginToCalDav(calDavAccount);

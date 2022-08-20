@@ -1,30 +1,23 @@
+import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
 import { ImportMock } from 'ts-mock-imports';
-import AdminUsersService from '../../../../../api/adminUsers/AdminUsersService';
-import { testUserData } from '../../../seeds/1-user-seed';
-import UserRepository from '../../../../../data/repository/UserRepository';
-import CalDavAccountEntity from '../../../../../data/entity/CalDavAccount';
-import CalDavAccountRepository from '../../../../../data/repository/CalDavAccountRepository';
+import { ParsedContact } from '../../../../../utils/davHelper';
 import { forEach, map } from 'lodash';
 import { generateRandomString } from '../../../../../utils/common';
 import { io } from '../../../../../app';
-import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
+import { parseFromVcardString } from '../../../../../utils/vcardParser';
+import { seedUserWithEntity } from '../../../seeds/1-user-seed';
+import { todoToKeepID } from './syncCalDavTodoQueueJob.seed';
+import CalDavAccountEntity from '../../../../../data/entity/CalDavAccount';
+import CalDavAccountRepository from '../../../../../data/repository/CalDavAccountRepository';
 import CardDavAddressBook from '../../../../../data/entity/CardDavAddressBook';
 import CardDavAddressBookRepository from '../../../../../data/repository/CardDavAddressBookRepository';
 import CardDavContact from '../../../../../data/entity/CardDavContact';
-import { parseFromVcardString } from '../../../../../utils/vcardParser';
-import { ParsedContact } from '../../../../../utils/davHelper';
-import { todoToKeepID } from './syncCalDavTodoQueueJob.seed';
 import CardDavContactRepository from '../../../../../data/repository/CardDavContactRepository';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const tsdav = require('tsdav');
 
 const createTestVcal = (id: string, email?: string) =>
-  `begin:vcard
-  version:bloben 3.0
-fn:Abadadadadad John
-n:John;Abadadadadad
-email;${email}
-end:vcard
-`;
+  `BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:Bloben\r\nUID:${id}\r\nFN:Abadadadadad John\r\nemail:${email}\r\nREV:${new Date().toISOString()}\r\nEND:VCARD`;
 
 export const vcalToInsertID = 'fd2acf38-40d7-4d33-b708-da1df05d18e1';
 export const vcalToUpdateID = '1ad2b4f3-f4d3-47ff-93d2-99a8eec4c0b2';
@@ -34,12 +27,8 @@ export const vcalToDeleteID = 'bebdce1a-f576-2b38-9ac7-e301ab32d6f9';
 const etagToKeep = 'FGHBAFJi123';
 
 const prepareData = async (accountUrl: string, calendarUrl: string) => {
-  await AdminUsersService.adminCreateUser({
-    body: testUserData,
-    // @ts-ignore
-    session: {},
-  });
-  const user = await UserRepository.findByUsername(testUserData.username);
+  const { user } = await seedUserWithEntity();
+
   const newAccount = new CalDavAccountEntity(
     {
       username: 'username1',
@@ -98,6 +87,7 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
   ImportMock.restore();
 
   // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   io = {
     to: () => {
       return {

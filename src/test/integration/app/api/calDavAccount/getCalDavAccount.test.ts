@@ -1,58 +1,63 @@
-import {invalidUUID} from "../../../../testHelpers/common";
+import { invalidUUID } from '../../../../testHelpers/common';
 
-const request = require("supertest");
-const assert = require("assert");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import {
-    createTestServer,
-    createTestServerWithSession
-} from "../../../../testHelpers/initTestServer";
-import { initSeeds } from "../../../seeds/init";
+  createTestServer,
+  createTestServerWithSession,
+} from '../../../../testHelpers/initTestServer';
+import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = (id: string) => `/api/v1/caldav-accounts/${id}`;
 
-describe(`Get calDav account [GET] ${PATH}`, async function() {
-
-    let calDavAccountID
+describe(`Get calDav account [GET] ${PATH}`, async function () {
+  let calDavAccountID;
+  let userID;
+  let demoUserID;
 
   beforeEach(async () => {
-      const {calDavAccount} = await initSeeds();
-      calDavAccountID = calDavAccount.id
+    [userID, demoUserID] = await seedUsers();
+    const { calDavAccount } = await seedCalDavCalendars(userID);
+    calDavAccountID = calDavAccount.id;
   });
 
-    it("Should get status 401", async function() {
-        const response: any = await request(createTestServer())
-            .get(PATH(calDavAccountID))
-            .send();
+  it('Should get status 401', async function () {
+    const response: any = await request(createTestServer())
+      .get(PATH(calDavAccountID))
+      .send();
 
-        const { status } = response;
+    const { status } = response;
 
-        assert.equal(status, 401);
-    });
+    assert.equal(status, 401);
+  });
 
-    it("Should get status 404 not found", async function() {
-        const response: any = await request(createTestServerWithSession())
-            .get(PATH(invalidUUID))
-            .send();
+  it('Should get status 404 not found', async function () {
+    const response: any = await request(createTestServerWithSession(userID))
+      .get(PATH(invalidUUID))
+      .send();
 
-        const { status } = response;
+    const { status } = response;
 
-        assert.equal(status, 404);
-    });
+    assert.equal(status, 404);
+  });
 
-    it("Should get status 404 demo user", async function() {
-        const response: any = await request(createTestServerWithSession(true))
-            .get(PATH(calDavAccountID))
-            .send();
+  it('Should get status 404 demo user', async function () {
+    const response: any = await request(createTestServerWithSession(demoUserID))
+      .get(PATH(calDavAccountID))
+      .send();
 
-        const { status } = response;
+    const { status } = response;
 
-        assert.equal(status, 404);
-    });
+    assert.equal(status, 404);
+  });
 
-  it("Should get status 200", async function() {
-    const response: any = await request(createTestServerWithSession())
-        .get(PATH(calDavAccountID))
-        .send();
+  it('Should get status 200', async function () {
+    const response: any = await request(createTestServerWithSession(userID))
+      .get(PATH(calDavAccountID))
+      .send();
 
     const { status } = response;
 

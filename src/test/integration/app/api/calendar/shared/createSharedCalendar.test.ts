@@ -1,11 +1,16 @@
-const request = require('supertest');
+import { seedUsers } from '../../../../seeds/1-user-seed';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../../seeds/init';
 import { invalidUUID } from '../../../../../testHelpers/common';
+import { seedCalDavCalendars } from '../../../../seeds/3-calDavCalendars';
+import { seedWebcal } from '../../../../seeds/6-webcal';
 
 const PATH = '/api/v1/calendars/shared';
 
@@ -21,10 +26,14 @@ const testBody = {
 describe(`Create shared calendar [POST] ${PATH}`, async function () {
   let calendarID;
   let webcalCalendarID;
+  let userID;
+  let demoUserID;
   beforeEach(async () => {
-    const { calDavCalendar, webcalCalendar } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const webcalCalendarEntity = await seedWebcal(userID);
+    const { calDavCalendar } = await seedCalDavCalendars(userID);
     calendarID = calDavCalendar.id;
-    webcalCalendarID = webcalCalendar.id;
+    webcalCalendarID = webcalCalendarEntity.id;
   });
 
   it('Should get status 401', async function () {
@@ -38,7 +47,7 @@ describe(`Create shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .post(PATH)
       .send(testBody);
 
@@ -48,7 +57,7 @@ describe(`Create shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 404 CalDAV', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({ ...testBody, calDavCalendars: [invalidUUID] });
 
@@ -58,7 +67,7 @@ describe(`Create shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 404 webcal', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({ ...testBody, webcalCalendars: [invalidUUID] });
 
@@ -68,7 +77,7 @@ describe(`Create shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         ...testBody,

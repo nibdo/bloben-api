@@ -8,19 +8,18 @@ import {
   eventToUpdateID,
   initSyncCalDavQueueJobData,
 } from './syncCalDavQueueJob.seed';
-
-const assert = require('assert');
 import { syncCalDavQueueJob } from '../../../../../jobs/queueJobs/syncCalDavQueueJob';
 import CalDavCalendarRepository from '../../../../../data/repository/CalDavCalendarRepository';
 import CalDavEventRepository from '../../../../../data/repository/CalDavEventRepository';
-import { initDatabase } from '../../../../testHelpers/initDatabase';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
 
 describe(`syncCalDavQueueJob [JOB]`, async function () {
   let userID: string;
   const accountUrl = 'http://localhost:3000';
 
   beforeEach(async () => {
-    await initDatabase();
     const user = await initSyncCalDavQueueJobData(accountUrl);
 
     userID = user.id;

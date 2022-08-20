@@ -1,16 +1,12 @@
-import { initSeeds } from '../../../seeds/init';
-
-import request from 'supertest';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
-import {
-  createAdminTestServerWithSession,
-  createTestServer,
-} from '../../../../testHelpers/initTestServer';
-import {
-  createAdminToken,
-  createWrongAdminToken
-} from '../../../../testHelpers/getTestUser';
+import { createAdminTestServerWithSession } from '../../../../testHelpers/initTestServer';
+import { createWrongAdminToken } from '../../../../testHelpers/getTestUser';
+import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/admin/users';
 
@@ -18,9 +14,10 @@ describe(`Get users admin [GET] ${PATH}`, async function () {
   let token;
   let wrongToken;
   beforeEach(async () => {
-    await initSeeds();
-    token = await createAdminToken();
-    wrongToken = await createWrongAdminToken()
+    await seedUsers();
+    const { jwtToken } = await seedAdminUser();
+    token = jwtToken;
+    wrongToken = await createWrongAdminToken();
   });
 
   it('Should get status 200', async function () {
@@ -40,9 +37,9 @@ describe(`Get users admin [GET] ${PATH}`, async function () {
     const server: any = createAdminTestServerWithSession();
 
     const response: any = await request(server)
-        .get(PATH)
-        .set('token', wrongToken)
-        .send();
+      .get(PATH)
+      .set('token', wrongToken)
+      .send();
 
     const { status } = response;
 

@@ -1,19 +1,21 @@
-import { initSeeds } from '../../seeds/init';
+import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import { DateTime } from 'luxon';
-import { v4 } from 'uuid';
 import {
   createDummyCalDavEvent,
   createDummyCalDavEventWithAlarm,
   createDummyCalDavEventWithAttendees,
   createDummyCalDavEventWithRepeatedAlarm,
 } from '../../../integration/seeds/4-calDavEvents';
-import { getTestReminders } from '../../../testHelpers/getTestReminders';
-import { createTestCalendarCalendar } from '../calDavServerTestHelper';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
+import { createTestCalendarCalendar } from '../calDavServerTestHelper';
+import { getTestReminders } from '../../../testHelpers/getTestReminders';
 import { invalidUUID } from '../../../testHelpers/common';
+import { v4 } from 'uuid';
 
 const PATH = '/api/v1/caldav-events';
 
@@ -23,14 +25,15 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
   let requestBodyWithAlarm;
   let requestBodyWithAlarmRepeated;
   let remoteID;
-
+  let userID;
   beforeEach(async () => {
-    remoteID = v4();
-    const { calDavAccount, user } = await initSeeds();
+    const { userData } = await seedUsersE2E();
+    userID = userData.user.id;
     const calDavCalendar = await createTestCalendarCalendar(
-      user.id,
-      calDavAccount
+      userData.user.id,
+      userData.calDavAccount
     );
+    remoteID = v4();
     requestBody = createDummyCalDavEvent(calDavCalendar.id, remoteID);
     requestBodyAttendees = createDummyCalDavEventWithAttendees(
       calDavCalendar.id,
@@ -48,11 +51,11 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 404 not found', async function () {
-    await request(createE2ETestServerWithSession())
+    await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send(requestBody);
 
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send({ ...requestBody, calendarID: invalidUUID });
 
@@ -62,7 +65,7 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send(requestBody);
 
@@ -72,7 +75,7 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200 with attendees', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send(requestBodyAttendees);
 
@@ -82,7 +85,7 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200 and create reminder', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send(requestBodyWithAlarm);
 
@@ -99,7 +102,7 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200 and create repeated reminders', async function () {
-    const response: any = await request(createE2ETestServerWithSession())
+    const response: any = await request(createE2ETestServerWithSession(userID))
       .post(PATH)
       .send(requestBodyWithAlarmRepeated);
 

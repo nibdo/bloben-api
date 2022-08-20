@@ -1,7 +1,7 @@
-import CalDavEventEntity from '../../data/entity/CalDavEventEntity';
-import CalDavEventAlarmEntity from '../../data/entity/CalDavEventAlarmEntity';
-import ReminderEntity from '../../data/entity/ReminderEntity';
 import { getConnection } from 'typeorm';
+import CalDavEventAlarmEntity from '../../data/entity/CalDavEventAlarmEntity';
+import CalDavEventEntity from '../../data/entity/CalDavEventEntity';
+import ReminderEntity from '../../data/entity/ReminderEntity';
 import UserEntity from '../../data/entity/UserEntity';
 
 export const invalidUUID = '460f1b3c-d781-45b3-9f2f-0008cf57c126';

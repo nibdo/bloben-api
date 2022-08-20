@@ -1,20 +1,17 @@
-import { MigrationInterface } from 'typeorm';
-
+import { AdminCreateUserRequest } from '../../../bloben-interface/admin/admin';
+import { USER_ROLE } from '../../../api/user/UserEnums';
+import { generateRandomSimpleString } from '../../../utils/common';
+import { v4 } from 'uuid';
+import CalendarSettingsEntity from '../../../data/entity/CalendarSettings';
+import CalendarSettingsRepository from '../../../data/repository/CalendarSettingsRepository';
+import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
-import {AdminCreateUserRequest} from "../../../bloben-interface/admin/admin";
-import AdminUsersService from "../../../api/adminUsers/AdminUsersService";
-import UserEntity from "../../../data/entity/UserEntity";
-import {ROLE} from "../../../bloben-interface/enums";
+import bcrypt from 'bcrypt';
 
 export const TEST_USER_PASSWORD = 'asivi2xxco59af';
 
 export const testUserData: AdminCreateUserRequest = {
   username: 'test_user',
-  password: TEST_USER_PASSWORD,
-};
-
-export const testUserDataWebcal: AdminCreateUserRequest = {
-  username: 'test_user_webcal',
   password: TEST_USER_PASSWORD,
 };
 
@@ -30,48 +27,47 @@ export const testUserDataWithTwoFactor: AdminCreateUserRequest = {
 
 export const TWO_FACTOR_SECRET = 'IZLXCU2GJZIDWQTR';
 
-export class userSeed implements MigrationInterface {
-  public async up(): Promise<UserEntity> {
-    // @ts-ignore
-    await AdminUsersService.adminCreateUser({
-      body: testUserData,
-      // @ts-ignore
-      session: {}
-    });
-    await AdminUsersService.adminCreateUser({
-      body: testDemoUserData,
-      // @ts-ignore
-      session: {}
-    });
-    await AdminUsersService.adminCreateUser({
-      body: testUserDataWithTwoFactor,
-      // @ts-ignore
-      session: {}
-    });
+export const seedUser = async (customData?: any): Promise<UserEntity> => {
+  const defaultData: AdminCreateUserRequest = {
+    username: generateRandomSimpleString(30),
+    password: TEST_USER_PASSWORD,
+  };
 
-    const user = await UserRepository.findByUsername(testUserData.username);
-    user.isEnabled = true;
-    await UserRepository.update(user);
+  const newUser: UserEntity = new UserEntity(defaultData);
 
-    const demoUser = await UserRepository.findByUsername(testDemoUserData.username);
-    demoUser.isEnabled = true;
-    demoUser.role = ROLE.DEMO
-    await UserRepository.update(demoUser);
+  // hash user password
+  const saltRounds = 10;
+  const salt = await bcrypt.genSaltSync(saltRounds);
+  newUser.id = v4();
+  newUser.username = defaultData.username;
+  newUser.hash = await bcrypt.hashSync(TEST_USER_PASSWORD, salt);
 
-    const userWithTwoFactor = await UserRepository.findByUsername(
-      testUserDataWithTwoFactor.username
-    );
+  const repository = UserRepository.getRepository();
+  await repository.save(newUser);
 
-    userWithTwoFactor.twoFactorSecret = TWO_FACTOR_SECRET;
-    userWithTwoFactor.isTwoFactorEnabled = true;
-    userWithTwoFactor.isEnabled = true;
+  const calendarSettings = new CalendarSettingsEntity();
+  calendarSettings.user = newUser;
 
-    await UserRepository.update(userWithTwoFactor);
+  await CalendarSettingsRepository.getRepository().save(calendarSettings);
 
-    return user
-  }
+  await repository.update(newUser.id, {
+    isEnabled: true,
+    ...customData,
+  });
 
-  public async down(): Promise<void> {
-    return Promise.resolve();
-  }
-}
+  return newUser;
+};
+
+export const seedUsers = async (data?: any) => {
+  const user = await seedUser(data);
+  const demoUser = await seedUser({ role: USER_ROLE.DEMO });
+
+  return [user.id, demoUser.id];
+};
+
+export const seedUserWithEntity = async (data?: any) => {
+  const user = await seedUser(data);
+  const demoUser = await seedUser({ role: USER_ROLE.DEMO });
+
+  return { user, demoUser };
+};
