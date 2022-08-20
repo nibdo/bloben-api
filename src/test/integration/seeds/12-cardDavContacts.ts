@@ -1,13 +1,12 @@
-import { Connection, getConnection, MigrationInterface } from 'typeorm';
+import { Connection, getConnection } from 'typeorm';
 import { forEach } from 'lodash';
 
-import { testUserData } from './1-user-seed';
-import UserEntity from '../../../data/entity/UserEntity';
-import { ParsedContact } from '../../../utils/davHelper';
-import { v4 } from 'uuid';
 import { CreateCardDavContactRequest } from '../../../bloben-interface/cardDavContact/cardDavContact';
+import { ParsedContact } from '../../../utils/davHelper';
+import { seedCardDavAddressBooks } from './11-cardDavAddressBooks';
+import { v4 } from 'uuid';
 import CardDavContact from '../../../data/entity/CardDavContact';
-import CardDavAddressBook from '../../../data/entity/CardDavAddressBook';
+import UserEntity from '../../../data/entity/UserEntity';
 
 export const testContactsData: CreateCardDavContactRequest[] = [
   {
@@ -27,47 +26,38 @@ export const testContactsData: CreateCardDavContactRequest[] = [
   },
 ];
 
-export class cardDavContacts implements MigrationInterface {
-  public async up(): Promise<{
-    contact: CardDavContact;
-  }> {
-    // @ts-ignore
-    const connection: Connection = await getConnection();
+export const seedContacts = async (
+  userID: string
+): Promise<{
+  contact: CardDavContact;
+}> => {
+  // @ts-ignore
+  const connection: Connection = await getConnection();
 
-    const [user, addressBook] = await Promise.all([
-      connection.manager.findOne(UserEntity, {
-        where: {
-          username: testUserData.username,
-        },
-      }),
-      connection.manager.findOne(CardDavAddressBook, {
-        where: {
-          url: `http://${testUserData.username}`,
-        },
-      }),
-    ]);
+  const user = await connection.manager.findOne(UserEntity, {
+    where: {
+      id: userID,
+    },
+  });
 
-    const contacts: CardDavContact[] = [];
+  const { cardDavAddressBook } = await seedCardDavAddressBooks(user.id);
 
-    forEach(testContactsData, (contact) => {
-      const data: ParsedContact = {
-        data: {
-          externalID: v4(),
-          emails: [contact.email],
-          fullName: contact.fullName,
-        },
-        etag: 'asadasf',
-        url: 'http://localhost/102',
-      };
-      contacts.push(new CardDavContact(data, addressBook.id));
-    });
+  const contacts: CardDavContact[] = [];
 
-    await connection.manager.save(contacts);
+  forEach(testContactsData, (contact) => {
+    const data: ParsedContact = {
+      data: {
+        externalID: v4(),
+        emails: [contact.email],
+        fullName: contact.fullName,
+      },
+      etag: 'asadasf',
+      url: 'http://localhost/102',
+    };
+    contacts.push(new CardDavContact(data, cardDavAddressBook.id));
+  });
 
-    return { contact: contacts[0] };
-  }
+  await connection.manager.save(contacts);
 
-  public async down(): Promise<void> {
-    return Promise.resolve();
-  }
-}
+  return { contact: contacts[0] };
+};

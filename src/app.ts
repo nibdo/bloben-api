@@ -83,7 +83,10 @@ const createApp = (): Promise<void> => {
 
     createBlobenApp();
     const server = http.createServer(BlobenApp);
-    server.listen(env.port);
+
+    if (env.nodeEnv !== NODE_ENV.TEST) {
+      server.listen(env.port);
+    }
     io = new Server(server, createSocketOptions());
     initWebsockets();
 

@@ -8,6 +8,7 @@ import { emptySchema } from '../../common/schemas/emptySchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
 import { updateUserEmailConfigSchema } from './schemas/UpdateUserEmailConfigSchema';
+import { userMiddleware } from '../../middleware/userMiddleware';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
 
 const UserEmailConfigRoutes: Router = Router();
@@ -40,6 +41,7 @@ UserEmailConfigRoutes.delete(
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
     validationMiddleware(emptySchema),
     authMiddleware,
+    userMiddleware,
     roleMiddleware([USER_ROLE.USER]),
   ],
   UserEmailConfigController.deleteUserEmailConfig

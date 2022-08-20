@@ -1,6 +1,7 @@
-import { injectMethod } from '../../../utils/davHelper';
 import { CALENDAR_METHOD } from '../../../utils/ICalHelper';
+import { injectMethod } from '../../../utils/davHelper';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 
 const eventString = `BEGIN:VCALENDAR

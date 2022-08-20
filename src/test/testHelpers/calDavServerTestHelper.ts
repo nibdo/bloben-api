@@ -1,9 +1,9 @@
-import { createCalDavCalendar } from '../../api/calDavCalendar/handlers/createCalDavCalendar';
-import CalDavCalendarEntity from '../../data/entity/CalDavCalendar';
 import { CALDAV_COMPONENTS } from '../../bloben-interface/enums';
+import { CALDAV_TEST_ACCOUNT } from '../e2e/seeds/1-user-caldav-seed';
+import { createCalDavCalendar } from '../../api/calDavCalendar/handlers/createCalDavCalendar';
 import CalDavAccountEntity from '../../data/entity/CalDavAccount';
+import CalDavCalendarEntity from '../../data/entity/CalDavCalendar';
 import CalDavCalendarRepository from '../../data/repository/CalDavCalendarRepository';
-import {CALDAV_TEST_ACCOUNT} from "../e2e/seeds/1-user-caldav-seed";
 
 export const createTestCalendarCalendar = async (
   userID: string,

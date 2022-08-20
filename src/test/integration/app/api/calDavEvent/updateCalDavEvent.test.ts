@@ -2,38 +2,43 @@ import {
   createDummyCalDavEventWithAlarm,
   createDummyCalDavEventWithAttendees,
   createDummyCalDavEventWithRepeatedAlarm,
+  seedCalDavEvents,
   testIcalString,
 } from '../../../seeds/4-calDavEvents';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
+import { DateTime } from 'luxon';
+import { ImportMock } from 'ts-mock-imports';
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
+import { getTestReminders } from '../../../../testHelpers/getTestReminders';
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
+import { invalidUUID } from '../../../../testHelpers/common';
 import {
   mockTsDav,
   mockTsDavEvent,
   mockTsDavUnauthorized,
 } from '../../../../__mocks__/tsdav';
-import { ImportMock } from 'ts-mock-imports';
-import { getTestReminders } from '../../../../testHelpers/getTestReminders';
-import { DateTime } from 'luxon';
-import {invalidUUID} from "../../../../testHelpers/common";
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/caldav-events';
 
 describe(`Update calDav event [PUT] ${PATH}`, async function () {
-  let mockManager;
   let calDavEvent;
+  let userID;
+  let demoUserID;
   before(async () => {
-    mockManager = initCalDavMock();
+    initCalDavMock();
   });
 
   beforeEach(async () => {
-    const { event } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const { event } = await seedCalDavEvents(userID);
     calDavEvent = event;
   });
 
@@ -54,7 +59,7 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 404', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
         calendarID: invalidUUID,
@@ -73,9 +78,9 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
 
   it('Should get status 409 cannot connect to calDav server', async function () {
     ImportMock.restore();
-    mockManager = mockTsDavUnauthorized();
+    mockTsDavUnauthorized();
 
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
         externalID: calDavEvent.externalID,
@@ -92,11 +97,11 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
     assert.equal(status, 409);
 
     ImportMock.restore();
-    mockManager = mockTsDav();
+    mockTsDav();
   });
 
   it('Should get status 403 forbidden', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .put(PATH)
       .send({
         externalID: calDavEvent.externalID,
@@ -114,7 +119,7 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
         externalID: calDavEvent.externalID,
@@ -132,7 +137,7 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200 with changed calendar', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
         externalID: calDavEvent.externalID,
@@ -155,7 +160,7 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200 with attendees', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
         externalID: calDavEvent.externalID,
@@ -180,7 +185,7 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
 
     mockTsDavEvent(requestBodyWithAlarm.iCalString);
 
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
         externalID: calDavEvent.externalID,
@@ -213,7 +218,7 @@ describe(`Update calDav event [PUT] ${PATH}`, async function () {
 
     mockTsDavEvent(requestBodyWithAlarmRepeated.iCalString);
 
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
         externalID: calDavEvent.externalID,

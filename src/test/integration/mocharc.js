@@ -1,8 +1,10 @@
 module.exports = {
   exit: true,
-  require: ['./src/test/integration/hooks.ts'],
   reporter: 'spec',
   timeout: 20000,
+  require: ['./src/test/integration/hooks.ts'],
+  parallel: true,
+  jobs: 2,
   verbose: true,
   spec: [
     './src/test/integration/app/*/*/*.test.ts',

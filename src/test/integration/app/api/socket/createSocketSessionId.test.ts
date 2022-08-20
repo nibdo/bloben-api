@@ -1,16 +1,16 @@
-import {
-  CreateSocketSessionRequest
-} from "../../../../../bloben-interface/socket/socket";
+import { CreateSocketSessionRequest } from '../../../../../bloben-interface/socket/socket';
 
-const request = require('supertest');
-const assert = require('assert');
 import { v4 } from 'uuid';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import {initSeeds} from "../../../seeds/init";
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/socket';
 
@@ -19,8 +19,10 @@ const data: CreateSocketSessionRequest = {
 };
 
 describe(`Socket session [POST] ${PATH}`, async function () {
+  let userID;
+  let demoUserID;
   beforeEach(async () => {
-    await initSeeds();
+    [userID, demoUserID] = await seedUsers();
   });
 
   it('Should get status 401', async function () {
@@ -34,9 +36,9 @@ describe(`Socket session [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
-        .post(PATH)
-        .send(data);
+    const response: any = await request(createTestServerWithSession(demoUserID))
+      .post(PATH)
+      .send(data);
 
     const { status } = response;
 
@@ -44,7 +46,7 @@ describe(`Socket session [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send(data);
 

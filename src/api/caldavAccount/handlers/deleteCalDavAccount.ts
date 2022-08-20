@@ -27,17 +27,17 @@ export const deleteCalDavAccount = async (
   let connection: Connection | null;
   let queryRunner: QueryRunner | null;
 
+  const { userID } = res.locals;
+  const { id } = req.params;
+
+  const calDavAccount: CalDavAccount | null =
+    await CalDavAccountRepository.getByIDAllTypes(id, userID);
+
+  if (!calDavAccount) {
+    throw throwError(404, 'Account not found', req);
+  }
+
   try {
-    const { userID } = res.locals;
-    const { id } = req.params;
-
-    const calDavAccount: CalDavAccount | null =
-      await CalDavAccountRepository.getByIDAllTypes(id, userID);
-
-    if (!calDavAccount) {
-      throw throwError(404, 'Account not found', req);
-    }
-
     const calendarSettings: {
       id: string | null;
     }[] = await CalendarSettingsRepository.getRepository().query(

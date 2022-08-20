@@ -1,23 +1,21 @@
+import {
+  createTestServer,
+  createTestServerWithSession,
+} from '../../../../testHelpers/initTestServer';
+import { seedUsers } from '../../../seeds/1-user-seed';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-import {
-  createTestServer,
-  createTestServerWithSession,
-} from '../../../../testHelpers/initTestServer';
-import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
-import { seedUsers } from '../../../seeds/1-user-seed';
+const PATH = `/api/v1/webcal/calendars`;
 
-const PATH = `/api/v1/events`;
-
-describe(`Get events [GET] ${PATH}`, async function () {
+describe(`Get calendars [GET] ${PATH}`, async function () {
   let userID;
   let demoUserID;
   beforeEach(async () => {
     [userID, demoUserID] = await seedUsers();
-    await seedCalDavEvents(userID);
   });
 
   it('Should get status 401', async function () {
@@ -28,7 +26,7 @@ describe(`Get events [GET] ${PATH}`, async function () {
     assert.equal(status, 401);
   });
 
-  it('Should get status 200 demo user', async function () {
+  it('Should get status 403 demo', async function () {
     const response: any = await request(
       createTestServerWithSession(demoUserID)
     ).get(`${PATH}`);

@@ -1,27 +1,34 @@
 import { mockTsDav } from '../../../../__mocks__/tsdav';
 
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../seeds/init';
-import {invalidUUID} from "../../../../testHelpers/common";
+import { invalidUUID } from '../../../../testHelpers/common';
+import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
+import { seedUsers } from '../../../seeds/1-user-seed';
 
 const PATH = (id: string) => `/api/v1/caldav-calendars/${id}`;
 
 describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
   let calendarID;
+  let userID;
+  let demoUserID;
+
   beforeEach(async () => {
-    const { calDavCalendar } = await initSeeds();
+    [userID, demoUserID] = await seedUsers();
+    const { calDavCalendar } = await seedCalDavCalendars(userID);
     calendarID = calDavCalendar.id;
   });
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer())
-        .delete(PATH(calendarID))
-        .send();
+      .delete(PATH(calendarID))
+      .send();
 
     const { status } = response;
 
@@ -29,9 +36,9 @@ describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
   });
 
   it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
-        .delete(PATH(calendarID))
-        .send();
+    const response: any = await request(createTestServerWithSession(demoUserID))
+      .delete(PATH(calendarID))
+      .send();
 
     const { status } = response;
 
@@ -41,9 +48,9 @@ describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
   it('Should get status 404', async function () {
     mockTsDav();
 
-    const response: any = await request(createTestServerWithSession())
-        .delete(PATH(invalidUUID))
-        .send();
+    const response: any = await request(createTestServerWithSession(userID))
+      .delete(PATH(invalidUUID))
+      .send();
 
     const { status } = response;
 
@@ -53,9 +60,9 @@ describe(`Delete calDav calendar [DELETE] ${PATH}`, async function () {
   it('Should get status 200', async function () {
     mockTsDav();
 
-    const response: any = await request(createTestServerWithSession())
-        .delete(PATH(calendarID))
-        .send();
+    const response: any = await request(createTestServerWithSession(userID))
+      .delete(PATH(calendarID))
+      .send();
 
     const { status } = response;
 

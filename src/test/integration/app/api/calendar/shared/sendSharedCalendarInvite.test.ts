@@ -1,14 +1,17 @@
 import { invalidUUID } from '../../../../../testHelpers/common';
 
-const request = require('supertest');
-const assert = require('assert');
+import { PostSendSharedCalendarInviteRequest } from '../../../../../../bloben-interface/calendar/shared/calendarShared';
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
-import { initSeeds } from '../../../../seeds/init';
-import { PostSendSharedCalendarInviteRequest } from '../../../../../../bloben-interface/calendar/shared/calendarShared';
-import {mockNodemailer} from "../../../../../__mocks__/nodemailer";
+import { mockNodemailer } from '../../../../../__mocks__/nodemailer';
+import { seedSharedCalendar } from '../../../../seeds/10-sharedCalendar';
+import { seedUsers } from '../../../../seeds/1-user-seed';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
 const PATH = (id: string) => `/api/v1/calendars/shared/${id}/invite`;
 
@@ -19,15 +22,20 @@ const body: PostSendSharedCalendarInviteRequest = {
 
 describe(`Send shared calendar [POST] ${PATH}`, async function () {
   let sharedLinkID;
-  let sharedLinkExpiredID
-  let sharedLinkDisabledID
+  let sharedLinkExpiredID;
+  let sharedLinkDisabledID;
+  let userID;
+  let demoUserID;
   beforeEach(async () => {
-    const { sharedLink, sharedLinkDisabled, sharedLinkExpired } = await initSeeds();
-    sharedLinkID = sharedLink.id;
-    sharedLinkExpiredID = sharedLinkExpired.id
-    sharedLinkDisabledID = sharedLinkDisabled.id
+    [userID, demoUserID] = await seedUsers();
+    const { sharedLink, sharedLinkDisabled, sharedLinkExpired } =
+      await seedSharedCalendar(userID);
 
-    mockNodemailer()
+    sharedLinkID = sharedLink.id;
+    sharedLinkExpiredID = sharedLinkExpired.id;
+    sharedLinkDisabledID = sharedLinkDisabled.id;
+
+    mockNodemailer();
   });
 
   it('Should get status 401', async function () {
@@ -41,7 +49,7 @@ describe(`Send shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 403 demo user', async function () {
-    const response: any = await request(createTestServerWithSession(true))
+    const response: any = await request(createTestServerWithSession(demoUserID))
       .post(PATH(sharedLinkID))
       .send(body);
 
@@ -51,7 +59,7 @@ describe(`Send shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 404', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH(invalidUUID))
       .send(body);
 
@@ -61,9 +69,9 @@ describe(`Send shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 expired', async function () {
-    const response: any = await request(createTestServerWithSession())
-        .post(PATH(sharedLinkExpiredID))
-        .send(body);
+    const response: any = await request(createTestServerWithSession(userID))
+      .post(PATH(sharedLinkExpiredID))
+      .send(body);
 
     const { status } = response;
 
@@ -71,9 +79,9 @@ describe(`Send shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 disabled', async function () {
-    const response: any = await request(createTestServerWithSession())
-        .post(PATH(sharedLinkDisabledID))
-        .send(body);
+    const response: any = await request(createTestServerWithSession(userID))
+      .post(PATH(sharedLinkDisabledID))
+      .send(body);
 
     const { status } = response;
 
@@ -81,7 +89,7 @@ describe(`Send shared calendar [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(userID))
       .post(PATH(sharedLinkID))
       .send(body);
 

@@ -1,62 +1,65 @@
-import { invalidUUID } from '../../../../testHelpers/common';
-
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
 import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedWebcal } from '../../../seeds/6-webcal';
+import { v4 } from 'uuid';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = (calendarID: string) =>
-  `/api/v1/caldav-task/settings/${calendarID}`;
+const PATH = (id: string) => `/api/v1/webcal/calendars/${id}`;
 
-describe(`Update calDav task settings [PUT] ${PATH}`, async function () {
-  let calDavCalendarID;
+const data: any = {
+  name: 'Test cal',
+  color: 'indigo',
+  url: 'http://localhost:3002',
+  syncFrequency: 180,
+  alarms: [
+    {
+      amount: 10,
+      timeUnit: 'minutes',
+    },
+  ],
+};
+
+describe(`Update calendar [PUT] ${PATH}`, async function () {
+  let calendarID: string;
   let userID;
   let demoUserID;
   beforeEach(async () => {
     [userID, demoUserID] = await seedUsers();
-    const { calDavCalendar } = await seedCalDavCalendars(userID);
-    calDavCalendarID = calDavCalendar.id;
+    const webcalCalendar = await seedWebcal(userID);
+    calendarID = webcalCalendar.id;
   });
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer())
-      .put(PATH(calDavCalendarID))
-      .send({
-        orderBy: 'custom',
-        order: [],
-      });
+      .put(PATH(calendarID))
+      .send(data);
 
     const { status } = response;
 
     assert.equal(status, 401);
   });
 
-  it('Should get status 404 not found', async function () {
+  it('Should get status 404', async function () {
     const response: any = await request(createTestServerWithSession(userID))
-      .put(PATH(invalidUUID))
-      .send({
-        order: [],
-        orderBy: 'custom',
-      });
+      .put(PATH(v4()))
+      .send(data);
 
     const { status } = response;
 
     assert.equal(status, 404);
   });
 
-  it('Should get status 403 forbidden', async function () {
+  it('Should get status 403 demo', async function () {
     const response: any = await request(createTestServerWithSession(demoUserID))
-      .put(PATH(calDavCalendarID))
-      .send({
-        order: [],
-        orderBy: 'custom',
-      });
+      .put(PATH(calendarID))
+      .send(data);
 
     const { status } = response;
 
@@ -65,11 +68,8 @@ describe(`Update calDav task settings [PUT] ${PATH}`, async function () {
 
   it('Should get status 200', async function () {
     const response: any = await request(createTestServerWithSession(userID))
-      .put(PATH(calDavCalendarID))
-      .send({
-        order: [],
-        orderBy: 'custom',
-      });
+      .put(PATH(calendarID))
+      .send(data);
 
     const { status } = response;
 

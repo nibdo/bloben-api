@@ -1,7 +1,8 @@
-import ImapService from "../../service/ImapService";
+import ImapService from '../../service/ImapService';
 
 export const mockImapService = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ImapService.validateImapAccountData = async (body: any) => {
-    return Promise.resolve(true)
+    return Promise.resolve(true);
   };
 };

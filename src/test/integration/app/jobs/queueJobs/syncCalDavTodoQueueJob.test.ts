@@ -1,27 +1,26 @@
-const assert = require("assert");
-import {initDatabase} from "../../../../testHelpers/initDatabase";
 import {
-  initSyncCalDavTodoQueueJobData, todoToDeleteID,
-  todoToInsertID, todoToKeepID, todoToUpdateID
-} from "./syncCalDavTodoQueueJob.seed";
-import {
-  syncCalDavTaskQueueJob
-} from "../../../../../jobs/queueJobs/syncCalDavTaskQueueJob";
-import CalDavTaskRepository
-  from "../../../../../data/repository/CalDavTaskRepository";
+  initSyncCalDavTodoQueueJobData,
+  todoToDeleteID,
+  todoToInsertID,
+  todoToKeepID,
+  todoToUpdateID,
+} from './syncCalDavTodoQueueJob.seed';
+import { syncCalDavTaskQueueJob } from '../../../../../jobs/queueJobs/syncCalDavTaskQueueJob';
+import CalDavTaskRepository from '../../../../../data/repository/CalDavTaskRepository';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
 
 describe(`syncCalDavTaskQueueJob [QUEUE]`, async function () {
   let userID: string;
-  const accountUrl = "http://localhost:3000";
+  const accountUrl = 'http://localhost:3000';
 
   beforeEach(async () => {
-    await initDatabase()
     const user = await initSyncCalDavTodoQueueJobData(accountUrl);
 
     userID = user.id;
   });
 
-  it("Should insert new task", async function () {
+  it('Should insert new task', async function () {
     await syncCalDavTaskQueueJob({
       data: { userID },
     } as any);
@@ -35,7 +34,7 @@ describe(`syncCalDavTaskQueueJob [QUEUE]`, async function () {
     assert.equal(todo.externalID, todoToInsertID);
   });
 
-  it("Should keep not changed task", async function () {
+  it('Should keep not changed task', async function () {
     await syncCalDavTaskQueueJob({
       data: { userID },
     } as any);
@@ -47,11 +46,11 @@ describe(`syncCalDavTaskQueueJob [QUEUE]`, async function () {
     });
 
     assert.equal(todo.externalID, todoToKeepID);
-    assert.equal(todo.summary, "Old value");
-    assert.equal(todo.etag, "FGHBAFJi123");
+    assert.equal(todo.summary, 'Old value');
+    assert.equal(todo.etag, 'FGHBAFJi123');
   });
 
-  it("Should update changed task", async function () {
+  it('Should update changed task', async function () {
     await syncCalDavTaskQueueJob({
       data: { userID },
     } as any);
@@ -63,10 +62,10 @@ describe(`syncCalDavTaskQueueJob [QUEUE]`, async function () {
     });
 
     assert.equal(todo.externalID, todoToUpdateID);
-    assert.equal(todo.summary, "New value");
+    assert.equal(todo.summary, 'New value');
   });
 
-  it("Should delete remote task", async function () {
+  it('Should delete remote task', async function () {
     await syncCalDavTaskQueueJob({
       data: { userID },
     } as any);

@@ -1,11 +1,11 @@
-import {initSeeds} from "../../../seeds/init";
-
-const request = require('supertest');
-const assert = require('assert');
 import { authenticator } from 'otplib';
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 import {
   TWO_FACTOR_SECRET,
+  seedUsers,
   testUserDataWithTwoFactor,
 } from '../../../seeds/1-user-seed';
 import { createTestServer } from '../../../../testHelpers/initTestServer';
@@ -14,7 +14,7 @@ const PATH = '/api/v1/users/2fa/login';
 
 describe(`Login user [POST] ${PATH}`, async function () {
   beforeEach(async () => {
-    await initSeeds();
+    await seedUsers();
   });
 
   it('Should get status 200', async function () {

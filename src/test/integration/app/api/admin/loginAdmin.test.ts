@@ -1,29 +1,28 @@
-import {initSeeds} from "../../../seeds/init";
-
-import request from 'supertest';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
 
-import {
-  createAdminTestServerWithSession,
-} from '../../../../testHelpers/initTestServer';
-import {testUserData} from "../../../seeds/1-user-seed";
-import {
-  DEFAULT_ADMIN_PASSWORD
-} from "../../../../../data/migrations/1630862365000-admin";
+import { createAdminTestServerWithSession } from '../../../../testHelpers/initTestServer';
+import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
+import { seedUsers, testUserData } from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/admin/login';
 
 describe(`Login admin [POST] ${PATH}`, async function () {
+  let username;
   beforeEach(async () => {
-    await initSeeds()
-  })
+    await seedUsers();
+    const data = await seedAdminUser();
+    username = data.username;
+  });
 
   it('Should get status 200', async function () {
     const server: any = createAdminTestServerWithSession();
 
     const response: any = await request(server).post(PATH).send({
-      username: 'admin',
-      password: DEFAULT_ADMIN_PASSWORD,
+      username: username,
+      password: process.env.INITIAL_ADMIN_PASSWORD,
     });
 
     const { status, body } = response;
@@ -37,7 +36,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
     const server: any = createAdminTestServerWithSession();
 
     await request(server).post(PATH).set('X-Real-IP', '13213').send({
-      username: 'admin',
+      username: username,
       password: 'abcde',
     });
 
@@ -45,7 +44,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
       .post(PATH)
       .set('X-Real-IP', '13213')
       .send({
-        username: 'admin',
+        username: username,
         password: 'abcde',
       });
 
@@ -58,9 +57,9 @@ describe(`Login admin [POST] ${PATH}`, async function () {
     const server: any = createAdminTestServerWithSession();
 
     const response: any = await request(server).post(PATH).send({
-      username: 'admin',
+      username: username,
       password: 'afsazxczxcf',
-    })
+    });
 
     const { status } = response;
     assert.equal(status, 401);
@@ -70,7 +69,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
     const server: any = createAdminTestServerWithSession();
 
     const response: any = await request(server).post(PATH).send({
-      username: testUserData.username,
+      username: 'abgkew',
       password: testUserData.password,
     });
 

@@ -1,24 +1,30 @@
-import {initSeeds} from "../../../seeds/init";
-
-const request = require('supertest');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const request = require('supertest');
+import {
+  TEST_USER_PASSWORD,
+  seedUserWithEntity,
+} from '../../../seeds/1-user-seed';
 import { createTestServer } from '../../../../testHelpers/initTestServer';
-import {testDemoUserData, testUserData} from '../../../seeds/1-user-seed';
 
 const PATH = '/api/v1/users/login';
 
 describe(`Login user [POST] ${PATH}`, async function () {
+  let user;
+  let demoUser;
   beforeEach(async () => {
-    await initSeeds();
+    const data = await seedUserWithEntity();
+    user = data.user;
+    demoUser = data.demoUser;
   });
 
   it('Should get status 200', async function () {
     const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
-      username: testUserData.username,
-      password: testUserData.password,
+      username: user.username,
+      password: TEST_USER_PASSWORD,
     });
 
     const { status, body } = response;
@@ -32,8 +38,8 @@ describe(`Login user [POST] ${PATH}`, async function () {
     const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
-      username: testDemoUserData.username,
-      password: testDemoUserData.password,
+      username: demoUser.username,
+      password: TEST_USER_PASSWORD,
     });
 
     const { status, body } = response;
@@ -47,7 +53,7 @@ describe(`Login user [POST] ${PATH}`, async function () {
     const server: any = createTestServer();
 
     await request(server).post(PATH).set('X-Real-IP', '13213').send({
-      username: testUserData.username,
+      username: user.username,
       password: 'abcde',
     });
 
@@ -55,7 +61,7 @@ describe(`Login user [POST] ${PATH}`, async function () {
       .post(PATH)
       .set('X-Real-IP', '13213')
       .send({
-        username: testUserData.username,
+        username: user.username,
         password: 'abcde',
       });
 
@@ -68,7 +74,7 @@ describe(`Login user [POST] ${PATH}`, async function () {
     const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
-      username: testUserData.username,
+      username: user.username,
       password: 'afsaf',
     });
 

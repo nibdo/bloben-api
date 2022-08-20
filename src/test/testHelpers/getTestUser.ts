@@ -1,75 +1,58 @@
 import { Connection, getConnection } from 'typeorm';
 
-import {testDemoUserData, testUserData} from '../integration/seeds/1-user-seed';
+import { ROLE } from '../../bloben-interface/enums';
+import { testDemoUserData } from '../integration/seeds/1-user-seed';
 import UserEntity from '../../data/entity/UserEntity';
-import {env} from "../../index";
+import UserRepository from '../../data/repository/UserRepository';
 import jwt from 'jsonwebtoken';
 
 export const getUserByID = async (id: string): Promise<UserEntity> => {
-    const connection: Connection = await getConnection();
-
-    return await connection.manager.findOne(UserEntity, {
-        where: {
-            id,
-        },
-    });
-};
-
-export const getTestUser = async (username?: string): Promise<UserEntity> => {
   const connection: Connection = await getConnection();
 
   return await connection.manager.findOne(UserEntity, {
     where: {
-      username: username || testUserData.username,
+      id,
     },
   });
 };
 
-export const getTestDemoUser = async (username?: string): Promise<UserEntity> => {
-    const connection: Connection = await getConnection();
-
-    return await connection.manager.findOne(UserEntity, {
-        where: {
-            username: username || testDemoUserData.username,
-        },
-    });
-};
-
-export const getTestAdmin = async (): Promise<UserEntity> => {
+export const getTestUser = async (id: string): Promise<UserEntity> => {
   const connection: Connection = await getConnection();
 
   return await connection.manager.findOne(UserEntity, {
     where: {
-      username: 'admin',
+      id,
     },
   });
 };
 
-export const createAdminToken = async () => {
-  const testUser: UserEntity = await getTestAdmin();
+export const getTestDemoUser = async (
+  username?: string
+): Promise<UserEntity> => {
+  const connection: Connection = await getConnection();
 
-  return jwt.sign(
-      {
-        data: {
-          userID: testUser.id,
-          role: testUser.role,
-        },
-      },
-      env.secret.sessionSecret,
-      { expiresIn: '1h' }
-  );
-}
+  return await connection.manager.findOne(UserEntity, {
+    where: {
+      username: username || testDemoUserData.username,
+    },
+  });
+};
+
 export const createWrongAdminToken = async () => {
-  const testUser: UserEntity = await getTestAdmin();
+  const user = await UserRepository.getRepository().findOne({
+    where: {
+      role: ROLE.USER,
+    },
+  });
 
   return jwt.sign(
-      {
-        data: {
-          userID: testUser.id,
-          role: testUser.role,
-        },
+    {
+      data: {
+        userID: user.id,
+        role: user.role,
       },
-      'pass',
-      { expiresIn: '1h' }
+    },
+    'pass',
+    { expiresIn: '1h' }
   );
-}
+};

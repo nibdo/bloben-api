@@ -1,36 +1,57 @@
-import {
-  Connection,
-  getConnection,
-  MigrationInterface,
-} from 'typeorm';
+import { Connection, getConnection } from 'typeorm';
 
-import bcrypt from "bcrypt";
-import {USER_ROLE} from "../../../api/user/UserEnums";
-import {
-  DEFAULT_ADMIN_PASSWORD
-} from "../../../data/migrations/1630862365000-admin";
-import {v4} from 'uuid'
+import { ROLE } from '../../../bloben-interface/enums';
+import { USER_ROLE } from '../../../api/user/UserEnums';
+import { env } from '../../../index';
+import { generateRandomSimpleString } from '../../../utils/common';
+import { v4 } from 'uuid';
+import UserEntity from '../../../data/entity/UserEntity';
+import UserRepository from '../../../data/repository/UserRepository';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-export class adminUserSeed implements MigrationInterface {
-  public async up(): Promise<{id: string}> {
-    const saltRounds = 10;
-    const salt = await bcrypt.genSaltSync(saltRounds);
-    const hash = await bcrypt.hashSync(DEFAULT_ADMIN_PASSWORD, salt);
+export const seedAdminUser = async (): Promise<{
+  id: string;
+  username: string;
+  jwtToken: string;
+}> => {
+  const saltRounds = 10;
+  const salt = await bcrypt.genSaltSync(saltRounds);
+  const hash = await bcrypt.hashSync(process.env.INITIAL_ADMIN_PASSWORD, salt);
 
-    const connection: Connection = await getConnection();
+  const connection: Connection = await getConnection();
 
-    const adminID = v4()
+  const adminID = v4();
 
-    await connection.query(`INSERT INTO public.users 
+  const username = generateRandomSimpleString(20);
+  await connection.query(`INSERT INTO public.users 
 (id, username, hash, role)
-VALUES ('${adminID}', 'admin', '${hash}', '${USER_ROLE.ADMIN}');`);
+VALUES ('${adminID}', '${generateRandomSimpleString(20)}', '${hash}', '${
+    USER_ROLE.ADMIN
+  }');`);
 
-    return {
-      id: adminID
-    }
-  }
+  const admin = new UserEntity(null);
+  admin.username = username;
+  admin.role = ROLE.ADMIN;
+  admin.hash = hash;
+  admin.id = adminID;
 
-  public async down(): Promise<void> {
-    return Promise.resolve();
-  }
-}
+  await UserRepository.getRepository().save(admin);
+
+  const jwtToken = jwt.sign(
+    {
+      data: {
+        userID: admin.id,
+        role: admin.role,
+      },
+    },
+    env.secret.sessionSecret,
+    { expiresIn: '1h' }
+  );
+
+  return {
+    id: adminID,
+    username,
+    jwtToken,
+  };
+};
