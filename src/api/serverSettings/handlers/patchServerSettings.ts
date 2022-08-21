@@ -18,8 +18,6 @@ export const patchServerSettings = async (
     throw throwError(404, 'Server settings not found');
   }
 
-  serverSettings.checkNewVersion = body.checkNewVersion;
-
   await ServerSettingsRepository.getRepository().update(
     { id: serverSettings.id },
     body
