@@ -16,6 +16,20 @@ export const getServerSettings = async (
   }
 };
 
+export const getServerSettingsUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await ServerSettingsService.getServerSettingsUser();
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const patchServerSettings = async (
   req: Request,
   res: Response,

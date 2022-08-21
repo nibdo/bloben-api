@@ -5,6 +5,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { LOCATION_PROVIDER } from '../../bloben-interface/enums';
 
 @Entity('server_settings')
 export default class ServerSettingsEntity {
@@ -19,6 +20,12 @@ export default class ServerSettingsEntity {
 
   @Column({ name: 'inner_email_counter', default: 0 })
   innerEmailCounter: number;
+
+  @Column({
+    name: 'location_provider',
+    default: LOCATION_PROVIDER.OPEN_STREET_MAPS,
+  })
+  locationProvider: string;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
