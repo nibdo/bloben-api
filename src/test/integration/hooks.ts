@@ -1,3 +1,4 @@
+import { globalSeed } from './seeds/0-global-seed';
 import { initDatabase } from '../testHelpers/initDatabase';
 import { mockRedisService } from '../__mocks__/RedisService';
 
@@ -13,7 +14,7 @@ export const mochaHooks = function () {
         while (count < 10 && !isConnected) {
           try {
             await initDatabase();
-            // await initGlobalSeeds()
+            await globalSeed();
 
             isConnected = true;
 
@@ -30,7 +31,7 @@ export const mochaHooks = function () {
             console.log(`Starting integration tests, attempt ${count}`);
 
             await initDatabase();
-            // await initGlobalSeeds()
+            await globalSeed();
           }
         }
       });

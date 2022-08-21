@@ -74,3 +74,8 @@ export enum DAV_ACCOUNT_TYPE {
   CALDAV = 'caldav',
   CARDDAV = 'carddav',
 }
+
+export enum LOCATION_PROVIDER {
+  OPEN_STREET_MAPS = 'OpenStreetMap',
+  GOOGLE_MAPS = 'Google Maps',
+}
