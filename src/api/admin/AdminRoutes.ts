@@ -10,6 +10,7 @@ import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
 import { userMiddleware } from '../../middleware/userMiddleware';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
+import Admin2FARouter from './2fa/Admin2FARoutes';
 
 const AdminRoutes: Router = Router();
 
@@ -23,7 +24,7 @@ AdminRoutes.post(
 );
 
 AdminRoutes.get(
-  '/login',
+  '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
     adminTokenMiddleware,
@@ -57,5 +58,7 @@ AdminRoutes.get(
   ],
   AdminController.logoutAdmin
 );
+
+AdminRoutes.use('/2fa', Admin2FARouter);
 
 export default AdminRoutes;

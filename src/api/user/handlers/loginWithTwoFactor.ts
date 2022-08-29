@@ -1,10 +1,8 @@
 import { Request } from 'express';
 import { authenticator } from 'otplib';
 
-import {
-  LoginResponse,
-  LoginWithTwoFactorRequest,
-} from '../../../bloben-interface/user/user';
+import { LoginResponse } from '../../../bloben-interface/user/user';
+import { LoginWithTwoFactorRequest } from '../../../bloben-interface/2fa/2fa';
 import { REDIS_PREFIX, SESSION } from '../../../utils/enums';
 import { throwError } from '../../../utils/errorCodes';
 import UserEntity from '../../../data/entity/UserEntity';

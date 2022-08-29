@@ -7,7 +7,7 @@ import ServerSettingsRouter from '../api/serverSettings/ServerSettingsRouter';
 
 const AdminRoutes: Router = Router();
 
-AdminRoutes.use('', AdminRouter);
+AdminRoutes.use('/user', AdminRouter);
 AdminRoutes.use('/users', AdminUsersRouter);
 AdminRoutes.use(`/logs`, LogRouter);
 AdminRoutes.use(`/server-settings`, ServerSettingsRouter);
