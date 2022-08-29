@@ -8,7 +8,7 @@ import { createWrongAdminToken } from '../../../../testHelpers/getTestUser';
 import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/admin/login';
+const PATH = '/api/v1/admin/user';
 
 describe(`Get admin account [GET] ${PATH}`, async function () {
   let token;

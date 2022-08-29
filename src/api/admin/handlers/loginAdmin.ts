@@ -28,7 +28,7 @@ export const loginAdmin = async (req: Request): Promise<any> => {
       LOG_TAG.SECURITY,
     ]);
 
-    throw throwError(401, 'Unauthorized', req);
+    throw throwError(401, 'Wrong username or password', req);
   }
 
   const isMatchingPassword: boolean = await bcrypt.compare(password, user.hash);
@@ -39,18 +39,15 @@ export const loginAdmin = async (req: Request): Promise<any> => {
       LOG_TAG.SECURITY,
     ]);
 
-    throw throwError(401, 'Unauthorized', req);
+    throw throwError(401, 'Wrong username or password', req);
   }
 
-  // if (user.isTwoFactorEnabled) {
-  //   req.session[REDIS_PREFIX.USER_ID_KEY_2FA] = user.id;
-  //   req.session.save();
-  //
-  //   return {
-  //     isLogged: false,
-  //     isTwoFactorEnabled: true,
-  //   };
-  // }
+  if (user.isTwoFactorEnabled) {
+    return {
+      isLogged: false,
+      isTwoFactorEnabled: true,
+    };
+  }
 
   const jwtToken = jwt.sign(
     {

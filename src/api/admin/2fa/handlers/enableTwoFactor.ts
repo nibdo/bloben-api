@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { authenticator } from 'otplib';
 
-import { CommonResponse } from '../../../bloben-interface/interface';
-import { LoginWithTwoFactorRequest } from '../../../bloben-interface/2fa/2fa';
-import { createCommonResponse } from '../../../utils/common';
-import { throwError } from '../../../utils/errorCodes';
-import UserEntity from '../../../data/entity/UserEntity';
-import UserRepository from '../../../data/repository/UserRepository';
+import { CommonResponse } from '../../../../bloben-interface/interface';
+import { EnableTwoFactorRequest } from '../../../../bloben-interface/2fa/2fa';
+import { createCommonResponse } from '../../../../utils/common';
+import { throwError } from '../../../../utils/errorCodes';
+import UserEntity from '../../../../data/entity/UserEntity';
+import UserRepository from '../../../../data/repository/UserRepository';
 
 /**
  * @param req
@@ -17,9 +17,11 @@ export const enableTwoFactor = async (
   res: Response
 ): Promise<CommonResponse> => {
   const { userID } = res.locals;
-  const body: LoginWithTwoFactorRequest = req.body;
+  const body: EnableTwoFactorRequest = req.body;
 
-  const user: UserEntity | undefined = await UserRepository.findById(userID);
+  const user: UserEntity | undefined = await UserRepository.findAdminById(
+    userID
+  );
 
   if (!user) {
     throw throwError(404, 'User not found', req);
@@ -43,5 +45,5 @@ export const enableTwoFactor = async (
 
   await UserRepository.update(user);
 
-  return createCommonResponse();
+  return createCommonResponse('Two factor authentication enabled');
 };
