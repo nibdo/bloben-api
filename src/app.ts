@@ -56,7 +56,7 @@ const createBlobenApp = () => {
   BlobenApp.use(cors(corsOptions));
 
   BlobenApp.use(bodyParser.urlencoded({ extended: false }));
-  BlobenApp.use(bodyParser.json({ limit: 1024 * 20 }));
+  BlobenApp.use(bodyParser.json({ limit: 1024 * 100 }));
 
   BlobenApp.use(`/api/${API_VERSIONS.V1}/admin`, AdminRoutes);
 
