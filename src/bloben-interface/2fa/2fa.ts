@@ -20,5 +20,4 @@ export interface LoginWithTwoFactorAdminResponse {
   message: string;
   isLogged: boolean;
   isTwoFactorEnabled: boolean;
-  token: string;
 }

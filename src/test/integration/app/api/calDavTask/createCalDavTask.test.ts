@@ -15,7 +15,7 @@ import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
 import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/caldav-tasks';
+const PATH = '/api/app/v1/caldav-tasks';
 
 describe(`Create calDav task [POST] ${PATH}`, async function () {
   let requestBody;

@@ -11,7 +11,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = `/api/v1/webcal/calendars`;
+const PATH = `/api/app/v1/webcal/calendars`;
 
 describe(`Delete calendar [DELETE] ${PATH}/:calendarID`, async function () {
   let calendarID: string;

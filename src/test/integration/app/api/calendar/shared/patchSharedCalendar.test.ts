@@ -11,7 +11,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = (id: string) => `/api/v1/calendars/shared/${id}`;
+const PATH = (id: string) => `/api/app/v1/calendars/shared/${id}`;
 
 describe(`Patch shared calendar [PATCH] ${PATH}`, async function () {
   let sharedLinkID;

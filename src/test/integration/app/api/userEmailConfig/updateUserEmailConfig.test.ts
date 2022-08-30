@@ -11,7 +11,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/users/email-config';
+const PATH = '/api/app/v1/users/email-config';
 
 describe(`Update user email config [PATCH] ${PATH}`, async function () {
   before(async () => {

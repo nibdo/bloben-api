@@ -12,7 +12,7 @@ import { invalidUUID } from '../../../../../testHelpers/common';
 import { seedCalDavCalendars } from '../../../../seeds/3-calDavCalendars';
 import { seedWebcal } from '../../../../seeds/6-webcal';
 
-const PATH = '/api/v1/calendars/shared';
+const PATH = '/api/app/v1/calendars/shared';
 
 const testBody = {
   name: 'Shared calendar',

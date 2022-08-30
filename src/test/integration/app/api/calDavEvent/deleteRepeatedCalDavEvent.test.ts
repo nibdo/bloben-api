@@ -15,7 +15,7 @@ import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
 import { seedUsers } from '../../../seeds/1-user-seed';
 import CalDavEventEntity from '../../../../../data/entity/CalDavEventEntity';
 
-const PATH = '/api/v1/caldav-events/repeated';
+const PATH = '/api/app/v1/caldav-events/repeated';
 
 const createBaseBody = (calDavEvent: CalDavEventEntity) => {
   return {

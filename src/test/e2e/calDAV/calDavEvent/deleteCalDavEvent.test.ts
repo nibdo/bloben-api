@@ -11,7 +11,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/caldav-events';
+const PATH = '/api/app/v1/caldav-events';
 
 describe(`[E2E] Delete calDav event [DELETE] ${PATH}`, async function () {
   let eventData;

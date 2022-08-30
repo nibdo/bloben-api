@@ -12,7 +12,7 @@ const assert = require('assert');
 const request = require('supertest');
 
 const PATH = (calendarID: string) =>
-  `/api/v1/caldav-task/settings/${calendarID}`;
+  `/api/app/v1/caldav-task/settings/${calendarID}`;
 
 describe(`Update calDav task settings [PUT] ${PATH}`, async function () {
   let calDavCalendarID;

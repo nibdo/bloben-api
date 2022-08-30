@@ -10,7 +10,7 @@ import {
 import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = `/api/v1/events/range`;
+const PATH = `/api/app/v1/events/range`;
 
 describe(`Get events [GET] ${PATH}`, async function () {
   let userID;

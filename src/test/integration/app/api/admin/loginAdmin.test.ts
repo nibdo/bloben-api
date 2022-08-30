@@ -3,11 +3,11 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-import { createAdminTestServerWithSession } from '../../../../testHelpers/initTestServer';
+import { createTestServer } from '../../../../testHelpers/initTestServer';
 import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
 import { seedUsers, testUserData } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/admin/user/login';
+const PATH = '/api/admin/v1/user/login';
 
 describe(`Login admin [POST] ${PATH}`, async function () {
   let username;
@@ -21,7 +21,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: username,
@@ -36,7 +36,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200 with two factor', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: usernameWith2FA,
@@ -51,7 +51,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 429 too many requests', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     await request(server).post(PATH).set('X-Real-IP', '13213').send({
       username: username,
@@ -72,7 +72,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 401 with wrong password', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: username,
@@ -84,7 +84,7 @@ describe(`Login admin [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 401 with wrong user', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: 'abgkew',

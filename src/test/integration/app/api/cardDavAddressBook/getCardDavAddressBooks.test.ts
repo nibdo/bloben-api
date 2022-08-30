@@ -10,7 +10,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/carddav/address-books';
+const PATH = '/api/app/v1/carddav/address-books';
 
 describe(`Get cardDav address books [GET] ${PATH}`, async function () {
   let userID;

@@ -12,7 +12,7 @@ const assert = require('assert');
 const request = require('supertest');
 
 const PATH = (id: string) =>
-  `/api/v1/events/${id}?type=${EVENT_TYPE.CALDAV}&isDark=false`;
+  `/api/app/v1/events/${id}?type=${EVENT_TYPE.CALDAV}&isDark=false`;
 
 describe(`Get event by ID [GET] ${PATH}`, async function () {
   let id = null;

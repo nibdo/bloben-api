@@ -10,7 +10,8 @@ import {
 import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = (summary: string) => `/api/v1/events/search?summary=${summary}`;
+const PATH = (summary: string) =>
+  `/api/app/v1/events/search?summary=${summary}`;
 
 describe(`Search events [GET] ${PATH}`, async function () {
   let userID;

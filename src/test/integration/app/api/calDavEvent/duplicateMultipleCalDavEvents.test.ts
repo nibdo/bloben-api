@@ -15,7 +15,7 @@ import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
 import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = (id: string) => `/api/v1/caldav-events/${id}/duplicate`;
+const PATH = (id: string) => `/api/app/v1/caldav-events/${id}/duplicate`;
 
 describe(`Duplicate calDav event [POST] ${PATH}`, async function () {
   let calDavEvent;

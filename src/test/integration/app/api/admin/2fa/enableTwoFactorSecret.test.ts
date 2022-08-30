@@ -5,40 +5,35 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-import { createAdminTestServerWithSession } from '../../../../../testHelpers/initTestServer';
-import { createWrongAdminToken } from '../../../../../testHelpers/getTestUser';
+import { createTestServerWithSession } from '../../../../../testHelpers/initTestServer';
+import { invalidUUID } from '../../../../../testHelpers/common';
 import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
 
-const PATH = '/api/v1/admin/user/2fa/enable';
+const PATH = '/api/admin/v1/user/2fa/enable';
 
 describe(`Admin enable two factor [POST] ${PATH}`, async function () {
-  let token;
-  let wrongToken;
-  let tokenWith2FA;
+  let idWith2FA;
   let secret;
+  let adminID;
 
   beforeEach(async () => {
-    const { jwtToken } = await seedAdminUser();
-    token = jwtToken;
-    wrongToken = await createWrongAdminToken();
+    const { id } = await seedAdminUser();
+    adminID = id;
 
     secret = authenticator.generateSecret();
     const data = await seedAdminUser({
       twoFactorSecret: secret,
     });
-    tokenWith2FA = data.jwtToken;
+    idWith2FA = data.id;
   });
 
   it('Should get status 200', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServerWithSession(idWith2FA);
     const correctCode = authenticator.generate(secret);
 
-    const response: any = await request(server)
-      .post(PATH)
-      .set('token', tokenWith2FA)
-      .send({
-        otpCode: correctCode,
-      });
+    const response: any = await request(server).post(PATH).send({
+      otpCode: correctCode,
+    });
 
     const { status } = response;
 
@@ -46,14 +41,11 @@ describe(`Admin enable two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServerWithSession(idWith2FA);
 
-    const response: any = await request(server)
-      .post(PATH)
-      .set('token', tokenWith2FA)
-      .send({
-        otpCode: '123456',
-      });
+    const response: any = await request(server).post(PATH).send({
+      otpCode: '123456',
+    });
 
     const { status } = response;
 
@@ -61,14 +53,11 @@ describe(`Admin enable two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 two factor missing', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServerWithSession(adminID);
 
-    const response: any = await request(server)
-      .post(PATH)
-      .set('token', token)
-      .send({
-        otpCode: '123456',
-      });
+    const response: any = await request(server).post(PATH).send({
+      otpCode: '123456',
+    });
 
     const { status } = response;
 
@@ -76,12 +65,9 @@ describe(`Admin enable two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 401 wrong token', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServerWithSession(invalidUUID);
 
-    const response: any = await request(server)
-      .post(PATH)
-      .set('token', wrongToken)
-      .send();
+    const response: any = await request(server).post(PATH).send();
 
     const { status } = response;
 

@@ -10,7 +10,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/caldav-task/settings';
+const PATH = '/api/app/v1/caldav-task/settings';
 
 describe(`Get calDav task settings [GET] ${PATH}`, async function () {
   let userID;

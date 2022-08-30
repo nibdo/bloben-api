@@ -2,7 +2,7 @@ import * as Admin2FAController from './Admin2FAController';
 import { RATE_LIMIT } from '../../../utils/enums';
 import { Router } from 'express';
 import { USER_ROLE } from '../../user/UserEnums';
-import { adminTokenMiddleware } from '../../../middleware/adminTokenMiddleware';
+import { authMiddleware } from '../../../middleware/authMiddleware';
 import { emptySchema } from '../../../common/schemas/emptySchema';
 import { enableTwoFactorSchema } from './schemas/enableTwoFactorSchema';
 import { loginWithTwoFactorSchema } from './schemas/loginWithTwoFactorSchema';
@@ -16,7 +16,7 @@ Admin2FARoutes.post(
   '',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     validationMiddleware(emptySchema),
   ],
@@ -27,7 +27,7 @@ Admin2FARoutes.post(
   '/enable',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     validationMiddleware(enableTwoFactorSchema),
   ],
@@ -38,7 +38,7 @@ Admin2FARoutes.delete(
   '',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     validationMiddleware(emptySchema),
   ],

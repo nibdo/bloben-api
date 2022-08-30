@@ -37,6 +37,7 @@ VALUES ('${adminID}', '${generateRandomSimpleString(20)}', '${hash}', '${
   admin.role = ROLE.ADMIN;
   admin.hash = hash;
   admin.id = adminID;
+  admin.isEnabled = true;
 
   if (data?.isTwoFactorEnabled) {
     admin.isTwoFactorEnabled = data.isTwoFactorEnabled;

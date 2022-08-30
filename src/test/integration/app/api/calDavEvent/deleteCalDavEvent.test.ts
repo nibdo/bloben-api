@@ -14,7 +14,7 @@ import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
 import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/caldav-events';
+const PATH = '/api/app/v1/caldav-events';
 
 describe(`Delete calDav event [DELETE] ${PATH}`, async function () {
   let calDavEvent;

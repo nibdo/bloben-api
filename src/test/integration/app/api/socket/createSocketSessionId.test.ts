@@ -12,7 +12,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/socket';
+const PATH = '/api/app/v1/socket';
 
 const data: CreateSocketSessionRequest = {
   clientSessionId: v4(),

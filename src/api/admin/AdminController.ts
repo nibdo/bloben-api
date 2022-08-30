@@ -56,7 +56,7 @@ export const logoutAdmin = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response: CommonResponse = await AdminService.logoutAdmin();
+    const response: CommonResponse = await AdminService.logoutAdmin(req);
 
     res.status(200).send(response);
   } catch (error) {

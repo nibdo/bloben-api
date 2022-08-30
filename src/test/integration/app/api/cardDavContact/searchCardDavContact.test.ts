@@ -10,7 +10,8 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = (text: string) => `/api/v1/carddav/contacts/search?text=${text}`;
+const PATH = (text: string) =>
+  `/api/app/v1/carddav/contacts/search?text=${text}`;
 
 describe(`Search carddav contact [GET] ${PATH}`, async function () {
   let userID;

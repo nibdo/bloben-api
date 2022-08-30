@@ -11,7 +11,7 @@ import { invalidUUID } from '../../../../testHelpers/common';
 import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/calendar-settings';
+const PATH = '/api/app/v1/calendar-settings';
 
 describe(`Patch calendar settings [PATCH] ${PATH}`, async function () {
   let calendarID;

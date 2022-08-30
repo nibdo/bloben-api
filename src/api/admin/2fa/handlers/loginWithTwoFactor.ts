@@ -1,18 +1,16 @@
 import { Request } from 'express';
 import { authenticator } from 'otplib';
 
-import { LOG_TAG } from '../../../../utils/enums';
+import { LOG_TAG, SESSION } from '../../../../utils/enums';
 import {
   LoginWithTwoFactorAdminResponse,
   LoginWithTwoFactorRequest,
 } from '../../../../bloben-interface/2fa/2fa';
 import { ROLE } from '../../../../bloben-interface/enums';
-import { env } from '../../../../index';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import logger from '../../../../utils/logger';
 
 export const loginWithTwoFactor = async (
@@ -68,21 +66,14 @@ export const loginWithTwoFactor = async (
     throw throwError(409, 'Wrong code', req);
   }
 
-  const jwtToken = jwt.sign(
-    {
-      data: {
-        userID: user.id,
-        role: user.role,
-      },
-    },
-    env.secret.sessionSecret,
-    { expiresIn: '1h' }
-  );
+  req.session[SESSION.USER_ID] = user.id;
+  req.session[SESSION.ROLE] = user.role;
+
+  req.session.save();
 
   return {
     message: 'Login successful',
     isLogged: true,
     isTwoFactorEnabled: true,
-    token: jwtToken,
   };
 };

@@ -11,7 +11,7 @@ import {
 import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = (id: string) => `/api/v1/caldav-accounts/${id}`;
+const PATH = (id: string) => `/api/app/v1/caldav-accounts/${id}`;
 
 describe(`Get calDav account [GET] ${PATH}`, async function () {
   let calDavAccountID;

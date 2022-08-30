@@ -9,7 +9,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/calendar-settings';
+const PATH = '/api/app/v1/calendar-settings';
 
 describe(`Get calendar settings [GET] ${PATH}`, async function () {
   let userID;

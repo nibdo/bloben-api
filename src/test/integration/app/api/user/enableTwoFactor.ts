@@ -6,7 +6,7 @@ const request = require('supertest');
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
 import { seedUserWithEntity } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/users/2fa';
+const PATH = '/api/app/v1/users/2fa';
 
 describe(`Enable two factor [POST] ${PATH}`, async function () {
   let userID;

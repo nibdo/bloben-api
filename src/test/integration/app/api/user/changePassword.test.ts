@@ -13,7 +13,7 @@ import {
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
 
-const PATH = '/api/v1/users/change-password';
+const PATH = '/api/app/v1/users/change-password';
 
 describe(`Change password [POST] ${PATH}`, async function () {
   let userID;

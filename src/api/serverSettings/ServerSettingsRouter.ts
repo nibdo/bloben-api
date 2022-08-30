@@ -3,7 +3,6 @@ import { Router } from 'express';
 import * as ServerSettingsController from './ServerSettingsController';
 import { RATE_LIMIT } from '../../utils/enums';
 import { USER_ROLE } from '../user/UserEnums';
-import { adminTokenMiddleware } from '../../middleware/adminTokenMiddleware';
 import { authMiddleware } from '../../middleware/authMiddleware';
 import { emptySchema } from '../../common/schemas/emptySchema';
 import { patchServerSettingsSchema } from './schemas/patchServerSettingsSchema';
@@ -29,7 +28,7 @@ ServerSettingsRoutes.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     userMiddleware,
     validationMiddleware(emptySchema),
@@ -40,7 +39,7 @@ ServerSettingsRoutes.patch(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     userMiddleware,
     validationMiddleware(patchServerSettingsSchema),

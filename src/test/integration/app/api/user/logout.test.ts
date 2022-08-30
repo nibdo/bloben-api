@@ -4,7 +4,7 @@ import assert from 'assert';
 
 import request from 'supertest';
 
-const PATH = '/api/v1/users/logout';
+const PATH = '/api/app/v1/users/logout';
 
 describe(`Logout [GET] ${PATH}`, async function () {
   let userID;

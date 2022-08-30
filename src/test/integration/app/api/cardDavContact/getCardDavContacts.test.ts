@@ -11,7 +11,7 @@ const assert = require('assert');
 const request = require('supertest');
 
 const PATH = (addressBookID: string) =>
-  `/api/v1/carddav/contacts?addressBookID=${addressBookID}`;
+  `/api/app/v1/carddav/contacts?addressBookID=${addressBookID}`;
 
 describe(`Get carddav contacts [GET] ${PATH}`, async function () {
   let addressBookID;

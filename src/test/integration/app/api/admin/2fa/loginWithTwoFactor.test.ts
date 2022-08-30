@@ -5,10 +5,10 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-import { createAdminTestServerWithSession } from '../../../../../testHelpers/initTestServer';
+import { createTestServer } from '../../../../../testHelpers/initTestServer';
 import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
 
-const PATH = '/api/v1/admin/user/2fa/login';
+const PATH = '/api/admin/v1/user/2fa/login';
 
 describe(`Admin login with two factor [POST] ${PATH}`, async function () {
   let username;
@@ -28,7 +28,7 @@ describe(`Admin login with two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 401 wrong password', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: username,
@@ -42,7 +42,7 @@ describe(`Admin login with two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 401', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: 'abcde',
@@ -56,7 +56,7 @@ describe(`Admin login with two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 missing two factor', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: usernameWithoutTwoFactor,
@@ -70,7 +70,7 @@ describe(`Admin login with two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 wrong code', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
 
     const response: any = await request(server).post(PATH).send({
       username: username,
@@ -84,7 +84,7 @@ describe(`Admin login with two factor [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const server: any = createAdminTestServerWithSession();
+    const server: any = createTestServer();
     const correctCode = authenticator.generate(secret);
 
     const response: any = await request(server).post(PATH).send({
