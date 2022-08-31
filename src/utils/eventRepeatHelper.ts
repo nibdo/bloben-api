@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import { forEach } from 'lodash';
-import { getOccurrences } from '../api/event/helpers/getRepeatedEvents';
+import { getOccurrences } from '../api/app/event/helpers/getRepeatedEvents';
 
 export const addRepeatedEvents = (data: any, range: any) => {
   let result: any = [];

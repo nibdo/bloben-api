@@ -78,8 +78,9 @@ export default class UserEntity {
   public getAccount(): GetAccountResponse {
     return {
       username: this.username,
-      userID: this.id,
+      id: this.id,
       role: this.role,
+      isTwoFactorEnabled: this.isTwoFactorEnabled,
     };
   }
 

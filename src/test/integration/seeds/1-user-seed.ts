@@ -1,5 +1,5 @@
 import { AdminCreateUserRequest } from '../../../bloben-interface/admin/admin';
-import { USER_ROLE } from '../../../api/user/UserEnums';
+import { USER_ROLE } from '../../../api/app/auth/UserEnums';
 import { generateRandomSimpleString } from '../../../utils/common';
 import { v4 } from 'uuid';
 import CalendarSettingsEntity from '../../../data/entity/CalendarSettings';
@@ -41,6 +41,13 @@ export const seedUser = async (customData?: any): Promise<UserEntity> => {
   newUser.id = v4();
   newUser.username = defaultData.username;
   newUser.hash = await bcrypt.hashSync(TEST_USER_PASSWORD, salt);
+
+  if (customData?.isTwoFactorEnabled) {
+    newUser.isTwoFactorEnabled = customData.isTwoFactorEnabled;
+  }
+  if (customData?.twoFactorSecret) {
+    newUser.twoFactorSecret = customData.twoFactorSecret;
+  }
 
   const repository = UserRepository.getRepository();
   await repository.save(newUser);

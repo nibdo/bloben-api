@@ -17,7 +17,7 @@ import { emailBullQueue } from '../../service/BullQueue';
 import { find } from 'lodash';
 import { io } from '../../app';
 import { loginToCalDav } from '../../service/davService';
-import { removeOrganizerFromAttendees } from '../../api/calDavEvent/handlers/createCalDavEvent';
+import { removeOrganizerFromAttendees } from '../../api/app/calDavEvent/handlers/createCalDavEvent';
 import { throwError } from '../../utils/errorCodes';
 import CalDavAccountRepository from '../../data/repository/CalDavAccountRepository';
 import CalDavCalendarRepository from '../../data/repository/CalDavCalendarRepository';

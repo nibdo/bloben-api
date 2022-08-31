@@ -21,7 +21,7 @@ import { cloneDeep, find, forEach, keyBy, map } from 'lodash';
 import {
   createCalDavCalendar,
   updateCalDavCalendar,
-} from '../api/caldavAccount/helpers/createCalDavCalendar';
+} from '../api/app/caldavAccount/helpers/createCalDavCalendar';
 import { createDavClient } from '../service/davService';
 import {
   formatEventCancelSubject,
@@ -31,7 +31,7 @@ import {
 } from './format';
 import { formatToRRule, parseEventDuration } from './common';
 import { io } from '../app';
-import { processCaldavAlarms } from '../api/calDavEvent/handlers/updateCalDavEvent';
+import { processCaldavAlarms } from '../api/app/calDavEvent/handlers/updateCalDavEvent';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';

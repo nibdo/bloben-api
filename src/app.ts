@@ -2,8 +2,11 @@ import { Application, default as Express } from 'express';
 import { Server } from 'socket.io';
 import { default as cors } from 'cors';
 import { corsOptions } from './config/cors';
-import { createSessionConfig } from './config/session';
-import Router from './routes';
+import {
+  createAdminSessionConfig,
+  createSessionConfig,
+} from './config/session';
+import Router from './routes/appRoutes';
 import bodyParser from 'body-parser';
 import connect_redis from 'connect-redis';
 import dotenv from 'dotenv';
@@ -12,7 +15,6 @@ import http from 'http';
 import session from 'express-session';
 
 import { API_VERSIONS, NODE_ENV } from './utils/enums';
-import { coverageTestUtil } from './utils/coverageUtil';
 import { createSocketOptions } from './config/socketio';
 import { env, redisClientOriginal } from './index';
 import { initBullQueue } from './service/BullQueue';
@@ -49,6 +51,13 @@ const createBlobenApp = () => {
     })
   );
 
+  const userSession = session(
+    createSessionConfig(redisStore, redisClientOriginal)
+  );
+  const adminSession = session(
+    createAdminSessionConfig(redisStore, redisClientOriginal)
+  );
+
   // for nginx
   if (env.nodeEnv !== NODE_ENV.DEVELOPMENT) {
     BlobenApp.set('trust proxy', 1);
@@ -58,11 +67,8 @@ const createBlobenApp = () => {
   BlobenApp.use(bodyParser.urlencoded({ extended: false }));
   BlobenApp.use(bodyParser.json({ limit: 1024 * 100 }));
 
-  BlobenApp.use(`/api/${API_VERSIONS.V1}/admin`, AdminRoutes);
-
-  BlobenApp.use(session(createSessionConfig(redisStore, redisClientOriginal)));
-
-  BlobenApp.use('/api', Router);
+  BlobenApp.use(`/api/admin/${API_VERSIONS.V1}`, adminSession, AdminRoutes);
+  BlobenApp.use(`/api/app/${API_VERSIONS.V1}`, userSession, Router);
   BlobenApp.use(`/api/${API_VERSIONS.V1}/public`, PublicRouter);
 
   BlobenApp.use(errorMiddleware);
@@ -77,9 +83,9 @@ const createApp = (): Promise<void> => {
     // eslint-disable-next-line no-console
     console.log(`[NODE_ENV]:  ${env.nodeEnv}`);
 
-    if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
-      coverageTestUtil();
-    }
+    // if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
+    //   coverageTestUtil();
+    // }
 
     createBlobenApp();
     const server = http.createServer(BlobenApp);

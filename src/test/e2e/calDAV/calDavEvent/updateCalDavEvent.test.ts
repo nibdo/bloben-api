@@ -19,7 +19,7 @@ import { getTestReminders } from '../../../testHelpers/getTestReminders';
 import { invalidUUID } from '../../../testHelpers/common';
 import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
 
-const PATH = '/api/v1/caldav-events';
+const PATH = '/api/app/v1/caldav-events';
 
 describe(`[E2E] Update calDav event [PUT] ${PATH}`, async function () {
   let eventData;

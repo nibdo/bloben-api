@@ -12,7 +12,7 @@ import { createRedisConfig } from '../../config/redis';
 import { createSessionConfig } from '../../config/session';
 import { getTestUser } from './getTestUser';
 import { redisClient } from '../../index';
-import Router from '../../routes';
+import Router from '../../routes/appRoutes';
 import UserEntity from '../../data/entity/UserEntity';
 import errorMiddleware from '../../middleware/errorMiddleware';
 
@@ -56,7 +56,7 @@ export const createE2ETestServerWithSession = (userID: string) => {
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());
   TestBlobenApp.use(testSessionMiddleware(userID));
-  TestBlobenApp.use('/api', Router);
+  TestBlobenApp.use('/api/app/v1', Router);
   TestBlobenApp.use(errorMiddleware);
 
   return TestBlobenApp;
