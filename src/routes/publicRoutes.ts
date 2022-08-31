@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import PublicCalendarRouter from '../api/publicCalendar/publicCalendarRouter';
+import PublicCalendarRouter from '../api/public/publicCalendar/publicCalendarRouter';
 
 const PublicRouter: Router = Router();
 

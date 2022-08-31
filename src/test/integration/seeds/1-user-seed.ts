@@ -1,5 +1,5 @@
 import { AdminCreateUserRequest } from '../../../bloben-interface/admin/admin';
-import { USER_ROLE } from '../../../api/user/UserEnums';
+import { USER_ROLE } from '../../../api/app/auth/UserEnums';
 import { generateRandomSimpleString } from '../../../utils/common';
 import { v4 } from 'uuid';
 import CalendarSettingsEntity from '../../../data/entity/CalendarSettings';

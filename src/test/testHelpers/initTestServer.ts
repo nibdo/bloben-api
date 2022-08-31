@@ -16,7 +16,7 @@ import { createRedisConfig } from '../../config/redis';
 import { env, redisClient } from '../../index';
 import { getTestUser } from './getTestUser';
 import { io } from '../../app';
-import Router from '../../routes';
+import Router from '../../routes/appRoutes';
 import UserEntity from '../../data/entity/UserEntity';
 import errorMiddleware from '../../middleware/errorMiddleware';
 

@@ -1,4 +1,4 @@
-import {} from '../api/event/handlers/getEventsInRange';
+import {} from '../api/app/event/handlers/getEventsInRange';
 
 import { DAVCalendarObject } from 'tsdav';
 import { DateTime } from 'luxon';

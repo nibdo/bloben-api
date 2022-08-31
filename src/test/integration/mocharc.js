@@ -6,9 +6,10 @@ module.exports = {
   parallel: true,
   jobs: 2,
   verbose: true,
+  recursive: true,
   spec: [
-    './src/test/integration/app/*/*/*.test.ts',
-    './src/test/integration/app/*/*/*/*.test.ts',
-    './src/test/integration/app/jobs/*/*.test.ts',
+    './src/test/integration/api/*/*/*.test.ts',
+    './src/test/integration/api/*/*/*/*.test.ts',
+    './src/test/integration/jobs/*/*.test.ts',
   ],
 };

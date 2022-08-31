@@ -12,7 +12,7 @@ import { createRedisConfig } from '../../config/redis';
 import { createSessionConfig } from '../../config/session';
 import { getTestUser } from './getTestUser';
 import { redisClient } from '../../index';
-import Router from '../../routes';
+import Router from '../../routes/appRoutes';
 import UserEntity from '../../data/entity/UserEntity';
 import errorMiddleware from '../../middleware/errorMiddleware';
 

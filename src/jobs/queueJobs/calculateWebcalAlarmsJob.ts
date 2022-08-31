@@ -4,7 +4,7 @@ import { CalendarAlarms } from '../../bloben-interface/interface';
 import { DateTime } from 'luxon';
 import { Job } from 'bullmq';
 import { LOG_TAG, TIMEZONE } from '../../utils/enums';
-import { getWebcalEvents } from '../../api/event/helpers/getWebCalEvents';
+import { getWebcalEvents } from '../../api/app/event/helpers/getWebCalEvents';
 import { map } from 'lodash';
 import CalendarSettingsRepository from '../../data/repository/CalendarSettingsRepository';
 import LuxonHelper from '../../utils/luxonHelper';

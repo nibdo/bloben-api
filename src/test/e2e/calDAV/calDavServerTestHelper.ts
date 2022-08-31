@@ -11,8 +11,8 @@ import {
 } from '../../../bloben-interface/event/event';
 import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
-import { createCalDavCalendar } from '../../../api/calDavCalendar/handlers/createCalDavCalendar';
-import { createCalDavEvent } from '../../../api/calDavEvent/handlers/createCalDavEvent';
+import { createCalDavCalendar } from '../../../api/app/calDavCalendar/handlers/createCalDavCalendar';
+import { createCalDavEvent } from '../../../api/app/calDavEvent/handlers/createCalDavEvent';
 import { formatIcalDate } from '../../../utils/davHelper';
 import { v4 } from 'uuid';
 import CalDavAccountEntity from '../../../data/entity/CalDavAccount';
