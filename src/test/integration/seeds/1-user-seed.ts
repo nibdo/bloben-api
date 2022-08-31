@@ -42,6 +42,13 @@ export const seedUser = async (customData?: any): Promise<UserEntity> => {
   newUser.username = defaultData.username;
   newUser.hash = await bcrypt.hashSync(TEST_USER_PASSWORD, salt);
 
+  if (customData?.isTwoFactorEnabled) {
+    newUser.isTwoFactorEnabled = customData.isTwoFactorEnabled;
+  }
+  if (customData?.twoFactorSecret) {
+    newUser.twoFactorSecret = customData.twoFactorSecret;
+  }
+
   const repository = UserRepository.getRepository();
   await repository.save(newUser);
 

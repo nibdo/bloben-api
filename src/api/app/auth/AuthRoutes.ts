@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import * as UserController from './UserController';
+import * as UserController from './AuthController';
 import { RATE_LIMIT } from '../../../utils/enums';
 import { USER_ROLE } from './UserEnums';
 import { authMiddleware } from '../../../middleware/authMiddleware';
@@ -8,14 +8,14 @@ import { changePasswordRequestSchema } from './schemas/changePasswordRequestSche
 import { emptySchema } from '../../../common/schemas/emptySchema';
 import { loginDemoRequestSchema } from './schemas/loginDemoRequestSchema';
 import { loginRequestSchema } from './schemas/loginRequestSchema';
-import { loginWithTwoFactorSchema } from './schemas/loginWithTwoFactorSchema';
 import { rateLimiterMiddleware } from '../../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../../middleware/roleMiddleware';
 import { validationMiddleware } from '../../../middleware/validationMiddleware';
+import twoFactorRouter from './twoFactor/TwoFactorRoutes';
 
-const UserRoutes: Router = Router();
+const AuthRoutes: Router = Router();
 
-UserRoutes.get(
+AuthRoutes.get(
   '/login',
   [
     rateLimiterMiddleware(RATE_LIMIT.GET_SESSION),
@@ -24,7 +24,7 @@ UserRoutes.get(
   UserController.getSession
 );
 
-UserRoutes.post(
+AuthRoutes.post(
   '/login',
   [
     rateLimiterMiddleware(RATE_LIMIT.LOGIN),
@@ -33,7 +33,7 @@ UserRoutes.post(
   UserController.loginAccount
 );
 
-UserRoutes.get(
+AuthRoutes.get(
   '/login-demo',
   [
     rateLimiterMiddleware(RATE_LIMIT.LOGIN),
@@ -42,7 +42,7 @@ UserRoutes.get(
   UserController.loginDemo
 );
 
-UserRoutes.get(
+AuthRoutes.get(
   '/account',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -53,17 +53,7 @@ UserRoutes.get(
   UserController.getAccount
 );
 
-UserRoutes.post(
-  '/2fa/login',
-  [
-    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(loginWithTwoFactorSchema),
-  ],
-  UserController.loginWithTwoFactor
-);
-
-UserRoutes.post(
+AuthRoutes.post(
   '/change-password',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -74,7 +64,7 @@ UserRoutes.post(
   UserController.changePassword
 );
 
-UserRoutes.delete(
+AuthRoutes.delete(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -84,7 +74,7 @@ UserRoutes.delete(
   ],
   UserController.deleteUser
 );
-UserRoutes.get(
+AuthRoutes.get(
   '/logout',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -93,45 +83,7 @@ UserRoutes.get(
   ],
   UserController.logout
 );
-UserRoutes.get(
-  '/2fa/generate',
-  [
-    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    authMiddleware,
-    roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(emptySchema),
-  ],
-  UserController.generateTwoFactor
-);
-UserRoutes.get(
-  '/2fa',
-  [
-    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    authMiddleware,
-    roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(emptySchema),
-  ],
-  UserController.getTwoFactor
-);
-UserRoutes.post(
-  '/2fa',
-  [
-    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    authMiddleware,
-    roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(loginWithTwoFactorSchema),
-  ],
-  UserController.enableTwoFactor
-);
-UserRoutes.delete(
-  '/2fa',
-  [
-    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    authMiddleware,
-    roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(emptySchema),
-  ],
-  UserController.deleteTwoFactor
-);
 
-export default UserRoutes;
+AuthRoutes.use('/two-factor', twoFactorRouter);
+
+export default AuthRoutes;

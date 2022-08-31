@@ -9,7 +9,7 @@ import {
 } from '../../../seeds/1-user-seed';
 import { createTestServer } from '../../../../testHelpers/initTestServer';
 
-const PATH = '/api/app/v1/users/login-demo';
+const PATH = '/api/app/v1/auth/login-demo';
 
 describe(`Login demo user [GET] ${PATH}`, async function () {
   let demoUser;

@@ -48,7 +48,7 @@ AdminTwoFactorRoutes.delete(
 AdminTwoFactorRoutes.post(
   '/login',
   [
-    rateLimiterMiddleware(RATE_LIMIT.LOGIN),
+    rateLimiterMiddleware(RATE_LIMIT.ADMIN_LOGIN),
     validationMiddleware(loginWithTwoFactorSchema),
   ],
   Admin2FAController.loginWithTwoFactor
