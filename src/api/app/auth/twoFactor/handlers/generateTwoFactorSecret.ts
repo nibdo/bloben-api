@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { authenticator } from 'otplib';
 
-import { GetTwoFactorSecretResponse } from '../../../../bloben-interface/2fa/2fa';
-import { throwError } from '../../../../utils/errorCodes';
-import UserEntity from '../../../../data/entity/UserEntity';
-import UserRepository from '../../../../data/repository/UserRepository';
+import { GetTwoFactorSecretResponse } from '../../../../../bloben-interface/2fa/2fa';
+import { throwError } from '../../../../../utils/errorCodes';
+import UserEntity from '../../../../../data/entity/UserEntity';
+import UserRepository from '../../../../../data/repository/UserRepository';
 
 /**
  * @param req
@@ -20,6 +20,10 @@ export const generateTwoFactorSecret = async (
 
   if (!user) {
     throw throwError(404, 'User not found', req);
+  }
+
+  if (user.isTwoFactorEnabled) {
+    throw throwError(409, 'Two factor authentication is already set', req);
   }
 
   const secret = authenticator.generateSecret();

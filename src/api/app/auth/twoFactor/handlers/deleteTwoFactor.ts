@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { createCommonResponse } from '../../../../utils/common';
-import { throwError } from '../../../../utils/errorCodes';
-import UserEntity from '../../../../data/entity/UserEntity';
-import UserRepository from '../../../../data/repository/UserRepository';
+import { CommonResponse } from '../../../../../bloben-interface/interface';
+import { createCommonResponse } from '../../../../../utils/common';
+import { throwError } from '../../../../../utils/errorCodes';
+import UserEntity from '../../../../../data/entity/UserEntity';
+import UserRepository from '../../../../../data/repository/UserRepository';
 
 /**
  * @param req
@@ -27,5 +27,5 @@ export const deleteTwoFactor = async (
 
   await UserRepository.update(user);
 
-  return createCommonResponse();
+  return createCommonResponse('Two factor authentication disabled');
 };

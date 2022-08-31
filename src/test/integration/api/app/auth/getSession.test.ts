@@ -9,7 +9,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/app/v1/users/login';
+const PATH = '/api/app/v1/auth/login';
 
 describe(`Get session [GET] ${PATH}`, async function () {
   let userID;

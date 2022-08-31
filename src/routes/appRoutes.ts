@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import AuthRouter from '../api/app/auth/AuthRoutes';
 import CalDavAccountRouter from '../api/app/caldavAccount/CalDavAccountRoutes';
 import CalDavCalendarRouter from '../api/app/calDavCalendar/CalDavCalendaRouter';
 import CalDavEventRouter from '../api/app/calDavEvent/CalDavEventRoutes';
@@ -15,14 +16,13 @@ import SocketRouter from '../api/app/socket/SocketRoutes';
 import SyncRouter from '../api/app/sync/SyncRoutes';
 import TimezoneRouter from '../api/app/timezone/TimezoneRoutes';
 import UserEmailConfigRoutes from '../api/app/userEmailConfig/UserEmailConfigRoutes';
-import UserRouter from '../api/app/auth/UserRoutes';
 import VersionRouter from '../api/app/version/VersionRoutes';
 import WebcalCalendarRouter from '../api/app/webcalCalendar/WebcalCalendarRouter';
 import WebcalEventsRouter from '../api/app/webcalEvents/WebcalEventRouter';
 
 const AppRouter: Router = Router();
 
-AppRouter.use(`/users`, UserRouter);
+AppRouter.use(`/auth`, AuthRouter);
 AppRouter.use(`/users/email-config`, UserEmailConfigRoutes);
 AppRouter.use(`/socket`, SocketRouter);
 AppRouter.use(`/caldav-events`, CalDavEventRouter);

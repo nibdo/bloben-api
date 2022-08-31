@@ -8,7 +8,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/app/v1/users/account';
+const PATH = '/api/app/v1/auth/account';
 
 describe(`User account [GET] ${PATH}`, async function () {
   let userID;
