@@ -10,7 +10,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { seedTasks } from '../../../seeds/7-calDavTasks';
 
-const PATH = '/api/v1/caldav-tasks';
+const PATH = '/api/app/v1/caldav-tasks';
 
 describe(`Get calDav tasks [GET] ${PATH}`, async function () {
   let userID;

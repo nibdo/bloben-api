@@ -8,7 +8,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/caldav-accounts';
+const PATH = '/api/app/v1/caldav-accounts';
 
 describe(`[E2E] Create calDav account [POST] ${PATH}`, async function () {
   let userID;

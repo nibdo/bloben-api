@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { authenticator } from 'otplib';
 
 import { CommonResponse } from '../../../bloben-interface/interface';
-import { LoginWithTwoFactorRequest } from '../../../bloben-interface/user/user';
+import { LoginWithTwoFactorRequest } from '../../../bloben-interface/2fa/2fa';
 import { createCommonResponse } from '../../../utils/common';
 import { throwError } from '../../../utils/errorCodes';
 import UserEntity from '../../../data/entity/UserEntity';

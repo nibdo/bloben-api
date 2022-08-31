@@ -12,7 +12,7 @@ import { seedCalDavCalendars } from '../../../../seeds/3-calDavCalendars';
 import { seedSharedCalendar } from '../../../../seeds/10-sharedCalendar';
 import { seedUsers } from '../../../../seeds/1-user-seed';
 
-const PATH = (id: string) => `/api/v1/calendars/shared/${id}`;
+const PATH = (id: string) => `/api/app/v1/calendars/shared/${id}`;
 
 const testBody = {
   name: 'Shared calendar',

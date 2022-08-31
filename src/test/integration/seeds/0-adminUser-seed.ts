@@ -10,7 +10,9 @@ import UserRepository from '../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-export const seedAdminUser = async (): Promise<{
+export const seedAdminUser = async (
+  data?: any
+): Promise<{
   id: string;
   username: string;
   jwtToken: string;
@@ -35,6 +37,14 @@ VALUES ('${adminID}', '${generateRandomSimpleString(20)}', '${hash}', '${
   admin.role = ROLE.ADMIN;
   admin.hash = hash;
   admin.id = adminID;
+  admin.isEnabled = true;
+
+  if (data?.isTwoFactorEnabled) {
+    admin.isTwoFactorEnabled = data.isTwoFactorEnabled;
+  }
+  if (data?.twoFactorSecret) {
+    admin.twoFactorSecret = data.twoFactorSecret;
+  }
 
   await UserRepository.getRepository().save(admin);
 

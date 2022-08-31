@@ -26,7 +26,7 @@ import {
 } from '../../../../__mocks__/tsdav';
 import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
 
-const PATH = '/api/v1/caldav-events';
+const PATH = '/api/app/v1/caldav-events';
 
 describe(`Create calDav event [POST] ${PATH}`, async function () {
   let requestBody;

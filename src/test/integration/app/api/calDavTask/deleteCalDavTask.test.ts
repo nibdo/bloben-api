@@ -14,7 +14,7 @@ import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
 import { seedTasks } from '../../../seeds/7-calDavTasks';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/caldav-tasks';
+const PATH = '/api/app/v1/caldav-tasks';
 
 describe(`Delete calDav task [DELETE] ${PATH}`, async function () {
   let calDavTask;

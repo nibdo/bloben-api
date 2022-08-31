@@ -9,7 +9,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = `/api/v1/timezones`;
+const PATH = `/api/app/v1/timezones`;
 
 describe(`Get timezones [GET] ${PATH}`, async function () {
   let userID;

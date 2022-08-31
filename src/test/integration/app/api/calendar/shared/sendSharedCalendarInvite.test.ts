@@ -13,7 +13,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = (id: string) => `/api/v1/calendars/shared/${id}/invite`;
+const PATH = (id: string) => `/api/app/v1/calendars/shared/${id}/invite`;
 
 const body: PostSendSharedCalendarInviteRequest = {
   emailBody: 'Test email',

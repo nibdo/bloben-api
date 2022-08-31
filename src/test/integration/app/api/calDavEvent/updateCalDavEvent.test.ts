@@ -26,7 +26,7 @@ import {
 } from '../../../../__mocks__/tsdav';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/caldav-events';
+const PATH = '/api/app/v1/caldav-events';
 
 describe(`Update calDav event [PUT] ${PATH}`, async function () {
   let calDavEvent;

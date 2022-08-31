@@ -2,7 +2,7 @@ import * as AdminController from './AdminController';
 import { RATE_LIMIT } from '../../utils/enums';
 import { Router } from 'express';
 import { USER_ROLE } from '../user/UserEnums';
-import { adminTokenMiddleware } from '../../middleware/adminTokenMiddleware';
+import { authMiddleware } from '../../middleware/authMiddleware';
 import { changeAdminPasswordSchema } from './schemas/changeAdminPasswordSchema';
 import { emptySchema } from '../../common/schemas/emptySchema';
 import { loginAdminSchema } from './schemas/loginAdminSchema';
@@ -10,6 +10,7 @@ import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
 import { userMiddleware } from '../../middleware/userMiddleware';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
+import Admin2FARouter from './2fa/Admin2FARoutes';
 
 const AdminRoutes: Router = Router();
 
@@ -23,10 +24,10 @@ AdminRoutes.post(
 );
 
 AdminRoutes.get(
-  '/login',
+  '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     userMiddleware,
     validationMiddleware(emptySchema),
@@ -38,7 +39,7 @@ AdminRoutes.post(
   '/change-password',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     userMiddleware,
     validationMiddleware(changeAdminPasswordSchema),
@@ -50,12 +51,14 @@ AdminRoutes.get(
   '/logout',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     userMiddleware,
     validationMiddleware(emptySchema),
   ],
   AdminController.logoutAdmin
 );
+
+AdminRoutes.use('/2fa', Admin2FARouter);
 
 export default AdminRoutes;

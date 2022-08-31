@@ -7,7 +7,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/caldav-calendars';
+const PATH = '/api/app/v1/caldav-calendars';
 
 const testBody = {
   name: 'GGG1234111',

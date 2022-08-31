@@ -14,7 +14,7 @@ import { invalidUUID } from '../../../../testHelpers/common';
 import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
 import { seedCardDavAddressBooks } from '../../../seeds/11-cardDavAddressBooks';
 
-const PATH = '/api/v1/carddav/contacts';
+const PATH = '/api/app/v1/carddav/contacts';
 
 describe(`Create carddav contact [POST] ${PATH}`, async function () {
   let addressBookID;

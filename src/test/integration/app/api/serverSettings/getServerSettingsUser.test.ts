@@ -9,7 +9,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/server-settings/user';
+const PATH = '/api/app/v1/server-settings/user';
 
 describe(`Get server settings user [GET] ${PATH}`, async function () {
   let userID;

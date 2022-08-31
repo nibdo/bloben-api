@@ -2,7 +2,10 @@ import { Application, default as Express } from 'express';
 import { Server } from 'socket.io';
 import { default as cors } from 'cors';
 import { corsOptions } from './config/cors';
-import { createSessionConfig } from './config/session';
+import {
+  createAdminSessionConfig,
+  createSessionConfig,
+} from './config/session';
 import Router from './routes';
 import bodyParser from 'body-parser';
 import connect_redis from 'connect-redis';
@@ -49,6 +52,13 @@ const createBlobenApp = () => {
     })
   );
 
+  const userSession = session(
+    createSessionConfig(redisStore, redisClientOriginal)
+  );
+  const adminSession = session(
+    createAdminSessionConfig(redisStore, redisClientOriginal)
+  );
+
   // for nginx
   if (env.nodeEnv !== NODE_ENV.DEVELOPMENT) {
     BlobenApp.set('trust proxy', 1);
@@ -58,11 +68,8 @@ const createBlobenApp = () => {
   BlobenApp.use(bodyParser.urlencoded({ extended: false }));
   BlobenApp.use(bodyParser.json({ limit: 1024 * 20 }));
 
-  BlobenApp.use(`/api/${API_VERSIONS.V1}/admin`, AdminRoutes);
-
-  BlobenApp.use(session(createSessionConfig(redisStore, redisClientOriginal)));
-
-  BlobenApp.use('/api', Router);
+  BlobenApp.use(`/api/admin/${API_VERSIONS.V1}`, adminSession, AdminRoutes);
+  BlobenApp.use(`/api/app/${API_VERSIONS.V1}`, userSession, Router);
   BlobenApp.use(`/api/${API_VERSIONS.V1}/public`, PublicRouter);
 
   BlobenApp.use(errorMiddleware);

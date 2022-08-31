@@ -1,13 +1,11 @@
 import { AdminLoginRequest } from '../../../bloben-interface/admin/admin';
-import { LOG_TAG } from '../../../utils/enums';
+import { LOG_TAG, SESSION } from '../../../utils/enums';
 import { ROLE } from '../../../bloben-interface/enums';
 import { Request } from 'express';
-import { env } from '../../../index';
 import { throwError } from '../../../utils/errorCodes';
 import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import logger from '../../../utils/logger';
 
 export const loginAdmin = async (req: Request): Promise<any> => {
@@ -28,7 +26,7 @@ export const loginAdmin = async (req: Request): Promise<any> => {
       LOG_TAG.SECURITY,
     ]);
 
-    throw throwError(401, 'Unauthorized', req);
+    throw throwError(401, 'Wrong username or password', req);
   }
 
   const isMatchingPassword: boolean = await bcrypt.compare(password, user.hash);
@@ -39,33 +37,23 @@ export const loginAdmin = async (req: Request): Promise<any> => {
       LOG_TAG.SECURITY,
     ]);
 
-    throw throwError(401, 'Unauthorized', req);
+    throw throwError(401, 'Wrong username or password', req);
   }
 
-  // if (user.isTwoFactorEnabled) {
-  //   req.session[REDIS_PREFIX.USER_ID_KEY_2FA] = user.id;
-  //   req.session.save();
-  //
-  //   return {
-  //     isLogged: false,
-  //     isTwoFactorEnabled: true,
-  //   };
-  // }
+  if (user.isTwoFactorEnabled) {
+    return {
+      isLogged: false,
+      isTwoFactorEnabled: true,
+    };
+  }
 
-  const jwtToken = jwt.sign(
-    {
-      data: {
-        userID: user.id,
-        role: user.role,
-      },
-    },
-    env.secret.sessionSecret,
-    { expiresIn: '1h' }
-  );
+  req.session[SESSION.USER_ID] = user.id;
+  req.session[SESSION.ROLE] = user.role;
+
+  req.session.save();
 
   return {
     isLogged: true,
     isTwoFactorEnabled: false,
-    token: jwtToken,
   };
 };

@@ -10,7 +10,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/calendars/shared';
+const PATH = '/api/app/v1/calendars/shared';
 
 describe(`Get shared calendars [GET] ${PATH}`, async function () {
   let userID;

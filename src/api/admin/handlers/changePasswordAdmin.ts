@@ -17,7 +17,9 @@ export const changePasswordAdmin = async (
   const body: AdminChangePasswordRequest = req.body;
   const { oldPassword, password } = body;
 
-  const user: UserEntity | undefined = await UserRepository.findById(userID);
+  const user: UserEntity | undefined = await UserRepository.findAdminById(
+    userID
+  );
 
   if (!user) {
     throw throwError(404, 'User not found', req);

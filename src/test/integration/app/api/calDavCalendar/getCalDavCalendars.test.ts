@@ -10,7 +10,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
 
-const PATH = '/api/v1/caldav-calendars';
+const PATH = '/api/app/v1/caldav-calendars';
 
 describe(`Get calDav calendars [GET] ${PATH}`, async function () {
   let userID;

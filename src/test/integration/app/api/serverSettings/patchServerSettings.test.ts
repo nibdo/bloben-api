@@ -1,6 +1,6 @@
 import { LOCATION_PROVIDER } from '../../../../../bloben-interface/enums';
-import { createAdminTestServerWithSession } from '../../../../testHelpers/initTestServer';
-import { createWrongAdminToken } from '../../../../testHelpers/getTestUser';
+import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
+import { invalidUUID } from '../../../../testHelpers/common';
 import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -8,20 +8,18 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-const PATH = '/api/v1/admin/server-settings';
+const PATH = '/api/admin/v1/server-settings';
 
 describe(`Patch server settings [PATCH] ${PATH}`, async function () {
-  let token;
-  let wrongToken;
+  let adminID;
   beforeEach(async () => {
-    const { jwtToken } = await seedAdminUser();
-    token = jwtToken;
-    wrongToken = await createWrongAdminToken();
+    const { id } = await seedAdminUser();
+    adminID = id;
   });
 
   it('Should get status 401', async function () {
     const response: any = await request(
-      createAdminTestServerWithSession()
+      createTestServerWithSession(invalidUUID)
     ).patch(PATH);
 
     const { status } = response;
@@ -30,9 +28,9 @@ describe(`Patch server settings [PATCH] ${PATH}`, async function () {
   });
 
   it('Should get status 401 wrong token', async function () {
-    const response: any = await request(createAdminTestServerWithSession())
-      .patch(PATH)
-      .set('token', wrongToken);
+    const response: any = await request(
+      createTestServerWithSession(invalidUUID)
+    ).patch(PATH);
 
     const { status } = response;
 
@@ -40,9 +38,8 @@ describe(`Patch server settings [PATCH] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
-    const response: any = await request(createAdminTestServerWithSession())
+    const response: any = await request(createTestServerWithSession(adminID))
       .patch(PATH)
-      .set('token', token)
       .send({
         emailCounter: 1,
         locationProvider: LOCATION_PROVIDER.OPEN_STREET_MAPS,

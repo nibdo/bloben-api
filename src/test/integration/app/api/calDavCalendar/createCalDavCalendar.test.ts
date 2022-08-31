@@ -12,7 +12,7 @@ import { invalidUUID } from '../../../../testHelpers/common';
 import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/caldav-calendars';
+const PATH = '/api/app/v1/caldav-calendars';
 
 const testBody = {
   name: 'GGG1234111',

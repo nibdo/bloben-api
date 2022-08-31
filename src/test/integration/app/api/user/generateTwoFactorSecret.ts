@@ -6,7 +6,7 @@ const request = require('supertest');
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/v1/users/2fa/generate';
+const PATH = '/api/app/v1/users/2fa/generate';
 
 describe(`Generate two factor [GET] ${PATH}`, async function () {
   let userID;

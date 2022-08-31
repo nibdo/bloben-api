@@ -12,7 +12,6 @@ import { duplicateMultipleCalDavEventsSchema } from './schemas/duplicateMultiple
 import { getCalDavEventSchema } from './schemas/getCalDavEventSchema';
 import { rateLimiterMiddleware } from '../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../middleware/roleMiddleware';
-import { syncRequestSchema } from '../../common/schemas/syncRequestSchema';
 import { updateCalDavEventSchema } from './schemas/updateCalDavEventSchema';
 import { updatePartstatStatusSchema } from './schemas/updatePartstatStatusSchema';
 import { updateRepeatedCalDavEventSchema } from './schemas/updateRepeatedCalDavEventSchema';
@@ -20,16 +19,6 @@ import { validationMiddleware } from '../../middleware/validationMiddleware';
 
 const CalDavEventRoutes: Router = Router();
 
-CalDavEventRoutes.get(
-  '/sync',
-  [
-    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    authMiddleware,
-    roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(syncRequestSchema),
-  ],
-  CalDavEventController.syncCalDavEvents
-);
 CalDavEventRoutes.put(
   '/repeated',
   [

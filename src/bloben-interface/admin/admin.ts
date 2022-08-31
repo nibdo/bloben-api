@@ -11,8 +11,10 @@ export interface AdminChangePasswordRequest {
 }
 
 export interface GetAdminAccountResponse {
+  username: string | null;
   isLogged: boolean;
   role: ROLE | null;
+  isTwoFactorEnabled: boolean;
 }
 
 export interface GetUsersResponse {

@@ -2,7 +2,7 @@ import * as AdminUsersController from './AdminUsersController';
 import { RATE_LIMIT } from '../../utils/enums';
 import { Router } from 'express';
 import { USER_ROLE } from '../user/UserEnums';
-import { adminTokenMiddleware } from '../../middleware/adminTokenMiddleware';
+import { authMiddleware } from '../../middleware/authMiddleware';
 import { createUserSchema } from './schemas/createUserSchema';
 import { deleteUserSchema } from './schemas/deleteUserSchema';
 import { emptySchema } from '../../common/schemas/emptySchema';
@@ -18,7 +18,7 @@ AdminUsersRoutes.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     userMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     validationMiddleware(emptySchema),
@@ -30,7 +30,7 @@ AdminUsersRoutes.post(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     userMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     validationMiddleware(createUserSchema),
@@ -42,7 +42,7 @@ AdminUsersRoutes.patch(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     userMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     validationMiddleware(updateUserSchema),
@@ -54,7 +54,7 @@ AdminUsersRoutes.delete(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    adminTokenMiddleware,
+    authMiddleware,
     userMiddleware,
     roleMiddleware([USER_ROLE.ADMIN]),
     validationMiddleware(deleteUserSchema),

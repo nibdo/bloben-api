@@ -4,8 +4,6 @@ import { CommonResponse } from '../../bloben-interface/interface';
 import {
   GetAccountResponse,
   GetSessionResponse,
-  GetTwoFactorResponse,
-  GetTwoFactorSecretResponse,
   LoginResponse,
 } from '../../bloben-interface/user/user';
 import UserService from './UserService';
@@ -126,8 +124,7 @@ export const generateTwoFactor = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response: GetTwoFactorSecretResponse =
-      await UserService.generateTwoFactorSecret(req, res);
+    const response = await UserService.generateTwoFactorSecret(req, res);
 
     res.status(200).send(response);
   } catch (error) {
@@ -158,10 +155,7 @@ export const getTwoFactor = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response: GetTwoFactorResponse = await UserService.getTwoFactor(
-      req,
-      res
-    );
+    const response = await UserService.getTwoFactor(req, res);
 
     res.status(200).send(response);
   } catch (error) {
