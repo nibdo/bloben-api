@@ -3,7 +3,7 @@ import { forEach } from 'lodash';
 import dotenv from 'dotenv';
 
 import { SESSION } from '../utils/enums';
-import { USER_ROLE } from '../api/user/UserEnums';
+import { USER_ROLE } from '../api/app/auth/UserEnums';
 import { throwError } from '../utils/errorCodes';
 
 dotenv.config();

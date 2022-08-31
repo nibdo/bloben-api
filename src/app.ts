@@ -6,7 +6,7 @@ import {
   createAdminSessionConfig,
   createSessionConfig,
 } from './config/session';
-import Router from './routes';
+import Router from './routes/appRoutes';
 import bodyParser from 'body-parser';
 import connect_redis from 'connect-redis';
 import dotenv from 'dotenv';
@@ -15,7 +15,6 @@ import http from 'http';
 import session from 'express-session';
 
 import { API_VERSIONS, NODE_ENV } from './utils/enums';
-import { coverageTestUtil } from './utils/coverageUtil';
 import { createSocketOptions } from './config/socketio';
 import { env, redisClientOriginal } from './index';
 import { initBullQueue } from './service/BullQueue';
@@ -84,9 +83,9 @@ const createApp = (): Promise<void> => {
     // eslint-disable-next-line no-console
     console.log(`[NODE_ENV]:  ${env.nodeEnv}`);
 
-    if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
-      coverageTestUtil();
-    }
+    // if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
+    //   coverageTestUtil();
+    // }
 
     createBlobenApp();
     const server = http.createServer(BlobenApp);

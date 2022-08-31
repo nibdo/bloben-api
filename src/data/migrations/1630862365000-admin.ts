@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { USER_ROLE } from '../../api/user/UserEnums';
+import { USER_ROLE } from '../../api/app/auth/UserEnums';
 import { v4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';

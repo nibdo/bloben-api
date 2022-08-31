@@ -28,8 +28,9 @@ export interface GetSessionResponse {
 
 export interface GetAccountResponse {
   username: string;
-  userID: string;
+  id: string;
   role: ROLE;
+  isTwoFactorEnabled: boolean;
 }
 
 export interface AddEmailRequest {

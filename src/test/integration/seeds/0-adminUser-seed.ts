@@ -1,7 +1,7 @@
 import { Connection, getConnection } from 'typeorm';
 
 import { ROLE } from '../../../bloben-interface/enums';
-import { USER_ROLE } from '../../../api/user/UserEnums';
+import { USER_ROLE } from '../../../api/app/auth/UserEnums';
 import { env } from '../../../index';
 import { generateRandomSimpleString } from '../../../utils/common';
 import { v4 } from 'uuid';

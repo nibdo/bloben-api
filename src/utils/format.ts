@@ -8,7 +8,7 @@ import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
 import { EventStyle } from '../bloben-interface/interface';
 import { find } from 'lodash';
-import { getEventStyle } from '../api/event/helpers/getWebCalEvents';
+import { getEventStyle } from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 
 const parseCalDavStyle = (
