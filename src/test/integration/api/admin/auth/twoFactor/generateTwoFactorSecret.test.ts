@@ -7,7 +7,7 @@ const request = require('supertest');
 import { createTestServerWithSession } from '../../../../../testHelpers/initTestServer';
 import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
 
-const PATH = '/api/admin/v1/auth/2fa';
+const PATH = '/api/admin/v1/auth/two-factor';
 
 describe(`Admin generate two factor [POST] ${PATH}`, async function () {
   let adminID;

@@ -1,4 +1,4 @@
-import * as Admin2FAController from './Admin2FAController';
+import * as Admin2FAController from './AdminTwoFactorController';
 import { RATE_LIMIT } from '../../../../utils/enums';
 import { Router } from 'express';
 import { USER_ROLE } from '../../../app/auth/UserEnums';
@@ -10,9 +10,9 @@ import { rateLimiterMiddleware } from '../../../../middleware/rateLimiterMiddlew
 import { roleMiddleware } from '../../../../middleware/roleMiddleware';
 import { validationMiddleware } from '../../../../middleware/validationMiddleware';
 
-const Admin2FARoutes: Router = Router();
+const AdminTwoFactorRoutes: Router = Router();
 
-Admin2FARoutes.post(
+AdminTwoFactorRoutes.post(
   '',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -23,7 +23,7 @@ Admin2FARoutes.post(
   Admin2FAController.generateTwoFactorSecret
 );
 
-Admin2FARoutes.post(
+AdminTwoFactorRoutes.post(
   '/enable',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -34,7 +34,7 @@ Admin2FARoutes.post(
   Admin2FAController.enableTwoFactor
 );
 
-Admin2FARoutes.delete(
+AdminTwoFactorRoutes.delete(
   '',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
@@ -45,7 +45,7 @@ Admin2FARoutes.delete(
   Admin2FAController.deleteTwoFactor
 );
 
-Admin2FARoutes.post(
+AdminTwoFactorRoutes.post(
   '/login',
   [
     rateLimiterMiddleware(RATE_LIMIT.LOGIN),
@@ -54,4 +54,4 @@ Admin2FARoutes.post(
   Admin2FAController.loginWithTwoFactor
 );
 
-export default Admin2FARoutes;
+export default AdminTwoFactorRoutes;

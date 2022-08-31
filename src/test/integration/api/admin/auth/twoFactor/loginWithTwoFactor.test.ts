@@ -8,7 +8,7 @@ const request = require('supertest');
 import { createTestServer } from '../../../../../testHelpers/initTestServer';
 import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
 
-const PATH = '/api/admin/v1/auth/2fa/login';
+const PATH = '/api/admin/v1/auth/two-factor/login';
 
 describe(`Admin login with two factor [POST] ${PATH}`, async function () {
   let username;

@@ -9,7 +9,7 @@ import { createTestServerWithSession } from '../../../../../testHelpers/initTest
 import { invalidUUID } from '../../../../../testHelpers/common';
 import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
 
-const PATH = '/api/admin/v1/auth/2fa/enable';
+const PATH = '/api/admin/v1/auth/two-factor/enable';
 
 describe(`Admin enable two factor [POST] ${PATH}`, async function () {
   let idWith2FA;

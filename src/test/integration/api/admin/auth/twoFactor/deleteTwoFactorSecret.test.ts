@@ -8,7 +8,7 @@ import { createTestServerWithSession } from '../../../../../testHelpers/initTest
 import { invalidUUID } from '../../../../../testHelpers/common';
 import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
 
-const PATH = '/api/admin/v1/auth/2fa';
+const PATH = '/api/admin/v1/auth/two-factor';
 
 describe(`Admin delete two factor [DELETE] ${PATH}`, async function () {
   let adminID;

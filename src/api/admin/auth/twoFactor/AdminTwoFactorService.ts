@@ -3,11 +3,11 @@ import { enableTwoFactor } from './handlers/enableTwoFactor';
 import { generateTwoFactorSecret } from './handlers/generateTwoFactorSecret';
 import { loginWithTwoFactor } from './handlers/loginWithTwoFactor';
 
-const Admin2FAService = {
+const AdminTwoFactorService = {
   deleteTwoFactor,
   enableTwoFactor,
   generateTwoFactorSecret,
   loginWithTwoFactor,
 };
 
-export default Admin2FAService;
+export default AdminTwoFactorService;

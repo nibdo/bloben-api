@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import Admin2FAService from './Admin2FAService';
+import AdminTwoFactorService from './AdminTwoFactorService';
 
 export const deleteTwoFactor = async (
   req: Request,
@@ -7,7 +7,7 @@ export const deleteTwoFactor = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response = await Admin2FAService.deleteTwoFactor(req, res);
+    const response = await AdminTwoFactorService.deleteTwoFactor(req, res);
 
     res.status(200).send(response);
   } catch (error) {
@@ -21,7 +21,7 @@ export const enableTwoFactor = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response = await Admin2FAService.enableTwoFactor(req, res);
+    const response = await AdminTwoFactorService.enableTwoFactor(req, res);
 
     res.status(200).send(response);
   } catch (error) {
@@ -35,7 +35,10 @@ export const generateTwoFactorSecret = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response = await Admin2FAService.generateTwoFactorSecret(req, res);
+    const response = await AdminTwoFactorService.generateTwoFactorSecret(
+      req,
+      res
+    );
 
     res.status(200).send(response);
   } catch (error) {
@@ -49,7 +52,7 @@ export const loginWithTwoFactor = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response = await Admin2FAService.loginWithTwoFactor(req);
+    const response = await AdminTwoFactorService.loginWithTwoFactor(req);
 
     res.status(200).send(response);
   } catch (error) {
