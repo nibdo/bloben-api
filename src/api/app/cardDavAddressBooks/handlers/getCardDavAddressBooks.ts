@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { GetCardDavAddressBooks } from '../../../../bloben-interface/cardDavAddressBook/cardDavAddressBook';
+import { GetCardDavAddressBooks } from 'bloben-interface';
 import CardDavAddressBookRepository from '../../../../data/repository/CardDavAddressBookRepository';
 
 export const getCardDavAddressBooks = async (

@@ -1,4 +1,4 @@
-import { DAV_ACCOUNT_TYPE } from '../../../../bloben-interface/enums';
+import { DAV_ACCOUNT_TYPE } from '../../../../data/types/enums';
 import Joi from 'joi';
 
 export const createCalDavAccount = Joi.object({

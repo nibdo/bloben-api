@@ -3,7 +3,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 import { ImportMock } from 'ts-mock-imports';
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../../bloben-interface/enums';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../../data/types/enums';
 import {
   createTestServer,
   createTestServerWithSession,

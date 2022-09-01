@@ -1,4 +1,4 @@
-import { CalDavTask } from '../../../../bloben-interface/calDavTask/calDavTask';
+import { CalDavTask } from 'bloben-interface';
 import { Request, Response } from 'express';
 import CalDavTaskRepository from '../../../../data/repository/CalDavTaskRepository';
 

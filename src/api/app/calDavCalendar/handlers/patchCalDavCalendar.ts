@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { PatchCalDavCalendarRequest } from '../../../../bloben-interface/calDavCalendar/calDavCalendar';
+import { CommonResponse, PatchCalDavCalendarRequest } from 'bloben-interface';
 import {
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,

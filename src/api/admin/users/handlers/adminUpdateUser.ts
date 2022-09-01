@@ -1,6 +1,5 @@
-import { AdminUpdateUserRequest } from '../../../../bloben-interface/admin/admin';
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { ROLE } from '../../../../bloben-interface/enums';
+import { AdminUpdateUserRequest, CommonResponse } from 'bloben-interface';
+import { ROLE } from '../../../../data/types/enums';
 import { Request, Response } from 'express';
 import { createCommonResponse } from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';

@@ -9,11 +9,10 @@ import {
   TIMEZONE,
 } from '../../../../utils/enums';
 import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, UpdateCalDavEventRequest } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DateTime } from 'luxon';
 import { RRule } from 'rrule';
-import { UpdateCalDavEventRequest } from '../../../../bloben-interface/event/event';
 import {
   cardDavBullQueue,
   emailBullQueue,

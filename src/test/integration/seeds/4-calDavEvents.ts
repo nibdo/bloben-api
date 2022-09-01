@@ -1,7 +1,7 @@
 import { Connection, getConnection } from 'typeorm';
 import { forEach } from 'lodash';
 
-import { CreateCalDavEventRequest } from '../../../bloben-interface/event/event';
+import { CreateCalDavEventRequest } from 'bloben-interface';
 import { DAVCalendarObject } from 'tsdav';
 import { DateTime } from 'luxon';
 import { formatEventJsonToCalDavEvent } from '../../../utils/davHelper';

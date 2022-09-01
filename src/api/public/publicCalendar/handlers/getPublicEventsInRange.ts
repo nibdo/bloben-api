@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { DateTime } from 'luxon';
-import { EventResult } from '../../../../bloben-interface/event/event';
+import { EventResult } from 'bloben-interface';
 import { REDIS_PREFIX } from '../../../../utils/enums';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getRepeatedEvents } from '../../../app/event/helpers/getRepeatedEvents';

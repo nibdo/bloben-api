@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import { LoginDemoRequest } from '../../../../bloben-interface/user/user';
-import { ROLE } from '../../../../bloben-interface/enums';
+import { LoginDemoRequest } from 'bloben-interface';
+import { ROLE } from '../../../../data/types/enums';
 import { SESSION } from '../../../../utils/enums';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';

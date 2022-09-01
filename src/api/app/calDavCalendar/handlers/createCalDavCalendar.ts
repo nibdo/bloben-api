@@ -5,8 +5,7 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { CreateCalDavCalendarRequest } from '../../../../bloben-interface/calDavCalendar/calDavCalendar';
+import { CommonResponse, CreateCalDavCalendarRequest } from 'bloben-interface';
 import { DAVNamespaceShort } from 'tsdav';
 import { Request, Response } from 'express';
 import { calDavSyncBullQueue } from '../../../../service/BullQueue';

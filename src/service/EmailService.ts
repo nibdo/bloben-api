@@ -2,12 +2,12 @@ import { v4 } from 'uuid';
 import nodemailer from 'nodemailer';
 
 import { EmailCredentials } from '../common/interface/common';
-import { EmailInviteData } from '../bloben-interface/event/event';
 import {
+  EmailInviteData,
   ImapConfig,
   ImapData,
   SmtpData,
-} from '../bloben-interface/userEmailConfig/userEmailConfig';
+} from 'bloben-interface';
 import { LOG_TAG, NODE_ENV } from '../utils/enums';
 import { env } from '../index';
 import { throwError } from '../utils/errorCodes';

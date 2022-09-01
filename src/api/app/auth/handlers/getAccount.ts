@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { GetAccountResponse } from '../../../../bloben-interface/user/user';
+import { GetAccountResponse } from 'bloben-interface';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';

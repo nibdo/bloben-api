@@ -1,7 +1,7 @@
 import { CalDavAccount } from '../data/repository/CalDavAccountRepository';
 import { DAVCalendarObject, DAVClient, DAVCredentials } from 'tsdav';
 import { LOG_TAG } from '../utils/enums';
-import { Range } from '../bloben-interface/interface';
+import { Range } from 'bloben-interface';
 import { createEventsFromCalendarObject } from '../utils/davHelper';
 import { forEach } from 'lodash';
 import { throwError } from '../utils/errorCodes';

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import { createCommonResponse } from '../../../../utils/common';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import {
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,

@@ -1,5 +1,4 @@
-import { CommonResponse } from '../../../bloben-interface/interface';
-import { GetCalDavAccountResponse } from '../../../bloben-interface/calDavAccount/calDavAccount';
+import { CommonResponse, GetCalDavAccountResponse } from 'bloben-interface';
 import { NextFunction, Request, Response } from 'express';
 import CalDavAccountService from './CalDavAccountService';
 

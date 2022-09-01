@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, CreateCalDavEventRequest } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { CreateCalDavEventRequest } from '../../../../bloben-interface/event/event';
 import {
   LOG_TAG,
   SOCKET_CHANNEL,

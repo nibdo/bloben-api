@@ -1,4 +1,4 @@
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../bloben-interface/enums';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
 import { prevEventSchema } from './updateCalDavEventSchema';
 import Joi from 'joi';
 

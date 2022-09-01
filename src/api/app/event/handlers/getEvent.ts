@@ -1,5 +1,5 @@
-import { EVENT_TYPE } from '../../../../bloben-interface/enums';
-import { EventResult } from '../../../../bloben-interface/event/event';
+import { EVENT_TYPE } from '../../../../data/types/enums';
+import { EventResult } from 'bloben-interface';
 import { Request, Response } from 'express';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getWebcalEventByID } from '../helpers/getWebCalEvents';

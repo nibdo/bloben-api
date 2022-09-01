@@ -1,5 +1,5 @@
-import { GetServerSettings } from '../../../../bloben-interface/serverSettings/serverSettings';
-import { LOCATION_PROVIDER } from '../../../../bloben-interface/enums';
+import { GetServerSettings } from 'bloben-interface';
+import { LOCATION_PROVIDER } from '../../../../data/types/enums';
 import { throwError } from '../../../../utils/errorCodes';
 import ServerSettingsRepository from '../../../../data/repository/ServerSettingsRepository';
 

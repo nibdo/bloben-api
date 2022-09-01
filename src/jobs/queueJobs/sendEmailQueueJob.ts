@@ -1,7 +1,7 @@
 import { CryptoAes } from '../../utils/CryptoAes';
 import { GROUP_LOG_KEY, LOG_TAG } from '../../utils/enums';
 import { Job } from 'bullmq';
-import { UserEmailConfigData } from '../../bloben-interface/userEmailConfig/userEmailConfig';
+import { UserEmailConfigData } from 'bloben-interface';
 import { env } from '../../index';
 import { sendEmailInvite } from '../../service/EmailService';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';

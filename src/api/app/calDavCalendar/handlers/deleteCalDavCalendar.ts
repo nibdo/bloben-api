@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { BULL_QUEUE, LOG_TAG } from '../../../../utils/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
 import { createDavClient } from '../../../../service/davService';

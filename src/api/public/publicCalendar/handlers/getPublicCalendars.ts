@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { GetCalDavCalendar } from '../../../../bloben-interface/calDavCalendar/calDavCalendar';
+import { GetCalDavCalendar } from 'bloben-interface';
 import { REDIS_PREFIX } from '../../../../utils/enums';
 import { map } from 'lodash';
 import { redisClient } from '../../../../index';

@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, UpdateCalDavCalendarRequest } from 'bloben-interface';
 import {
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { UpdateCalDavCalendarRequest } from '../../../../bloben-interface/calDavCalendar/calDavCalendar';
 import { createCommonResponse } from '../../../../utils/common';
 import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';

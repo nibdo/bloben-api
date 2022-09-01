@@ -1,5 +1,4 @@
-import { default as Express } from 'express';
-import { NextFunction, Request, Response } from 'express';
+import { default as Express, NextFunction, Request, Response } from 'express';
 import { default as cors } from 'cors';
 import bodyParser from 'body-parser';
 import connect_redis from 'connect-redis';

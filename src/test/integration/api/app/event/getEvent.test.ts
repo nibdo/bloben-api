@@ -1,4 +1,4 @@
-import { EVENT_TYPE } from '../../../../../bloben-interface/enums';
+import { EVENT_TYPE } from '../../../../../data/types/enums';
 import {
   createTestServer,
   createTestServerWithSession,

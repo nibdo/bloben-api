@@ -1,10 +1,6 @@
-import {
-  CalDavEvent,
-  CommonResponse,
-  Range,
-} from '../bloben-interface/interface';
+import { CalDavEvent, CommonResponse, Range } from 'bloben-interface';
 import { DateTime, Interval } from 'luxon';
-import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../bloben-interface/enums';
+import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../data/types/enums';
 import { SOCKET_ROOM_NAMESPACE } from './enums';
 import { WEEKDAY_START } from 'kalend-layout';
 import { forEach } from 'lodash';

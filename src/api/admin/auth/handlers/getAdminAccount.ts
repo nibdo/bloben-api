@@ -1,5 +1,5 @@
-import { GetAdminAccountResponse } from '../../../../bloben-interface/admin/admin';
-import { ROLE } from '../../../../bloben-interface/enums';
+import { GetAdminAccountResponse } from 'bloben-interface';
+import { ROLE } from '../../../../data/types/enums';
 import { Request, Response } from 'express';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';

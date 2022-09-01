@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 
 import { createCommonResponse } from '../../../../utils/common';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { PatchWebcalCalendarRequest } from '../../../../bloben-interface/webcalCalendar/webcalCalendar';
+import { CommonResponse, PatchWebcalCalendarRequest } from 'bloben-interface';
 
 import {
   SOCKET_CHANNEL,
