@@ -9,9 +9,8 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { AdminCreateUserRequest } from '../../bloben-interface/admin/admin';
-import { GetAccountResponse } from '../../bloben-interface/user/user';
-import { ROLE } from '../../bloben-interface/enums';
+import { AdminCreateUserRequest, GetAccountResponse } from 'bloben-interface';
+import { ROLE } from '../types/enums';
 import CalDavAccountEntity from './CalDavAccount';
 import CalendarSettingsEntity from './CalendarSettings';
 import UserEmailConfigEntity from './UserEmailConfig';

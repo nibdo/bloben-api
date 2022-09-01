@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, UpdateCalDavEventRequest } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import {
   LOG_TAG,
@@ -8,7 +8,6 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { UpdateCalDavEventRequest } from '../../../../bloben-interface/event/event';
 import { createCommonResponse } from '../../../../utils/common';
 import { createTaskFromCalendarObject } from '../../../../utils/davHelperTodo';
 import { io } from '../../../../app';

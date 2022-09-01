@@ -1,9 +1,6 @@
 import { CryptoAes } from '../../utils/CryptoAes';
 import { GROUP_LOG_KEY, LOG_TAG, REDIS_PREFIX } from '../../utils/enums';
-import {
-  ImapData,
-  UserEmailConfigDecryptedData,
-} from '../../bloben-interface/userEmailConfig/userEmailConfig';
+import { ImapData, UserEmailConfigDecryptedData } from 'bloben-interface';
 import { redisClient } from '../../index';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';
 import imapService from '../../service/ImapService';

@@ -1,4 +1,4 @@
-import { GetUsersResponse } from '../../../../bloben-interface/admin/admin';
+import { GetUsersResponse } from 'bloben-interface';
 import { map } from 'lodash';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';

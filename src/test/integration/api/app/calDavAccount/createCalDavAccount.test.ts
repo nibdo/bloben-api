@@ -1,5 +1,5 @@
-import { CreateCalDavAccountRequest } from '../../../../../bloben-interface/calDavAccount/calDavAccount';
-import { DAV_ACCOUNT_TYPE } from '../../../../../bloben-interface/enums';
+import { CreateCalDavAccountRequest } from 'bloben-interface';
+import { DAV_ACCOUNT_TYPE } from '../../../../../data/types/enums';
 import { ImportMock } from 'ts-mock-imports';
 import {
   createTestServer,

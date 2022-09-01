@@ -1,4 +1,4 @@
-import { LOCATION_PROVIDER } from '../../../../bloben-interface/enums';
+import { LOCATION_PROVIDER } from '../../../../data/types/enums';
 import Joi from 'joi';
 
 export const patchServerSettingsSchema = Joi.object({

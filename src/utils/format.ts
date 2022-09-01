@@ -1,12 +1,7 @@
-import { ATTENDEE_PARTSTAT, EVENT_TYPE } from '../bloben-interface/enums';
-import {
-  Attendee,
-  EventResult,
-  Organizer,
-} from '../bloben-interface/event/event';
+import { ATTENDEE_PARTSTAT, EVENT_TYPE } from '../data/types/enums';
+import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
-import { EventStyle } from '../bloben-interface/interface';
 import { find } from 'lodash';
 import { getEventStyle } from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';

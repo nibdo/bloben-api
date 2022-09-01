@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 
 import {
   Attendee,
+  CommonResponse,
   Organizer,
   UpdatePartstatStatusRequest,
-} from '../../../../bloben-interface/event/event';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+} from 'bloben-interface';
 
 import {
   SOCKET_CHANNEL,

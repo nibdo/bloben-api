@@ -6,8 +6,7 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { DeleteCalDavEventRequest } from '../../../../bloben-interface/event/event';
+import { CommonResponse, DeleteCalDavEventRequest } from 'bloben-interface';
 import { createCommonResponse } from '../../../../utils/common';
 import { emailBullQueue } from '../../../../service/BullQueue';
 import { formatCancelInviteData } from '../../../../utils/davHelper';

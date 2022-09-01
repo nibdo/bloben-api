@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { UpdateCalDavAccountRequest } from '../../../../bloben-interface/calDavAccount/calDavAccount';
+import { CommonResponse, UpdateCalDavAccountRequest } from 'bloben-interface';
 import { createCommonResponse } from '../../../../utils/common';
 import { createDavClient } from '../../../../service/davService';
 import { throwError } from '../../../../utils/errorCodes';

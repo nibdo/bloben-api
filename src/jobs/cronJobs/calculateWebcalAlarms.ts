@@ -1,5 +1,5 @@
 import { BULL_QUEUE } from '../../utils/enums';
-import { CalendarAlarms } from '../../bloben-interface/interface';
+import { CalendarAlarms } from 'bloben-interface';
 import { webcalRemindersBullQueue } from '../../service/BullQueue';
 import WebcalCalendarRepository from '../../data/repository/WebcalCalendarRepository';
 import logger from '../../utils/logger';

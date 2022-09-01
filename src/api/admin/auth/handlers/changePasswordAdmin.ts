@@ -1,5 +1,4 @@
-import { AdminChangePasswordRequest } from '../../../../bloben-interface/admin/admin';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { AdminChangePasswordRequest, CommonResponse } from 'bloben-interface';
 import { LOG_TAG } from '../../../../utils/enums';
 import { Request, Response } from 'express';
 import { createCommonResponse } from '../../../../utils/common';

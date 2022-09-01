@@ -5,8 +5,8 @@ import { LOG_TAG, SESSION } from '../../../../../utils/enums';
 import {
   LoginWithTwoFactorAdminResponse,
   LoginWithTwoFactorRequest,
-} from '../../../../../bloben-interface/2fa/2fa';
-import { ROLE } from '../../../../../bloben-interface/enums';
+} from 'bloben-interface';
+import { ROLE } from '../../../../../data/types/enums';
 import { throwError } from '../../../../../utils/errorCodes';
 import UserEntity from '../../../../../data/entity/UserEntity';
 import UserRepository from '../../../../../data/repository/UserRepository';

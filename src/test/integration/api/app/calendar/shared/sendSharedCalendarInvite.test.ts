@@ -1,6 +1,6 @@
 import { invalidUUID } from '../../../../../testHelpers/common';
 
-import { PostSendSharedCalendarInviteRequest } from '../../../../../../bloben-interface/calendar/shared/calendarShared';
+import { PostSendSharedCalendarInviteRequest } from 'bloben-interface';
 import {
   createTestServer,
   createTestServerWithSession,

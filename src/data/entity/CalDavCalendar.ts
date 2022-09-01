@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { CalendarAlarms } from '../../bloben-interface/interface';
+import { CalendarAlarms } from 'bloben-interface';
 import CalDavAccountEntity from './CalDavAccount';
 import CalDavEventEntity from './CalDavEventEntity';
 import CalDavTaskEntity from './CalDavTaskEntity';

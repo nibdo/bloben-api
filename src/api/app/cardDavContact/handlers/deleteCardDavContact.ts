@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import { LOG_TAG } from '../../../../utils/enums';
 import { createCommonResponse } from '../../../../utils/common';
 import { loginToCalDav } from '../../../../service/davService';

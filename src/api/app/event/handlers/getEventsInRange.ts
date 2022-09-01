@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { DateTime } from 'luxon';
-import { EventResult } from '../../../../bloben-interface/event/event';
+import { EventResult } from 'bloben-interface';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getRepeatedEvents } from '../helpers/getRepeatedEvents';
 import { getWebcalEvents } from '../helpers/getWebCalEvents';

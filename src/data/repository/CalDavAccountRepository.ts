@@ -1,7 +1,7 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
 import { DAVCalendar } from 'tsdav';
-import { DAV_ACCOUNT_TYPE } from '../../bloben-interface/enums';
+import { DAV_ACCOUNT_TYPE } from '../types/enums';
 import { forEach, groupBy } from 'lodash';
 import { getOneResult } from '../../utils/common';
 import CalDavAccountEntity from '../entity/CalDavAccount';

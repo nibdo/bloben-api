@@ -14,10 +14,12 @@ import {
   formatInviteData,
   formatRecurringCancelInviteData,
 } from '../../../../utils/davHelper';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import {
+  CommonResponse,
+  DeleteRepeatedCalDavEventRequest,
+} from 'bloben-interface';
 import { DAVClient } from 'tsdav';
-import { DeleteRepeatedCalDavEventRequest } from '../../../../bloben-interface/event/event';
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../bloben-interface/enums';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
 import {
   calDavSyncBullQueue,
   emailBullQueue,

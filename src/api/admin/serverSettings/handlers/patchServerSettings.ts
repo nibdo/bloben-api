@@ -1,5 +1,4 @@
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { PatchServerSettings } from '../../../../bloben-interface/serverSettings/serverSettings';
+import { CommonResponse, PatchServerSettings } from 'bloben-interface';
 import { Request } from 'express';
 import { createCommonResponse } from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';

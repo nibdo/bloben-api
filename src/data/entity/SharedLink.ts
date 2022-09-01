@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 import { DateTime } from 'luxon';
-import { PostSharedLinkRequest } from '../../bloben-interface/calendar/shared/calendarShared';
+import { PostSharedLinkRequest } from 'bloben-interface';
 import SharedLinkCalendarEntity from './SharedLinkCalendars';
 import UserEntity from './UserEntity';
 

@@ -1,5 +1,5 @@
-import { ATTENDEE_PARTSTAT } from '../../bloben-interface/enums';
-import { Attendee } from '../../bloben-interface/event/event';
+import { ATTENDEE_PARTSTAT } from '../../data/types/enums';
+import { Attendee } from 'bloben-interface';
 import {
   BULL_QUEUE,
   LOG_TAG,

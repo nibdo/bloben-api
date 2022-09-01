@@ -7,7 +7,7 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { DuplicateMultipleCalDavEventsBody } from '../../../../bloben-interface/event/event';
+import { DuplicateMultipleCalDavEventsBody } from 'bloben-interface';
 import { createCommonResponse } from '../../../../utils/common';
 
 import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';

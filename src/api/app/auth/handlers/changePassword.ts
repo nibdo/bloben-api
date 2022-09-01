@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import { ChangePasswordRequest } from '../../../../bloben-interface/user/user';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { ChangePasswordRequest, CommonResponse } from 'bloben-interface';
 import { LOG_TAG } from '../../../../utils/enums';
 import { createCommonResponse } from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';

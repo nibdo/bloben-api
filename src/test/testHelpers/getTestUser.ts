@@ -1,6 +1,6 @@
 import { Connection, getConnection } from 'typeorm';
 
-import { ROLE } from '../../bloben-interface/enums';
+import { ROLE } from '../../data/types/enums';
 import { testDemoUserData } from '../integration/seeds/1-user-seed';
 import UserEntity from '../../data/entity/UserEntity';
 import UserRepository from '../../data/repository/UserRepository';

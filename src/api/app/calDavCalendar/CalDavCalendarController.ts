@@ -1,4 +1,4 @@
-import { GetCalDavCalendar } from '../../../bloben-interface/calDavCalendar/calDavCalendar';
+import { GetCalDavCalendar } from 'bloben-interface';
 import { NextFunction, Request, Response } from 'express';
 import CalDavCalendarService from './CalDavCalendarService';
 

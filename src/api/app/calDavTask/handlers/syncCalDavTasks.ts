@@ -1,5 +1,5 @@
 import { BULL_QUEUE } from '../../../../utils/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import { Request, Response } from 'express';
 import {
   calDavSyncBullQueue,

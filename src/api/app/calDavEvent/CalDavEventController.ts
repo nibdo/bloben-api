@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CommonResponse } from '../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import CalDavEventService from './CalDavEventService';
 
 export const createCalDavEvent = async (

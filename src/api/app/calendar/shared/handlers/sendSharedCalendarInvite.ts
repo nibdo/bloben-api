@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import { BULL_QUEUE } from '../../../../../utils/enums';
 import { DateTime } from 'luxon';
-import { PostSendSharedCalendarInviteRequest } from '../../../../../bloben-interface/calendar/shared/calendarShared';
+import { PostSendSharedCalendarInviteRequest } from 'bloben-interface';
 import { createCommonResponse } from '../../../../../utils/common';
 import { emailBullQueue } from '../../../../../service/BullQueue';
 import { formatGeneralEmailData } from '../../../../../utils/davHelper';

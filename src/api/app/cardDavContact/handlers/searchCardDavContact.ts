@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { SearchCardDavContactResponse } from '../../../../bloben-interface/cardDavContact/cardDavContact';
+import { SearchCardDavContactResponse } from 'bloben-interface';
 import { forEach } from 'lodash';
 import CardDavContactRepository from '../../../../data/repository/CardDavContactRepository';
 

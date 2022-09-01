@@ -2,13 +2,13 @@ import {
   CALDAV_COMPONENTS,
   EVENT_TYPE,
   REPEATED_EVENT_CHANGE_TYPE,
-} from '../../../bloben-interface/enums';
+} from '../../../data/types/enums';
 import { CALDAV_TEST_ACCOUNT } from '../seeds/1-user-caldav-seed';
 import {
   CreateCalDavEventRequest,
   DeleteRepeatedCalDavEventRequest,
   UpdateRepeatedCalDavEventRequest,
-} from '../../../bloben-interface/event/event';
+} from 'bloben-interface';
 import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
 import { createCalDavCalendar } from '../../../api/app/calDavCalendar/handlers/createCalDavCalendar';

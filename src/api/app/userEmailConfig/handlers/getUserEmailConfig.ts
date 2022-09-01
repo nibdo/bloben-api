@@ -4,7 +4,7 @@ import { CryptoAes } from '../../../../utils/CryptoAes';
 import {
   GetUserEmailConfigResponse,
   UserEmailConfigData,
-} from '../../../../bloben-interface/userEmailConfig/userEmailConfig';
+} from 'bloben-interface';
 import { env } from '../../../../index';
 import UserEmailConfigRepository from '../../../../data/repository/UserEmailConfigRepository';
 
