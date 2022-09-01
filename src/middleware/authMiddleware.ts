@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { LOG_TAG, SESSION } from '../utils/enums';
-import { ROLE } from '../bloben-interface/enums';
+import { ROLE } from '../data/types/enums';
 import { throwError } from '../utils/errorCodes';
 import UserEntity from '../data/entity/UserEntity';
 import logger from '../utils/logger';

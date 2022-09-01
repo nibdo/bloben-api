@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { GetCardDavContactsResponse } from '../../../../bloben-interface/cardDavContact/cardDavContact';
+import { GetCardDavContactsResponse } from 'bloben-interface';
 import CardDavContactRepository from '../../../../data/repository/CardDavContactRepository';
 
 interface Query {

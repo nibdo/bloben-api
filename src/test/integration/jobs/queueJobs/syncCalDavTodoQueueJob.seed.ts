@@ -1,5 +1,5 @@
 import { DAVCalendarObject } from 'tsdav';
-import { DAV_ACCOUNT_TYPE } from '../../../../bloben-interface/enums';
+import { DAV_ACCOUNT_TYPE } from '../../../../data/types/enums';
 import { ImportMock } from 'ts-mock-imports';
 import { forEach } from 'lodash';
 import { formatTodoJsonToCalDavTodo } from '../../../../utils/davHelperTodo';

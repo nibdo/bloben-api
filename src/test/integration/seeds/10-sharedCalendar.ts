@@ -1,7 +1,7 @@
 import { Connection, getConnection } from 'typeorm';
 
 import { DateTime } from 'luxon';
-import { PostSharedLinkRequest } from '../../../bloben-interface/calendar/shared/calendarShared';
+import { PostSharedLinkRequest } from 'bloben-interface';
 import { seedCalDavCalendars } from './3-calDavCalendars';
 import SharedLinkCalendarEntity from '../../../data/entity/SharedLinkCalendars';
 import SharedLinkEntity from '../../../data/entity/SharedLink';

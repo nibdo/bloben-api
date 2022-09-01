@@ -1,6 +1,6 @@
-import { EVENT_TYPE } from '../../../../bloben-interface/enums';
+import { EVENT_TYPE } from '../../../../data/types/enums';
 import { NextFunction, Request, Response } from 'express';
-import { SearchEventsResponse } from '../../../../bloben-interface/event/event';
+import { SearchEventsResponse } from 'bloben-interface';
 import { SearchResult } from '../../../app/event/handlers/searchEvents';
 import { map } from 'lodash';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';

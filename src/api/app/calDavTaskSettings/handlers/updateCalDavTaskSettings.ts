@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
 
-import { CALDAV_COMPONENTS } from '../../../../bloben-interface/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CALDAV_COMPONENTS } from '../../../../data/types/enums';
+import {
+  CommonResponse,
+  UpdateCalDavTaskSettingsRequest,
+} from 'bloben-interface';
 import {
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { UpdateCalDavTaskSettingsRequest } from '../../../../bloben-interface/calDavTaskSettings/CalDavTaskLabel';
 import { createCommonResponse } from '../../../../utils/common';
 import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';

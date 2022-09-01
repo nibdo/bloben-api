@@ -1,9 +1,6 @@
 import * as ImapFlowLib from 'imapflow';
 import { BULL_QUEUE, LOG_TAG } from '../utils/enums';
-import {
-  ImapConfig,
-  ImapData,
-} from '../bloben-interface/userEmailConfig/userEmailConfig';
+import { ImapConfig, ImapData } from 'bloben-interface';
 import { emailInviteBullQueue } from './BullQueue';
 import { getTextCalendarAttachment } from '../jobs/cronJobs/getImapEmails';
 import logger from '../utils/logger';

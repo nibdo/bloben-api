@@ -2,9 +2,8 @@ import { Request } from 'express';
 import { authenticator } from 'otplib';
 
 import { LOG_TAG, SESSION } from '../../../../../utils/enums';
-import { LoginResponse } from '../../../../../bloben-interface/user/user';
-import { LoginWithTwoFactorRequest } from '../../../../../bloben-interface/2fa/2fa';
-import { ROLE } from '../../../../../bloben-interface/enums';
+import { LoginResponse, LoginWithTwoFactorRequest } from 'bloben-interface';
+import { ROLE } from '../../../../../data/types/enums';
 import { throwError } from '../../../../../utils/errorCodes';
 import UserEntity from '../../../../../data/entity/UserEntity';
 import UserRepository from '../../../../../data/repository/UserRepository';

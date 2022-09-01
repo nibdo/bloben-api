@@ -1,6 +1,6 @@
 import { QueryRunner, getConnection } from 'typeorm';
 
-import { CalendarAlarms } from '../../bloben-interface/interface';
+import { CalendarAlarms } from 'bloben-interface';
 import { DateTime } from 'luxon';
 import { Job } from 'bullmq';
 import { LOG_TAG, TIMEZONE } from '../../utils/enums';

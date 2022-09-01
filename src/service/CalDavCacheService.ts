@@ -2,7 +2,7 @@ import {} from '../api/app/event/handlers/getEventsInRange';
 
 import { DAVCalendarObject } from 'tsdav';
 import { DateTime } from 'luxon';
-import { Range } from '../bloben-interface/interface';
+import { Range } from 'bloben-interface';
 import { createDavClient } from './davService';
 import { createEventsFromCalendarObject } from '../utils/davHelper';
 import { forEach } from 'lodash';

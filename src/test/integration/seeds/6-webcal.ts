@@ -1,6 +1,6 @@
 import { Connection, getConnection } from 'typeorm';
 
-import { CreateWebcalCalendarRequest } from '../../../bloben-interface/webcalCalendar/webcalCalendar';
+import { CreateWebcalCalendarRequest } from 'bloben-interface';
 import UserEntity from '../../../data/entity/UserEntity';
 import WebcalCalendarEntity from '../../../data/entity/WebcalCalendarEntity';
 import WebcalEventEntity from '../../../data/entity/WebcalEventEntity';

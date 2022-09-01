@@ -1,10 +1,7 @@
 import { Request } from 'express';
 
 import { LOG_TAG, REDIS_PREFIX, SESSION } from '../../../../utils/enums';
-import {
-  LoginRequest,
-  LoginResponse,
-} from '../../../../bloben-interface/user/user';
+import { LoginRequest, LoginResponse } from 'bloben-interface';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';

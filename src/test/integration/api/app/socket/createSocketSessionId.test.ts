@@ -1,4 +1,4 @@
-import { CreateSocketSessionRequest } from '../../../../../bloben-interface/socket/socket';
+import { CreateSocketSessionRequest } from 'bloben-interface';
 
 import { v4 } from 'uuid';
 // eslint-disable-next-line @typescript-eslint/no-var-requires

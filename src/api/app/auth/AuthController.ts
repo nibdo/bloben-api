@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CommonResponse } from '../../../bloben-interface/interface';
 import {
+  CommonResponse,
   GetAccountResponse,
   GetSessionResponse,
   LoginResponse,
-} from '../../../bloben-interface/user/user';
+} from 'bloben-interface';
 import AuthService from './AuthService';
 
 export const loginAccount = async (

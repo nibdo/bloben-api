@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import { createCommonResponse } from '../../../../../utils/common';
 import { throwError } from '../../../../../utils/errorCodes';
 import UserEntity from '../../../../../data/entity/UserEntity';

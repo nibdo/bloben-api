@@ -16,7 +16,7 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from './enums';
 import { RRule } from 'rrule';
-import { Range } from '../bloben-interface/interface';
+import { Range } from 'bloben-interface';
 import { cloneDeep, find, forEach, keyBy, map } from 'lodash';
 import {
   createCalDavCalendar,
@@ -42,7 +42,7 @@ import CalDavEventRepository, {
 import ICalParser, { DateTimeObject, EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 
-import { ATTENDEE_PARTSTAT } from '../bloben-interface/enums';
+import { ATTENDEE_PARTSTAT } from '../data/types/enums';
 import { VcardParsed, parseFromVcardString } from './vcardParser';
 import CalendarSettingsRepository from '../data/repository/CalendarSettingsRepository';
 import CardDavAddressBook from '../data/entity/CardDavAddressBook';

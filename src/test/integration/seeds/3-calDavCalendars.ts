@@ -1,11 +1,8 @@
 import { Connection, getConnection } from 'typeorm';
 import { forEach } from 'lodash';
 
-import {
-  CALDAV_COMPONENTS,
-  DAV_ACCOUNT_TYPE,
-} from '../../../bloben-interface/enums';
-import { CreateCalDavAccountRequest } from '../../../bloben-interface/calDavAccount/calDavAccount';
+import { CALDAV_COMPONENTS, DAV_ACCOUNT_TYPE } from '../../../data/types/enums';
+import { CreateCalDavAccountRequest } from 'bloben-interface';
 import CalDavAccountEntity from '../../../data/entity/CalDavAccount';
 import CalDavCalendarEntity from '../../../data/entity/CalDavCalendar';
 import UserEntity from '../../../data/entity/UserEntity';

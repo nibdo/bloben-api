@@ -1,7 +1,7 @@
 import { AccountWithCalendars } from '../../../../data/repository/CalDavAccountRepository';
 import { DAVCalendar } from 'tsdav';
 import { DateTime } from 'luxon';
-import { GetCalDavCalendar } from '../../../../bloben-interface/calDavCalendar/calDavCalendar';
+import { GetCalDavCalendar } from 'bloben-interface';
 import { QueryRunner } from 'typeorm';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
 import CalDavCalendarEntity from '../../../../data/entity/CalDavCalendar';

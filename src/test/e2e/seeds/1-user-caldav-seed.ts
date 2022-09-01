@@ -1,6 +1,8 @@
-import { AdminCreateUserRequest } from '../../../bloben-interface/admin/admin';
-import { CreateCalDavAccountRequest } from '../../../bloben-interface/calDavAccount/calDavAccount';
-import { DAV_ACCOUNT_TYPE } from '../../../bloben-interface/enums';
+import {
+  AdminCreateUserRequest,
+  CreateCalDavAccountRequest,
+} from 'bloben-interface';
+import { DAV_ACCOUNT_TYPE } from '../../../data/types/enums';
 import { USER_ROLE } from '../../../api/app/auth/UserEnums';
 import { generateRandomSimpleString } from '../../../utils/common';
 import { v4 } from 'uuid';

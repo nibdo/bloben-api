@@ -1,6 +1,6 @@
 import { Connection, MigrationInterface, getConnection } from 'typeorm';
 
-import { AdminCreateUserRequest } from '../../../bloben-interface/admin/admin';
+import { AdminCreateUserRequest } from 'bloben-interface';
 import { TEST_USER_PASSWORD } from './1-user-seed';
 import AdminUsersService from '../../../api/admin/users/AdminUsersService';
 import UserEntity from '../../../data/entity/UserEntity';

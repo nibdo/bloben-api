@@ -1,5 +1,4 @@
-import { AdminCreateUserRequest } from '../../../../bloben-interface/admin/admin';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { AdminCreateUserRequest, CommonResponse } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { LOG_TAG } from '../../../../utils/enums';
 import { Request } from 'express';

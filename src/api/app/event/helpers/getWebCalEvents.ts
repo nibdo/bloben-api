@@ -4,10 +4,9 @@ import {
   ATTENDEE_PARTSTAT,
   ATTENDEE_ROLE,
   EVENT_TYPE,
-} from '../../../../bloben-interface/enums';
+} from '../../../../data/types/enums';
 import { DateTime } from 'luxon';
-import { EventResult } from '../../../../bloben-interface/event/event';
-import { EventStyle } from '../../../../bloben-interface/interface';
+import { EventResult, EventStyle } from 'bloben-interface';
 import { getOccurrences } from './getRepeatedEvents';
 import LuxonHelper from '../../../../utils/luxonHelper';
 import WebcalEventExceptionRepository from '../../../../data/repository/WebcalEventExceptionRepository';

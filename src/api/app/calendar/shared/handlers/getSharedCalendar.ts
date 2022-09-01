@@ -1,9 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import {
-  GetSharedCalendarResponse,
-  SharedCalendar,
-} from '../../../../../bloben-interface/calendar/shared/calendarShared';
+import { GetSharedCalendarResponse, SharedCalendar } from 'bloben-interface';
 import { forEach } from 'lodash';
 import { throwError } from '../../../../../utils/errorCodes';
 import SharedLinkRepository from '../../../../../data/repository/SharedLinkRepository';

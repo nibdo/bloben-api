@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { CreateCalDavAccountRequest } from '../../bloben-interface/calDavAccount/calDavAccount';
+import { CreateCalDavAccountRequest } from 'bloben-interface';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CardDavAddressBook from './CardDavAddressBook';
 import UserEntity from './UserEntity';

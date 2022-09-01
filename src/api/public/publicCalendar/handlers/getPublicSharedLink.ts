@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { GetSharedLinkPublicResponse } from '../../../../bloben-interface/public/SharedLinkPublic';
+import { GetSharedLinkPublicResponse } from 'bloben-interface';
 import { REDIS_PREFIX } from '../../../../utils/enums';
 import { redisClient } from '../../../../index';
 import SharedLinkRepository from '../../../../data/repository/SharedLinkRepository';

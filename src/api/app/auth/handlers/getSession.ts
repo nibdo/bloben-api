@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-import { GetSessionResponse } from '../../../../bloben-interface/user/user';
+import { GetSessionResponse } from 'bloben-interface';
 import { SESSION } from '../../../../utils/enums';
 import UserRepository from '../../../../data/repository/UserRepository';
 

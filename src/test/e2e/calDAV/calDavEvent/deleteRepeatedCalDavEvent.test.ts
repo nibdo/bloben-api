@@ -1,12 +1,12 @@
 import { DateTime } from 'luxon';
-import { DeleteRepeatedCalDavEventRequest } from '../../../../bloben-interface/event/event';
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../bloben-interface/enums';
+import { DeleteRepeatedCalDavEventRequest } from 'bloben-interface';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
 import {
   createDeleteRepeatedEventBodyJSON,
+  createRepeatedTestCalDavEvent,
   formatIcalStringDates,
 } from '../calDavServerTestHelper';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
-import { createRepeatedTestCalDavEvent } from '../calDavServerTestHelper';
 import { createTestCalendarCalendar } from '../../../testHelpers/calDavServerTestHelper';
 import { invalidUUID } from '../../../testHelpers/common';
 import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';

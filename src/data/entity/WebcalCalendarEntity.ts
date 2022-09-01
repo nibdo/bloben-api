@@ -1,4 +1,4 @@
-import { CalendarAlarms } from '../../bloben-interface/interface';
+import { CalendarAlarms, CreateWebcalCalendarRequest } from 'bloben-interface';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +9,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CreateWebcalCalendarRequest } from '../../bloben-interface/webcalCalendar/webcalCalendar';
 import SharedLinkCalendarEntity from './SharedLinkCalendars';
 import UserEntity from './UserEntity';
 import WebcalEventEntity from './WebcalEventEntity';

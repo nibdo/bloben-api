@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../../bloben-interface/interface';
+import { CommonResponse, PostSharedLinkRequest } from 'bloben-interface';
 import { DateTime } from 'luxon';
-import { PostSharedLinkRequest } from '../../../../../bloben-interface/calendar/shared/calendarShared';
 import { QueryRunner, getConnection } from 'typeorm';
 import { createCommonResponse } from '../../../../../utils/common';
 import { forEach } from 'lodash';

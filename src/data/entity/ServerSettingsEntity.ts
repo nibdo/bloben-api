@@ -5,7 +5,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { LOCATION_PROVIDER } from '../../bloben-interface/enums';
+import { LOCATION_PROVIDER } from '../types/enums';
 
 @Entity('server_settings')
 export default class ServerSettingsEntity {

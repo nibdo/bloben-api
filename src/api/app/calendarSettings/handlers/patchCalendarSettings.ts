@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { PatchCalendarSettingsRequest } from '../../../../bloben-interface/calendarSettings/calendarSettings';
+import { CommonResponse, PatchCalendarSettingsRequest } from 'bloben-interface';
 
 import { createCommonResponse } from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';

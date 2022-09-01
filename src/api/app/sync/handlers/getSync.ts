@@ -4,7 +4,7 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import { Request, Response } from 'express';
 import {
   calDavSyncBullQueue,

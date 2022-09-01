@@ -1,4 +1,4 @@
-import { LOCATION_PROVIDER } from '../../../../../bloben-interface/enums';
+import { LOCATION_PROVIDER } from '../../../../../data/types/enums';
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
 import { seedAdminUser } from '../../../seeds/0-adminUser-seed';

@@ -1,4 +1,4 @@
-import { LOG_FILE_TYPE } from '../../../../bloben-interface/enums';
+import { LOG_FILE_TYPE } from '../../../../data/types/enums';
 import Joi from 'joi';
 
 export const getLogFilesSchema = Joi.object({

@@ -1,4 +1,4 @@
-import { LOCATION_PROVIDER } from '../../../bloben-interface/enums';
+import { LOCATION_PROVIDER } from '../../../data/types/enums';
 import ServerSettingsEntity from '../../../data/entity/ServerSettingsEntity';
 import ServerSettingsRepository from '../../../data/repository/ServerSettingsRepository';
 

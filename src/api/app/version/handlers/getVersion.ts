@@ -1,4 +1,4 @@
-import { GetVersion } from '../../../../bloben-interface/version/version';
+import { GetVersion } from 'bloben-interface';
 import RedisService from '../../../../service/RedisService';
 import ServerSettingsRepository from '../../../../data/repository/ServerSettingsRepository';
 import axios from 'axios';

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CommonResponse } from '../../../bloben-interface/interface';
-import { GetWebcalCalendarsResponse } from '../../../bloben-interface/webcalCalendar/webcalCalendar';
+import { CommonResponse, GetWebcalCalendarsResponse } from 'bloben-interface';
 import WebcalCalendarService from './WebcalCalendarService';
 
 export const createWebcalCalendar = async (

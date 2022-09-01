@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import {
   LOG_TAG,

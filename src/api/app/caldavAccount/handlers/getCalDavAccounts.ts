@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { GetCalDavAccountResponse } from '../../../../bloben-interface/calDavAccount/calDavAccount';
+import { GetCalDavAccountResponse } from 'bloben-interface';
 import { map } from 'lodash';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 

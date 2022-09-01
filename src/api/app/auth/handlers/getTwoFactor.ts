@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { GetTwoFactorResponse } from '../../../../bloben-interface/2fa/2fa';
+import { GetTwoFactorResponse } from 'bloben-interface';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';

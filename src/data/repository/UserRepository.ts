@@ -1,6 +1,6 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
-import { ROLE } from '../../bloben-interface/enums';
+import { ROLE } from '../types/enums';
 import UserEntity from '../entity/UserEntity';
 
 @EntityRepository(UserEntity)

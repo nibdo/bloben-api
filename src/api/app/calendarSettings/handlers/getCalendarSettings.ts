@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CalendarSettingsResponse } from '../../../../bloben-interface/calendarSettings/calendarSettings';
+import { CalendarSettingsResponse } from 'bloben-interface';
 
 import { CALENDAR_VIEW } from 'kalend-layout';
 import CalendarSettingsRepository from '../../../../data/repository/CalendarSettingsRepository';
