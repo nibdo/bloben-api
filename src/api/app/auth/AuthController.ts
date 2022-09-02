@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 
 import {
   CommonResponse,
-  GetAccountResponse,
   GetSessionResponse,
   LoginResponse,
 } from 'bloben-interface';
@@ -55,20 +54,6 @@ export const getSession = async (
 ): Promise<void> => {
   try {
     const response: GetSessionResponse = await AuthService.getSession(req);
-
-    res.status(200).send(response);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getAccount = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const response: GetAccountResponse = await AuthService.getAccount(req, res);
 
     res.status(200).send(response);
   } catch (error) {

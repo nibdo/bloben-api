@@ -11,6 +11,7 @@ import CalendarSettingsRouter from '../api/app/calendarSettings/CalendarSettings
 import CardDavAddressBookRouter from '../api/app/cardDavAddressBooks/CardDavAddressBookRouter';
 import CardDavContactRouter from '../api/app/cardDavContact/CardDavContactRouter';
 import EventRoutes from '../api/app/event/EventRoutes';
+import ProfileRoutes from '../api/app/profile/ProfileRoutes';
 import ServerSettingsRouter from '../api/admin/serverSettings/ServerSettingsRouter';
 import SocketRouter from '../api/app/socket/SocketRoutes';
 import SyncRouter from '../api/app/sync/SyncRoutes';
@@ -23,6 +24,7 @@ import WebcalEventsRouter from '../api/app/webcalEvents/WebcalEventRouter';
 const AppRouter: Router = Router();
 
 AppRouter.use(`/auth`, AuthRouter);
+AppRouter.use(`/profile`, ProfileRoutes);
 AppRouter.use(`/users/email-config`, UserEmailConfigRoutes);
 AppRouter.use(`/socket`, SocketRouter);
 AppRouter.use(`/caldav-events`, CalDavEventRouter);
