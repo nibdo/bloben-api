@@ -37,6 +37,7 @@ export default class UserRepository extends Repository<UserEntity> {
         'username',
         'role',
         'hash',
+        'language',
         'isEnabled',
         'isTwoFactorEnabled',
         'twoFactorSecret',
