@@ -22,6 +22,7 @@ interface Query {
  * Get events outside base range
  * @param req
  * @param res
+ * @param next
  */
 export const getPublicEventsInRange = async (
   req: Request,

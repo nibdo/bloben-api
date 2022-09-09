@@ -2,7 +2,6 @@ import { default as Express, NextFunction, Request, Response } from 'express';
 import { default as cors } from 'cors';
 import bodyParser from 'body-parser';
 import connect_redis from 'connect-redis';
-import redis from 'redis';
 import session from 'express-session';
 
 import { SESSION } from '../../utils/enums';
@@ -10,15 +9,14 @@ import { corsOptions } from '../../config/cors';
 import { createRedisConfig } from '../../config/redis';
 import { createSessionConfig } from '../../config/session';
 import { getTestUser } from './getTestUser';
-import { redisClient } from '../../index';
+import Redis from 'ioredis';
 import Router from '../../routes/appRoutes';
 import UserEntity from '../../data/entity/UserEntity';
 import errorMiddleware from '../../middleware/errorMiddleware';
 
-const redisClientOriginal: any = redis.createClient();
+let redisClient = new Redis();
 const redisStore: any = connect_redis(session);
 import { loadEnv } from '../../config/env';
-import asyncRedis from 'async-redis';
 
 loadEnv();
 
@@ -43,14 +41,12 @@ export const createE2ETestServerWithSession = (userID: string) => {
   const redisConfig: any = createRedisConfig();
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  redisClient = asyncRedis.createClient(redisConfig);
+  redisClient = new Redis(redisConfig);
 
   const TestBlobenApp: any = Express();
   TestBlobenApp.use(cors(corsOptions));
   // Set session settings
-  TestBlobenApp.use(
-    session(createSessionConfig(redisStore, redisClientOriginal))
-  );
+  TestBlobenApp.use(session(createSessionConfig(redisStore, redisClient)));
 
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());

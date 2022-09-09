@@ -1,4 +1,4 @@
-import { CALENDAR_VIEW } from 'kalend-layout';
+import { CALENDAR_VIEW } from 'kalend/common/enums';
 import Joi from 'joi';
 
 export const calendarSettingsSchema = Joi.object().keys({

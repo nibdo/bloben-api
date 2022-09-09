@@ -1,17 +1,11 @@
-import { env } from '../index';
+import { RedisOptions } from 'ioredis/built/redis/RedisOptions';
 
-export const createRedisConfig = () => {
-  const config: {
-    host?: string;
-    port?: string;
-    url?: string;
-  } = {};
+export const createRedisConfig = (): RedisOptions => {
+  const config: RedisOptions = {};
 
-  if (env.redis.url) {
-    config.url = env.redis.url;
-  } else if (env.redis.port && env.redis.host) {
-    config.host = env.redis.host;
-    config.port = env.redis.port;
+  if (process.env.REDIS_PORT && process.env.REDIS_HOST) {
+    config.host = process.env.REDIS_HOST;
+    config.port = Number(process.env.REDIS_PORT);
   } else {
     throw Error('Invalid redis config');
   }
