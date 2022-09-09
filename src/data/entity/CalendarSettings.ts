@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { CALENDAR_VIEW } from 'kalend-layout';
+import { CALENDAR_VIEW } from 'kalend/common/enums';
 import CardDavAddressBook from './CardDavAddressBook';
 import UserEntity from './UserEntity';
 

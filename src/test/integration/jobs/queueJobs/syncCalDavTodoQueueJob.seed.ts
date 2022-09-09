@@ -4,6 +4,7 @@ import { ImportMock } from 'ts-mock-imports';
 import { forEach } from 'lodash';
 import { formatTodoJsonToCalDavTodo } from '../../../../utils/davHelperTodo';
 import { generateRandomString } from '../../../../utils/common';
+// eslint-disable-next-line unused-imports/no-unused-imports-ts,@typescript-eslint/no-unused-vars
 import { io } from '../../../../app';
 import { seedUserWithEntity } from '../../seeds/1-user-seed';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';

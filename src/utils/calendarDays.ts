@@ -1,5 +1,5 @@
 /* tslint:disable:no-magic-numbers */
-import { CALENDAR_VIEW, WEEKDAY_START } from 'kalend-layout';
+import { CALENDAR_VIEW, WEEKDAY_START } from 'kalend/common/enums';
 import { DateTime } from 'luxon';
 import LuxonHelper from './luxonHelper';
 
