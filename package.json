@@ -85,7 +85,7 @@
     "helmet": "5.1.1",
     "http-errors": "2.0.0",
     "http-proxy-middleware": "2.0.6",
-    "ical-js-parser": "0.7.0-beta.1",
+    "ical-js-parser": "0.7.0",
     "imapflow": "1.0.107",
     "ioredis": "5.2.3",
     "joi": "17.6.0",
