@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { GetSharedCalendarsResponse } from '../../../../../bloben-interface/calendar/shared/calendarShared';
+import { GetSharedCalendarsResponse } from 'bloben-interface';
 import SharedLinkRepository from '../../../../../data/repository/SharedLinkRepository';
 
 export const getSharedCalendars = async (

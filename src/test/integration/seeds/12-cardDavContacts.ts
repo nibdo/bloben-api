@@ -1,7 +1,7 @@
 import { Connection, getConnection } from 'typeorm';
 import { forEach } from 'lodash';
 
-import { CreateCardDavContactRequest } from '../../../bloben-interface/cardDavContact/cardDavContact';
+import { CreateCardDavContactRequest } from 'bloben-interface';
 import { ParsedContact } from '../../../utils/davHelper';
 import { seedCardDavAddressBooks } from './11-cardDavAddressBooks';
 import { v4 } from 'uuid';

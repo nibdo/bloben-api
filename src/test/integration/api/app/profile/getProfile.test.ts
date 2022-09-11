@@ -8,9 +8,9 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { seedUsers } from '../../../seeds/1-user-seed';
 
-const PATH = '/api/app/v1/auth/account';
+const PATH = '/api/app/v1/profile';
 
-describe(`User account [GET] ${PATH}`, async function () {
+describe(`User profile [GET] ${PATH}`, async function () {
   let userID;
   let demoUserID;
   beforeEach(async () => {

@@ -1,5 +1,5 @@
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { GetCalDavCalendar } from '../../../../bloben-interface/calDavCalendar/calDavCalendar';
+import { GetCalDavCalendar } from 'bloben-interface';
 import {
   LOG_TAG,
   SOCKET_CHANNEL,
@@ -9,7 +9,7 @@ import { Request, Response } from 'express';
 import {
   SOCKET_APP_TYPE,
   SOCKET_CRUD_ACTION,
-} from '../../../../bloben-interface/enums';
+} from '../../../../data/types/enums';
 import {
   createCalDavCalendar,
   updateCalDavCalendar,

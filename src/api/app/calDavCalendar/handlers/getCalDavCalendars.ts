@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CalendarAlarms } from '../../../../bloben-interface/interface';
-import { GetCalDavCalendar } from '../../../../bloben-interface/calDavCalendar/calDavCalendar';
+import { CalendarAlarms, GetCalDavCalendar } from 'bloben-interface';
 import { map } from 'lodash';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 

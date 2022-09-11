@@ -1,5 +1,4 @@
-import { CommonResponse } from '../../../bloben-interface/interface';
-import { GetUsersResponse } from '../../../bloben-interface/admin/admin';
+import { CommonResponse, GetUsersResponse } from 'bloben-interface';
 import { NextFunction, Request, Response } from 'express';
 import AdminUsersService from './AdminUsersService';
 

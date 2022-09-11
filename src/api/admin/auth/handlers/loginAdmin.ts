@@ -1,6 +1,6 @@
-import { AdminLoginRequest } from '../../../../bloben-interface/admin/admin';
+import { AdminLoginRequest } from 'bloben-interface';
 import { LOG_TAG, SESSION } from '../../../../utils/enums';
-import { ROLE } from '../../../../bloben-interface/enums';
+import { ROLE } from '../../../../data/types/enums';
 import { Request } from 'express';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';

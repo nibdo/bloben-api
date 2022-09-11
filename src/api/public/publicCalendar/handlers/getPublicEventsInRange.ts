@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { DateTime } from 'luxon';
-import { EventResult } from '../../../../bloben-interface/event/event';
+import { EventResult } from 'bloben-interface';
 import { REDIS_PREFIX } from '../../../../utils/enums';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getRepeatedEvents } from '../../../app/event/helpers/getRepeatedEvents';
@@ -22,6 +22,7 @@ interface Query {
  * Get events outside base range
  * @param req
  * @param res
+ * @param next
  */
 export const getPublicEventsInRange = async (
   req: Request,

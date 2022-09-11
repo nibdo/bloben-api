@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, UpdateUserEmailConfigRequest } from 'bloben-interface';
 import { CryptoAes } from '../../../../utils/CryptoAes';
 import { LOG_TAG } from '../../../../utils/enums';
-import { UpdateUserEmailConfigRequest } from '../../../../bloben-interface/userEmailConfig/userEmailConfig';
 import { createCommonResponse } from '../../../../utils/common';
 import { createTransport } from 'nodemailer';
 import { env } from '../../../../index';

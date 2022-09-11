@@ -9,9 +9,8 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { AdminCreateUserRequest } from '../../bloben-interface/admin/admin';
-import { GetAccountResponse } from '../../bloben-interface/user/user';
-import { ROLE } from '../../bloben-interface/enums';
+import { AdminCreateUserRequest, GetProfileResponse } from 'bloben-interface';
+import { ROLE } from '../types/enums';
 import CalDavAccountEntity from './CalDavAccount';
 import CalendarSettingsEntity from './CalendarSettings';
 import UserEmailConfigEntity from './UserEmailConfig';
@@ -30,6 +29,9 @@ export default class UserEntity {
 
   @Column()
   hash: string;
+
+  @Column({ nullable: false, type: 'varchar', length: 2, default: 'en' })
+  language: string;
 
   @Column({ name: 'is_enabled', default: false })
   isEnabled: boolean;
@@ -75,12 +77,13 @@ export default class UserEntity {
     }
   }
 
-  public getAccount(): GetAccountResponse {
+  public getProfile(): GetProfileResponse {
     return {
-      username: this.username,
       id: this.id,
+      username: this.username,
       role: this.role,
       isTwoFactorEnabled: this.isTwoFactorEnabled,
+      language: this.language,
     };
   }
 

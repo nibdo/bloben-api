@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { forEach } from 'lodash';
 
 import { LOG_DIR } from '../../../../utils/winston';
-import { Log } from '../../../../bloben-interface/interface';
+import { Log } from 'bloben-interface';
 import {
   getLogDateString,
   getLogLevelFromFile,

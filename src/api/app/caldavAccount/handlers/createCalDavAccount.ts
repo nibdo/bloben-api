@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 
 import { BULL_QUEUE, LOG_TAG } from '../../../../utils/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, CreateCalDavAccountRequest } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { CreateCalDavAccountRequest } from '../../../../bloben-interface/calDavAccount/calDavAccount';
-import { DAV_ACCOUNT_TYPE } from '../../../../bloben-interface/enums';
+import { DAV_ACCOUNT_TYPE } from '../../../../data/types/enums';
 import {
   calDavSyncBullQueue,
   cardDavBullQueue,

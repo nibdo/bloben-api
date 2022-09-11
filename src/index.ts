@@ -1,5 +1,4 @@
 import { Connection, createConnection } from 'typeorm';
-import { createClient } from 'redis';
 import dotenv from 'dotenv';
 
 import { Env, loadEnv } from './config/env';
@@ -7,18 +6,18 @@ import { LOG_TAG } from './utils/enums';
 import { createORMConfig } from './config/ormconfig';
 import { createRedisConfig } from './config/redis';
 import { createWinstonLogger } from './utils/winston';
+import Redis from 'ioredis';
 import createApp from './app';
 import logger from './utils/logger';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const asyncRedis = require('async-redis');
 
 dotenv.config();
 
 export let env: Env | null;
 
-export let redisClient: any;
-export let redisClientOriginal: any;
+// init redis
+const redisConfig = createRedisConfig();
+export const redisClient = new Redis(redisConfig);
+
 export let winstonLogger: any;
 
 export const startServer = async (): Promise<void> => {
@@ -32,11 +31,6 @@ export const startServer = async (): Promise<void> => {
     await connection.runMigrations();
 
     winstonLogger = createWinstonLogger();
-
-    // init redis
-    const redisConfig: any = createRedisConfig();
-    redisClient = asyncRedis.createClient(redisConfig);
-    redisClientOriginal = createClient(redisConfig);
 
     // create app
     await createApp();

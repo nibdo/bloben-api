@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-
 import {
   BULL_QUEUE,
   LOG_TAG,
@@ -15,13 +13,14 @@ import {
   createEventsFromDavObject,
   formatInviteData,
 } from '../../../../utils/davHelper';
-import { DAVClient } from 'tsdav';
-import { DateTime } from 'luxon';
 import {
+  CommonResponse,
   EventResult,
   UpdateRepeatedCalDavEventRequest,
-} from '../../../../bloben-interface/event/event';
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../bloben-interface/enums';
+} from 'bloben-interface';
+import { DAVClient } from 'tsdav';
+import { DateTime } from 'luxon';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
 import {
   calDavSyncBullQueue,
   emailBullQueue,

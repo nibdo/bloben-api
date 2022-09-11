@@ -42,17 +42,6 @@ AuthRoutes.get(
   UserController.loginDemo
 );
 
-AuthRoutes.get(
-  '/account',
-  [
-    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    authMiddleware,
-    roleMiddleware([USER_ROLE.USER, USER_ROLE.DEMO]),
-    validationMiddleware(emptySchema),
-  ],
-  UserController.getAccount
-);
-
 AuthRoutes.post(
   '/change-password',
   [

@@ -2,9 +2,8 @@ import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, LoginRequest } from 'bloben-interface';
 import { LOG_TAG } from '../../../../utils/enums';
-import { LoginRequest } from '../../../../bloben-interface/user/user';
 import { createCommonResponse } from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';

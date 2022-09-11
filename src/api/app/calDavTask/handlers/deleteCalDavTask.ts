@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { DeleteCalDavEventRequest } from '../../../../bloben-interface/event/event';
+import { CommonResponse, DeleteCalDavEventRequest } from 'bloben-interface';
 import {
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,

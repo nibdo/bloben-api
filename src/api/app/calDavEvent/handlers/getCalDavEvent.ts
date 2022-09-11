@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { GetCaldavEventResponse } from '../../../../bloben-interface/caldavEvent/caldavEvent';
+import { GetCaldavEventResponse } from 'bloben-interface';
 import { createEventFromCalendarObject } from '../../../../utils/davHelper';
 import { loginToCalDav } from '../../../../service/davService';
 import { throwError } from '../../../../utils/errorCodes';

@@ -8,8 +8,7 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { CreateWebcalCalendarRequest } from '../../../../bloben-interface/webcalCalendar/webcalCalendar';
+import { CommonResponse, CreateWebcalCalendarRequest } from 'bloben-interface';
 
 import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';

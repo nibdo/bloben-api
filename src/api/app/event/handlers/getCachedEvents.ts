@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { EventResult } from '../../../../bloben-interface/event/event';
+import { EventResult } from 'bloben-interface';
 import { Request, Response } from 'express';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getCurrentRangeForSync } from '../../../../utils/common';

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { GetVersion } from '../../../bloben-interface/version/version';
+import { GetVersion } from 'bloben-interface';
 import { getVersion } from './handlers/getVersion';
 
 export const getVersionController = async (

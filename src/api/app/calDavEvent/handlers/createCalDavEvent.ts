@@ -8,9 +8,8 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
-import { CommonResponse } from '../../../../bloben-interface/interface';
+import { CommonResponse, CreateCalDavEventRequest } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { CreateCalDavEventRequest } from '../../../../bloben-interface/event/event';
 import {
   cardDavBullQueue,
   emailBullQueue,

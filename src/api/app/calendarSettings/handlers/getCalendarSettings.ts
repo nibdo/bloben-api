@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
-import { CalendarSettingsResponse } from '../../../../bloben-interface/calendarSettings/calendarSettings';
+import { CalendarSettingsResponse } from 'bloben-interface';
 
-import { CALENDAR_VIEW } from 'kalend-layout';
+import { CALENDAR_VIEW } from 'kalend/common/enums';
 import CalendarSettingsRepository from '../../../../data/repository/CalendarSettingsRepository';
 
 export const getCalendarSettings = async (

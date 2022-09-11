@@ -34,9 +34,12 @@ interface WebcalCalendar {
   userID: string;
   updatedAt: string;
   attempt: number;
+  language: string;
 }
 
-export const getWebcalendarsForSync = (data?: { userID: string }) => {
+export const getWebcalendarsForSync = (data?: {
+  userID: string;
+}): Promise<WebcalCalendar[]> => {
   return WebcalCalendarRepository.getRepository().query(
     `
             SELECT 
@@ -44,15 +47,19 @@ export const getWebcalendarsForSync = (data?: { userID: string }) => {
                 wc.url as url, 
                 wc.user_id as "userID",
                 wc.attempt as "attempt",
-                wc.updated_at as "updatedAt"
+                wc.updated_at as "updatedAt",
+                u.language as language
             FROM 
                 webcal_calendars wc
+            INNER JOIN users u ON u.id = wc.user_id
             WHERE 
                 (
                     (SELECT wc.attempt = 0 AND wc.last_sync_at IS NULL) OR
                     (wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 hours')
                 )
                 AND wc.sync_frequency >= 1
+                AND u.deleted_at IS NULL
+                AND u.is_enabled IS TRUE
                 ${data?.userID ? `AND wc.user_id = '${data.userID}'` : ''}
                 `
   );
@@ -97,7 +104,8 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
 
           // get file
           const response: AxiosResponse = await AxiosService.get(
-            webcalCalendar.url
+            webcalCalendar.url,
+            webcalCalendar.language
           );
 
           connection = await getConnection();

@@ -16,7 +16,7 @@ import session from 'express-session';
 
 import { API_VERSIONS, NODE_ENV } from './utils/enums';
 import { createSocketOptions } from './config/socketio';
-import { env, redisClientOriginal } from './index';
+import { env, redisClient } from './index';
 import { initBullQueue } from './service/BullQueue';
 import { initCronJobs } from './jobs/init';
 import { initWebsockets } from './utils/websockets';
@@ -32,7 +32,7 @@ const createBlobenApp = () => {
   BlobenApp = null;
   BlobenApp = Express();
 
-  const redisStore: any = connect_redis(session);
+  const redisStore = connect_redis(session);
 
   BlobenApp.use(helmet());
   BlobenApp.use(
@@ -51,11 +51,9 @@ const createBlobenApp = () => {
     })
   );
 
-  const userSession = session(
-    createSessionConfig(redisStore, redisClientOriginal)
-  );
+  const userSession = session(createSessionConfig(redisStore, redisClient));
   const adminSession = session(
-    createAdminSessionConfig(redisStore, redisClientOriginal)
+    createAdminSessionConfig(redisStore, redisClient)
   );
 
   // for nginx

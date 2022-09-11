@@ -1,14 +1,12 @@
 import { Connection, getConnection } from 'typeorm';
 
-import { ROLE } from '../../../bloben-interface/enums';
+import { ROLE } from '../../../data/types/enums';
 import { USER_ROLE } from '../../../api/app/auth/UserEnums';
-import { env } from '../../../index';
 import { generateRandomSimpleString } from '../../../utils/common';
 import { v4 } from 'uuid';
 import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 
 export const seedAdminUser = async (
   data?: any
@@ -48,20 +46,8 @@ VALUES ('${adminID}', '${generateRandomSimpleString(20)}', '${hash}', '${
 
   await UserRepository.getRepository().save(admin);
 
-  const jwtToken = jwt.sign(
-    {
-      data: {
-        userID: admin.id,
-        role: admin.role,
-      },
-    },
-    env.secret.sessionSecret,
-    { expiresIn: '1h' }
-  );
-
   return {
     id: adminID,
     username,
-    jwtToken,
   };
 };

@@ -34,6 +34,6 @@ export default {
   deleteDavClientCache: async (accountID: string) => {
     const key = `${REDIS_PREFIX.DAV_CLIENT}_${accountID}`;
 
-    await redisClient.delete(key);
+    await redisClient.del(key);
   },
 };

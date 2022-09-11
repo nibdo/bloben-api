@@ -1,4 +1,4 @@
-import { CALDAV_COMPONENTS } from '../../../../bloben-interface/enums';
+import { CALDAV_COMPONENTS } from '../../../../data/types/enums';
 import Joi from 'joi';
 
 export const createCalDavCalendarSchema = Joi.object({

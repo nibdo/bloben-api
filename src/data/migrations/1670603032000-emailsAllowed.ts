@@ -5,7 +5,7 @@ import {
   getConnection,
 } from 'typeorm';
 import { LOG_TAG } from '../../utils/enums';
-import { ROLE } from '../../bloben-interface/enums';
+import { ROLE } from '../types/enums';
 import { forEach } from 'lodash';
 import UserEntity from '../entity/UserEntity';
 import UserRepository from '../repository/UserRepository';

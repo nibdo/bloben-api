@@ -1,8 +1,9 @@
-import { DAV_ACCOUNT_TYPE } from '../../../../bloben-interface/enums';
+import { DAV_ACCOUNT_TYPE } from '../../../../data/types/enums';
 import { ImportMock } from 'ts-mock-imports';
 import { ParsedContact } from '../../../../utils/davHelper';
 import { forEach, map } from 'lodash';
 import { generateRandomString } from '../../../../utils/common';
+// eslint-disable-next-line unused-imports/no-unused-imports-ts,@typescript-eslint/no-unused-vars
 import { io } from '../../../../app';
 import { parseFromVcardString } from '../../../../utils/vcardParser';
 import { seedUserWithEntity } from '../../seeds/1-user-seed';

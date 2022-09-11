@@ -1,5 +1,4 @@
-import { CalendarAlarms } from '../../../../bloben-interface/interface';
-import { GetWebcalCalendarsResponse } from '../../../../bloben-interface/webcalCalendar/webcalCalendar';
+import { CalendarAlarms, GetWebcalCalendarsResponse } from 'bloben-interface';
 import { Request, Response } from 'express';
 import { map } from 'lodash';
 import WebcalCalendarRepository from '../../../../data/repository/WebcalCalendarRepository';

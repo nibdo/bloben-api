@@ -1,4 +1,4 @@
-import { EventSyncAction } from '../../bloben-interface/interface';
+import { EventSyncAction } from 'bloben-interface';
 import { MSG_STATUS } from '../../utils/enums';
 
 export interface UserSocketData {

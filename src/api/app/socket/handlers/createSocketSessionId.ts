@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CommonResponse } from '../../../../bloben-interface/interface';
-import { CreateSocketSessionRequest } from '../../../../bloben-interface/socket/socket';
+import { CommonResponse, CreateSocketSessionRequest } from 'bloben-interface';
 import { REDIS_PREFIX } from '../../../../utils/enums';
 import { SocketSession } from '../../../../common/interface/common';
 import { createCommonResponse } from '../../../../utils/common';

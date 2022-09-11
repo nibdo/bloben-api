@@ -1,4 +1,4 @@
-import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../bloben-interface/enums';
+import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
 import Joi from 'joi';
 
 export const DateTimezoneObject = Joi.object().keys({

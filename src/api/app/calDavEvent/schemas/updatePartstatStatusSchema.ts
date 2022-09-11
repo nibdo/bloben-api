@@ -1,4 +1,4 @@
-import { ATTENDEE_PARTSTAT } from '../../../../bloben-interface/enums';
+import { ATTENDEE_PARTSTAT } from '../../../../data/types/enums';
 import { map } from 'lodash';
 import Joi from 'joi';
 

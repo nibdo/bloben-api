@@ -1,9 +1,8 @@
-import { default as Express } from 'express';
-import { NextFunction, Request, Response } from 'express';
+import { default as Express, NextFunction, Request, Response } from 'express';
 import { default as cors } from 'cors';
+import Redis from 'ioredis';
 import bodyParser from 'body-parser';
 import connect_redis from 'connect-redis';
-import redis from 'redis';
 import session from 'express-session';
 
 import { API_VERSIONS, SESSION } from '../../utils/enums';
@@ -13,22 +12,22 @@ import {
   createSessionConfig,
 } from '../../config/session';
 import { createRedisConfig } from '../../config/redis';
-import { env, redisClient } from '../../index';
+import { env } from '../../index';
 import { getTestUser } from './getTestUser';
-import { io } from '../../app';
 import Router from '../../routes/appRoutes';
 import UserEntity from '../../data/entity/UserEntity';
 import errorMiddleware from '../../middleware/errorMiddleware';
 
-const redisClientOriginal: any = redis.createClient();
+let redisClient = new Redis();
 const redisStore: any = connect_redis(session);
+import { Server } from 'socket.io';
 import { initBullQueue } from '../../service/BullQueue';
 import { loadEnv } from '../../config/env';
 import AdminRoutes from '../../routes/adminRoutes';
 import PublicRouter from '../../routes/publicRoutes';
-import asyncRedis from 'async-redis';
 
 loadEnv();
+export let io: Server = null;
 
 export const testSessionMiddleware = (
   id: string
@@ -49,9 +48,7 @@ export const testSessionMiddleware = (
 export const createTestServerWithSession = (userID: string) => {
   loadEnv();
   const redisConfig: any = createRedisConfig();
-  // @ts-ignore
-  redisClient = asyncRedis.createClient(redisConfig);
-
+  redisClient = new Redis(redisConfig);
   const TestBlobenApp: any = Express();
   TestBlobenApp.use(cors(corsOptions));
 
@@ -59,11 +56,9 @@ export const createTestServerWithSession = (userID: string) => {
   TestBlobenApp.use(bodyParser.json());
 
   const adminSession = session(
-    createAdminSessionConfig(redisStore, redisClientOriginal)
+    createAdminSessionConfig(redisStore, redisClient)
   );
-  const appSession = session(
-    createSessionConfig(redisStore, redisClientOriginal)
-  );
+  const appSession = session(createSessionConfig(redisStore, redisClient));
 
   TestBlobenApp.use(
     '/api/admin/v1',
@@ -109,21 +104,20 @@ export const createTestServerWithSession = (userID: string) => {
 
 export const createTestServer = () => {
   const redisConfig: any = createRedisConfig();
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  redisClient = asyncRedis.createClient(redisConfig);
+  redisClient = new Redis(redisConfig);
+
   const TestBlobenApp = Express();
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());
   TestBlobenApp.use(
     '/api/app/v1',
-    session(createSessionConfig(redisStore, redisClientOriginal)),
+    session(createSessionConfig(redisStore, redisClient)),
     Router
   );
   TestBlobenApp.use(`/api/${API_VERSIONS.V1}/public`, PublicRouter);
   TestBlobenApp.use(
     '/api/admin/v1',
-    session(createAdminSessionConfig(redisStore, redisClientOriginal)),
+    session(createAdminSessionConfig(redisStore, redisClient)),
     AdminRoutes
   );
 

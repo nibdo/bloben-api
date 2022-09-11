@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { CalDavTaskSettings } from '../../../../bloben-interface/calDavTaskSettings/CalDavTaskLabel';
+import { CalDavTaskSettings } from 'bloben-interface';
 
 import CalDavTaskSettingsRepository from '../../../../data/repository/CalDavTaskSettingsRepository';
 

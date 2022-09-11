@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { authenticator } from 'otplib';
 
-import { GetTwoFactorSecretResponse } from '../../../../../bloben-interface/2fa/2fa';
+import { GetTwoFactorSecretResponse } from 'bloben-interface';
 import { throwError } from '../../../../../utils/errorCodes';
 import UserEntity from '../../../../../data/entity/UserEntity';
 import UserRepository from '../../../../../data/repository/UserRepository';
