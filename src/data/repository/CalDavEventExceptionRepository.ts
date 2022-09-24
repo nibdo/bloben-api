@@ -1,6 +1,5 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
-import CalDavEventEntity from '../entity/CalDavEventEntity';
 import CalDavEventExceptionEntity from '../entity/CalDavEventExceptionEntity';
 
 export interface CalDavEventExceptionsRaw {
@@ -13,7 +12,7 @@ export interface CalDavEventExceptionsRaw {
 @EntityRepository(CalDavEventExceptionEntity)
 export default class CalDavEventExceptionRepository extends Repository<CalDavEventExceptionEntity> {
   public static getRepository() {
-    return getRepository(CalDavEventEntity);
+    return getRepository(CalDavEventExceptionEntity);
   }
 
   public static getExceptions(

@@ -388,16 +388,20 @@ const handleChangeThisAndFuture = async (
   };
 };
 
+interface Event extends EventResult {
+  valarms?: any[];
+  alarms?: any[];
+}
+interface Body extends UpdateRepeatedCalDavEventRequest {
+  event: Event;
+}
 export const updateRepeatedCalDavEvent = async (
   req: Request,
   res: Response
 ): Promise<CommonResponse> => {
-  // let connection: Connection | null;
-  // let queryRunner: QueryRunner | null;
-
   const { userID } = res.locals;
 
-  const body: UpdateRepeatedCalDavEventRequest = req.body;
+  const body: Body = req.body;
 
   const event = await CalDavEventRepository.getCalDavEventByID(userID, body.id);
 
@@ -414,6 +418,8 @@ export const updateRepeatedCalDavEvent = async (
   if (!calDavAccount) {
     throw throwError(404, 'Account not found');
   }
+
+  body.event.valarms = body.event.alarms;
 
   const client = await loginToCalDav(calDavAccount);
 

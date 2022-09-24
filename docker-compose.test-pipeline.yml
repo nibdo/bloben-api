@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   databaseBlobenTest:
-    image: 'postgres:13.7-bullseye'
+    image: 'postgres:13.8-bullseye'
     container_name: databaseBlobenTest
     env_file:
       - .env.test
@@ -10,7 +10,7 @@ services:
       - '5432:5432'
 
   redis:
-    image: redis:7.0.3-bullseye
+    image: redis:7.0.5-bullseye
     container_name: redis
     ports:
       - '6379:6379'
