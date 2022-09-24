@@ -241,6 +241,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
 
     // trigger sync
     const events = await getSyncedEvents(userID, eventData.remoteID);
+
     const baseEvent = events[0];
     const recurrenceEvent = events[1];
 
