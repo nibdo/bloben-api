@@ -16,7 +16,7 @@ services:
   #      - '9229:9229'
 
   databaseBlobenApi:
-    image: 'postgres:13.7-bullseye'
+    image: 'postgres:13.8-bullseye'
     container_name: databaseBlobenApi
     env_file:
       - .env
@@ -26,7 +26,7 @@ services:
       - '5433:5432'
 
   redisBlobenApi:
-    image: redis:7.0.3-bullseye
+    image: redis:7.0.5-bullseye
     container_name: redisBlobenApi
     volumes:
       - redisBlobenApiData:/data

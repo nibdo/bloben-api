@@ -12,6 +12,7 @@ import { invalidUUID } from '../../../testHelpers/common';
 import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
 import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import { v4 } from 'uuid';
+import CalDavEventExceptionRepository from '../../../../data/repository/CalDavEventExceptionRepository';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -31,6 +32,33 @@ const getSyncedEvents = async (userID: string, remoteID: string) => {
       externalID: remoteID,
     },
   });
+};
+
+const getSyncedEventsAndRecurrences = async (
+  userID: string,
+  remoteID: string,
+  calendarID: string
+) => {
+  await syncCalDavQueueJob({ data: { userID } } as any);
+
+  const events = await CalDavEventRepository.getRepository().find({
+    where: {
+      externalID: remoteID,
+      calendarID,
+    },
+  });
+
+  const exceptions = await CalDavEventExceptionRepository.getRepository().find({
+    where: {
+      externalID: remoteID,
+      calDavCalendarID: calendarID,
+    },
+  });
+
+  return {
+    exceptions,
+    events,
+  };
 };
 
 describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
@@ -215,7 +243,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200 single with one recurrence', async function () {
-    const newDate = baseDateTime.plus({ day: 2 });
+    const newDate = baseDateTime.plus({ day: 1 });
 
     const body = createBody(
       createRepeatedEventBodyJSON(
@@ -227,7 +255,9 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
         REPEATED_EVENT_CHANGE_TYPE.SINGLE,
         newDate.set({ hour: 21 }).toString(),
         newDate.set({ hour: 22 }).toString(),
-        newDate.toString()
+        newDate.toString(),
+        undefined,
+        'FREQ=YEARLY'
       )
     );
 
@@ -240,28 +270,19 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
     assert.equal(status, 200);
 
     // trigger sync
-    const events = await getSyncedEvents(userID, eventData.remoteID);
-    const baseEvent = events[0];
-    const recurrenceEvent = events[1];
-
-    assert.equal(events.length, 2);
-    assert.notEqual(baseEvent.rRule, null);
-    assert.equal(recurrenceEvent.rRule, null);
-    assert.equal(
-      DateTime.fromJSDate(recurrenceEvent.startAt).toUTC().toString(),
-      newDate.set({ hour: 21 }).toUTC().toString(),
-      'baseEvent startAt'
+    const { events, exceptions } = await getSyncedEventsAndRecurrences(
+      userID,
+      eventData.remoteID,
+      eventData.calendarID
     );
+
+    const exception = exceptions[0];
+
+    assert.equal(events.length, 1);
     assert.equal(
-      // @ts-ignore
-      DateTime.fromISO(recurrenceEvent.recurrenceID?.value, {
-        // @ts-ignore
-        zone: recurrenceEvent.recurrenceID?.timezone,
-      })
-        .toUTC()
-        .toString(),
-      newDate.toString(),
-      'recurrenceEvent recurrenceID'
+      DateTime.fromJSDate(exception.exceptionDate).toUTC().toString(),
+      newDate.set({ hour: 14 }).toUTC().toString(),
+      'baseEvent startAt'
     );
   });
 
