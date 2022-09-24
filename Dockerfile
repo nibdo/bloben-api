@@ -1,4 +1,4 @@
-FROM node:16.17.0-bullseye-slim
+FROM node:18.9.0-bullseye-slim
 
 ENV NODE_ENV development
 
