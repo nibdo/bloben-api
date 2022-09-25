@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  #  api:
+  #    build:
+  #      context: .
+  #      dockerfile: Dockerfile.local
+  #    container_name: BlobenApi
+  #    volumes:
+  #      - ./src:/usr/app/src
+  #      - ./logs:/usr/app/logs
+  #    env_file:
+  #      - .env
+  #    ports:
+  #      - '127.0.0.1:8080:8080'
+  #      - '9229:9229'
+
+  databaseBlobenApiPg14:
+    image: 'postgres:14.5-bullseye'
+    container_name: databaseBlobenApiPg14
+    env_file:
+      - .env
+    volumes:
+      - databaseBlobenApiDataPg14:/var/lib/postgresql/data
+    ports:
+      - '5433:5432'
+
+  redisBlobenApi:
+    image: redis:7.0.5-bullseye
+    container_name: redisBlobenApi
+    volumes:
+      - redisBlobenApiData:/data
+    ports:
+      - '127.0.0.1:6380:6379'
+
+volumes:
+  databaseBlobenApiDataPg14:
+    name: databaseBlobenApiDataPg14
+  redisBlobenApiData:
+    name: redisBlobenApiData
