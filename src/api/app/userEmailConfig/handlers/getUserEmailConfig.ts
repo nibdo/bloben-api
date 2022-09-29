@@ -20,9 +20,12 @@ export const getUserEmailConfig = async (
   let mailto: string | null = null;
 
   if (userEmailConfig) {
-    userEmailConfigData = userEmailConfig
-      ? ((await CryptoAes.decrypt(userEmailConfig.data)) as UserEmailConfigData)
-      : null;
+    userEmailConfigData =
+      userEmailConfig && userEmailConfig.data
+        ? ((await CryptoAes.decrypt(
+            userEmailConfig.data
+          )) as UserEmailConfigData)
+        : null;
 
     if (userEmailConfigData) {
       mailto = userEmailConfigData?.smtp?.smtpEmail;
@@ -32,7 +35,7 @@ export const getUserEmailConfig = async (
   return {
     hasSystemConfig: env.email !== null,
     hasCustomConfig: userEmailConfig !== null && userEmailConfig !== undefined,
-    mailto: mailto || env.email.identity || null,
+    mailto: mailto || env.email?.identity || null,
     smtp: userEmailConfigData?.smtp
       ? {
           smtpPort: userEmailConfigData.smtp.smtpPort,
