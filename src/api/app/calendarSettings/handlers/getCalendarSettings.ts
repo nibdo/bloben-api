@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { CalendarSettingsResponse } from 'bloben-interface';
 
 import { CALENDAR_VIEW } from 'kalend/common/enums';
+import CalendarSettingsEntity from '../../../../data/entity/CalendarSettings';
 import CalendarSettingsRepository from '../../../../data/repository/CalendarSettingsRepository';
 
 export const getCalendarSettings = async (
@@ -11,9 +12,14 @@ export const getCalendarSettings = async (
 ): Promise<CalendarSettingsResponse> => {
   const { userID } = res.locals;
 
-  const calendarSettings = await CalendarSettingsRepository.findByUserID(
-    userID
-  );
+  let calendarSettings = await CalendarSettingsRepository.findByUserID(userID);
+
+  if (!calendarSettings) {
+    calendarSettings = new CalendarSettingsEntity();
+    calendarSettings.userID = userID;
+
+    await CalendarSettingsRepository.getRepository().save(calendarSettings);
+  }
 
   return {
     defaultCalendarID: calendarSettings.defaultCalendarID,
