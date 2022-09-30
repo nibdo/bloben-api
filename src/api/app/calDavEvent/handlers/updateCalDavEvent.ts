@@ -17,18 +17,24 @@ import {
   cardDavBullQueue,
   emailBullQueue,
 } from '../../../../service/BullQueue';
+import {
+  createCalendarObject,
+  deleteCalendarObject,
+  fetchCalendarObjects,
+  updateCalendarObject,
+} from 'tsdav';
 import { createCommonResponse, formatToRRule } from '../../../../utils/common';
 import {
   createEventFromCalendarObject,
   formatInviteData,
 } from '../../../../utils/davHelper';
 import { forEach } from 'lodash';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import {
   handleCreateContact,
   removeOrganizerFromAttendees,
 } from './createCalDavEvent';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { parseAlarmDuration } from '../../../../utils/caldavAlarmHelper';
 import { throwError } from '../../../../utils/errorCodes';
 import { v4 } from 'uuid';
@@ -158,16 +164,19 @@ export const updateCalDavEvent = async (
     throw throwError(404, 'Account not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
 
   if (body.prevEvent) {
-    response = await client.createCalendarObject({
+    response = await createCalendarObject({
+      headers: davHeaders,
       calendar: calDavAccount.calendar,
       filename: `${body.externalID}.ics`,
       iCalString: body.iCalString,
     });
   } else {
-    response = await client.updateCalendarObject({
+    response = await updateCalendarObject({
+      headers: davHeaders,
       calendarObject: {
         url: body.url,
         data: body.iCalString,
@@ -185,7 +194,8 @@ export const updateCalDavEvent = async (
     throw throwError(409, `Cannot update event: ${response.statusText}`);
   }
 
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
+    headers: davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [response.url],
   });
@@ -274,7 +284,8 @@ export const updateCalDavEvent = async (
 
     // delete previous event if calendar was changed
     if (body.prevEvent) {
-      await client.deleteCalendarObject({
+      await deleteCalendarObject({
+        headers: davHeaders,
         calendarObject: {
           url: body.prevEvent.url,
           etag: body.prevEvent.etag,

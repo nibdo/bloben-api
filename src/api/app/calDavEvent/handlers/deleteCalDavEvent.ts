@@ -7,11 +7,15 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 import { CommonResponse, DeleteCalDavEventRequest } from 'bloben-interface';
-import { createCommonResponse } from '../../../../utils/common';
+import {
+  createCommonResponse,
+  handleDavResponse,
+} from '../../../../utils/common';
+import { deleteCalendarObject } from 'tsdav';
 import { emailBullQueue } from '../../../../service/BullQueue';
 import { formatCancelInviteData } from '../../../../utils/davHelper';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
@@ -36,14 +40,18 @@ export const deleteCalDavEvent = async (
     throw throwError(404, 'Account not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
 
-  await client.deleteCalendarObject({
+  const response = await deleteCalendarObject({
+    headers: davHeaders,
     calendarObject: {
       url: body.url,
       etag: body.etag,
     },
   });
+
+  handleDavResponse(response, 'Delete caldav event error');
 
   const event = await CalDavEventRepository.getCalDavEventByID(userID, body.id);
 

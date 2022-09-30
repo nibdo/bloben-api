@@ -15,7 +15,7 @@ export const getCalDavAccounts = async (
       SELECT 
         c.id as id, 
         c.username as username, 
-        c.url as url,
+        c.server_url as "url",
         c.principal_url as "principalUrl",
         c.account_type as "accountType"
       FROM 

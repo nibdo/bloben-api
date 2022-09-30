@@ -25,8 +25,14 @@ export default class CalDavAccountEntity {
   @Column({ name: 'password', nullable: false })
   password: string;
 
-  @Column({ name: 'url', nullable: false })
-  url: string;
+  @Column({ name: 'server_url', nullable: true })
+  serverUrl: string;
+
+  @Column({ name: 'root_url', nullable: true })
+  rootUrl: string;
+
+  @Column({ name: 'home_url', nullable: true })
+  homeUrl: string;
 
   @Column({ name: 'principal_url', nullable: false })
   principalUrl: string;
@@ -68,7 +74,7 @@ export default class CalDavAccountEntity {
     if (body) {
       this.username = body.username;
       this.password = body.password;
-      this.url = body.url;
+      this.serverUrl = body.url;
       this.user = user;
       this.accountType = body.accountType;
     }

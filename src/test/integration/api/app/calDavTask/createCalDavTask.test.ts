@@ -82,6 +82,7 @@ describe(`Create calDav task [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
+    mockTsDav();
     const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send(requestBody);

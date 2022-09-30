@@ -47,7 +47,9 @@ export const seedCalDavCalendars = async (
     const newAccount = new CalDavAccountEntity(account, user);
     const newCalendar = new CalDavCalendarEntity();
     newAccount.principalUrl = `http://${user.username}`;
-    newAccount.url = `http://${user.username}`;
+    newAccount.serverUrl = `http://${user.username}`;
+    newAccount.homeUrl = `http://${user.username}`;
+    newAccount.rootUrl = `http://${user.username}`;
     newAccount.accountType = DAV_ACCOUNT_TYPE.CALDAV;
 
     newCalendar.url = `http://${user.username}`;

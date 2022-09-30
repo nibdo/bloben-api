@@ -55,7 +55,10 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
     user
   );
   newAccount.principalUrl = accountUrl;
-  newAccount.url = accountUrl;
+  newAccount.principalUrl = accountUrl;
+  newAccount.serverUrl = accountUrl;
+  newAccount.rootUrl = accountUrl;
+  newAccount.homeUrl = accountUrl;
 
   const newCalendar = new CalDavCalendarEntity();
 
@@ -108,14 +111,7 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
     },
   };
 
-  const mockManager = ImportMock.mockClass(tsdav, 'DAVClient');
-  // @ts-ignore
-  mockManager.set('login', () => {
-    return;
-  });
-
-  // @ts-ignore
-  mockManager.set('fetchCalendars', () => {
+  tsdav.fetchCalendars = () => {
     return [
       {
         components: ['VEVENT', 'VTODO'],
@@ -124,10 +120,9 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
         url: `${calendarUrl}`,
       },
     ];
-  });
+  };
 
-  // @ts-ignore
-  mockManager.set('calendarQuery', () => {
+  tsdav.calendarQuery = () => {
     const todoIDS = [todoToInsertID, todoToUpdateID, todoToKeepID];
 
     return todoIDS.map((id) => ({
@@ -140,10 +135,9 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
         getetag: id === todoToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
       },
     }));
-  });
+  };
 
-  // @ts-ignore
-  mockManager.set('fetchCalendarObjects', () => {
+  tsdav.fetchCalendarObjects = () => {
     const todoIDS = [todoToInsertID, todoToUpdateID, todoToKeepID];
 
     return todoIDS.map((id) => ({
@@ -154,9 +148,7 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
       etag: id === todoToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
       url: `${calendarUrl}/${id}`,
     }));
-  });
-
-  return mockManager;
+  };
 };
 
 /**

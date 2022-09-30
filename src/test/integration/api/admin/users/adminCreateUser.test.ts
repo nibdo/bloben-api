@@ -3,6 +3,7 @@ import { invalidUUID } from '../../../../testHelpers/common';
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
+import { v4 } from 'uuid';
 
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
 import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
@@ -24,7 +25,7 @@ describe(`Create user admin [POST] ${PATH}`, async function () {
     const server: any = createTestServerWithSession(adminID);
 
     const response: any = await request(server).post(PATH).send({
-      username: 'vbde1',
+      username: v4(),
       password: 'root22',
     });
 

@@ -2,13 +2,13 @@ import {
   AccountWithCalendars,
   CalendarFromAccount,
 } from '../data/repository/CalDavAccountRepository';
-import { DAVCalendarObject, DAVClient } from 'tsdav';
+import { DAVCalendarObject, calendarQuery, fetchCalendars } from 'tsdav';
 
-import { createDavClient } from '../service/davService';
 import { find, forEach } from 'lodash';
 import { getCalendarObjectsByUrl } from './davHelper';
 
 import { Connection, QueryRunner, getConnection } from 'typeorm';
+import { DavRequestData, getDavRequestData } from './davAccountHelper';
 import {
   LOG_TAG,
   SOCKET_CHANNEL,
@@ -79,10 +79,13 @@ export const createTaskFromCalendarObject = (
 };
 
 export const queryClientForTasks = async (
-  client: DAVClient,
+  davRequestData: DavRequestData,
   serverCalendar: any
-) =>
-  client.calendarQuery({
+) => {
+  const { davHeaders } = davRequestData;
+
+  return calendarQuery({
+    headers: davHeaders,
     url: serverCalendar.url,
     // @ts-ignore
     _attributes: {
@@ -106,6 +109,7 @@ export const queryClientForTasks = async (
     },
     depth: '1',
   });
+};
 
 const syncTasksForAccount = async (calDavAccount: AccountWithCalendars) => {
   let wasChanged = false;
@@ -114,14 +118,14 @@ const syncTasksForAccount = async (calDavAccount: AccountWithCalendars) => {
     ? calDavAccount.calendars
     : [calDavAccount.calendar];
 
-  const client = createDavClient(calDavAccount.url, {
-    username: calDavAccount.username,
-    password: calDavAccount.password,
-  });
-  await client.login();
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders, davAccount } = davRequestData;
 
   // fetch calendars
-  const serverCalendars = await client.fetchCalendars();
+  const serverCalendars = await fetchCalendars({
+    account: davAccount,
+    headers: davHeaders,
+  });
 
   const calendarsToCheck: any = [];
   const calendarsToUpdateCtag: { [id: string]: { newCtag: string } } = {};
@@ -191,7 +195,7 @@ const syncTasksForAccount = async (calDavAccount: AccountWithCalendars) => {
       const softDeleteExternalID: string[] = [];
 
       const calDavServerResult: any = await queryClientForTasks(
-        client,
+        davRequestData,
         calendarToCheck
       );
 
@@ -265,7 +269,7 @@ const syncTasksForAccount = async (calDavAccount: AccountWithCalendars) => {
 
       if (toInsert.length > 0) {
         const toInsertResponse: any = await getCalendarObjectsByUrl(
-          client,
+          davRequestData,
           calendarToCheck,
           toInsert
         );
