@@ -100,7 +100,7 @@
     "pretty-quick": "2.0.2",
     "rrule": "2.7.1",
     "socket.io": "4.5.2",
-    "tsconfig-paths": "3.14.1",
+    "tsconfig-paths": "4.1.0",
     "tsdav": "2.0.3",
     "typeorm": "0.3.10",
     "uuid": "9.0.0",
