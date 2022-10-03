@@ -9,6 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    target-branch: "production"
 
   - package-ecosystem: "docker"
     directory: "/"
