@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 
 import { CommonResponse, UpdateCalDavAccountRequest } from 'bloben-interface';
+import { createAccount } from 'tsdav';
 import { createCommonResponse } from '../../../../utils/common';
-import { createDavClient } from '../../../../service/davService';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository, {
   CalDavAccount,
@@ -25,13 +26,17 @@ export const updateCalDavAccount = async (
     throw throwError(404, 'Account not found', req);
   }
 
+  const davRequestData = await getDavRequestData({
+    ...calDavAccount,
+    password,
+  });
+
   try {
     // check connection with new password
-    const client = createDavClient(calDavAccount.url, {
-      username: calDavAccount.username,
-      password,
+    await createAccount({
+      account: davRequestData.davAccount,
+      headers: davRequestData.davHeaders,
     });
-    await client.login();
   } catch (e) {
     throw throwError(409, 'Cannot connect to calDav server', req);
   }

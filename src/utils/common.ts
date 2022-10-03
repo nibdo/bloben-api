@@ -1,11 +1,13 @@
 import { CalDavEvent, CommonResponse, Range } from 'bloben-interface';
 import { DateTime, Interval } from 'luxon';
+import { LOG_TAG, SOCKET_ROOM_NAMESPACE } from './enums';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../data/types/enums';
-import { SOCKET_ROOM_NAMESPACE } from './enums';
 import { WEEKDAY_START } from 'kalend/common/enums';
 import { forEach } from 'lodash';
 import { getMonthDays } from './calendarDays';
 import { parseDurationString } from './caldavAlarmHelper';
+import { throwError } from './errorCodes';
+import logger from './logger';
 
 export const createCommonResponse = (
   message = '',
@@ -395,4 +397,11 @@ export const removeArtifacts = (value: string, counter = 0): string => {
   }
 
   return removeArtifacts(newValue, counter + 1);
+};
+
+export const handleDavResponse = (response: Response, errorMsg: string) => {
+  if (response.status >= 300) {
+    logger.error(errorMsg, response.statusText, [LOG_TAG.CALDAV]);
+    throw throwError(409, response.statusText);
+  }
 };

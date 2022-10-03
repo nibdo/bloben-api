@@ -107,6 +107,8 @@ describe(`Update calDav task [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200', async function () {
+    mockTsDav();
+
     const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({
@@ -125,6 +127,8 @@ describe(`Update calDav task [PUT] ${PATH}`, async function () {
   });
 
   it('Should get status 200 with changed calendar', async function () {
+    mockTsDav();
+
     const response: any = await request(createTestServerWithSession(userID))
       .put(PATH)
       .send({

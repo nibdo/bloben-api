@@ -8,10 +8,14 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { createCommonResponse } from '../../../../utils/common';
+import { createCalendarObject, fetchCalendarObjects } from 'tsdav';
+import {
+  createCommonResponse,
+  handleDavResponse,
+} from '../../../../utils/common';
 import { createTaskFromCalendarObject } from '../../../../utils/davHelperTodo';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CalDavTaskEntity from '../../../../data/entity/CalDavTaskEntity';
@@ -39,15 +43,20 @@ export const createCalDavTask = async (
     throw throwError(404, 'Account with calendar not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
 
-  const response: any = await client.createCalendarObject({
+  const response: any = await createCalendarObject({
+    headers: davHeaders,
     calendar: calDavAccount.calendar,
     filename: `${body.externalID}.ics`,
     iCalString: body.iCalString,
   });
 
-  const fetchedTodos = await client.fetchCalendarObjects({
+  handleDavResponse(response, 'Create task error');
+
+  const fetchedTodos = await fetchCalendarObjects({
+    headers: davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [response.url],
   });

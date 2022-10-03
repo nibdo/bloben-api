@@ -6,14 +6,8 @@ const tsdav = require('tsdav');
 
 export const mockTsDav = () => {
   ImportMock.restore();
-  const mockManager = ImportMock.mockClass(tsdav, 'DAVClient');
-  // @ts-ignore
-  mockManager.set('login', () => {
-    return;
-  });
 
-  // @ts-ignore
-  mockManager.set('fetchCalendars', () => {
+  tsdav.fetchCalendars = () => {
     return [
       {
         components: ['VEVENT', 'VTODO'],
@@ -22,283 +16,169 @@ export const mockTsDav = () => {
         url: 'cal',
       } as DAVCalendar,
     ];
+  };
+
+  tsdav.createVCard = () => ({
+    status: 200,
+    etag: 'ABCDE',
+    url: 'card',
   });
 
-  // @ts-ignore
-  mockManager.set('createVCard', () => {
-    return {
-      status: 200,
-      etag: 'ABCDE',
-      url: 'card',
-    } as unknown as Response;
+  tsdav.deleteVCard = () => ({
+    status: 200,
   });
 
-  // @ts-ignore
-  mockManager.set('deleteVCard', () => {
-    return {
-      status: 200,
-    } as unknown as Response;
+  tsdav.createCalendarObject = () => ({
+    url: 'http://localhost:8012/test',
   });
 
-  // @ts-ignore
-  mockManager.set('createCalendarObject', () => {
-    return {
+  tsdav.deleteObject = () => ({
+    status: 204,
+  });
+
+  tsdav.makeCalendar = () => [
+    {
+      ok: true,
+    },
+  ];
+
+  tsdav.updateCalendarObject = () => ({
+    url: 'http://localhost:8012/test',
+  });
+
+  tsdav.fetchCalendarObjects = () => [
+    {
+      data: testIcalString,
+      etag: 'ABCDE123',
       url: 'http://localhost:8012/test',
-    };
-  });
+    },
+  ];
 
-  // @ts-ignore
-  mockManager.set('deleteObject', () => {
-    return {
-      status: 204,
-    };
-  });
-
-  // @ts-ignore
-  mockManager.set('makeCalendar', () => {
-    return [
-      {
-        ok: true,
-      },
-    ];
-  });
-
-  // @ts-ignore
-  mockManager.set('updateCalendarObject', () => {
-    return {
-      url: 'http://localhost:8012/test',
-    };
-  });
-
-  // @ts-ignore
-  mockManager.set('fetchCalendarObjects', () => {
-    return [
-      {
-        data: testIcalString,
-        etag: 'ABCDE123',
-        url: 'http://localhost:8012/test',
-      },
-    ];
-  });
-
-  // @ts-ignore
-  mockManager.set('deleteCalendarObject', () => {
-    return;
-  });
+  tsdav.deleteCalendarObject = () => ({});
 
   const MOCK_URL = 'http://localhost';
 
-  ImportMock.mockFunction(tsdav, 'createAccount', {
-    accountType: 'caldav',
-    serverUrl: MOCK_URL,
-    credentials: {
-      username: 'test',
-      password: 'test',
-    },
-    rootUrl: MOCK_URL,
-    principalUrl: MOCK_URL,
-    homeUrl: MOCK_URL,
-    calendars: [
-      {
-        components: ['VEVENT', 'VTODO'],
-        ctag: 'ABCDE',
-        displayName: 'default',
-        url: 'cal',
+  tsdav.createAccount = () => {
+    return {
+      accountType: 'caldav',
+      serverUrl: MOCK_URL,
+      credentials: {
+        username: 'test',
+        password: 'test',
       },
-    ],
-  } as DAVAccount);
-
-  return mockManager;
+      rootUrl: MOCK_URL,
+      principalUrl: MOCK_URL,
+      homeUrl: MOCK_URL,
+      calendars: [
+        {
+          components: ['VEVENT', 'VTODO'],
+          ctag: 'ABCDE',
+          displayName: 'default',
+          url: 'cal',
+        },
+      ],
+    };
+  };
+  // return mockManager;
 };
 
 export const mockTsDavEvent = (icalString: string) => {
   ImportMock.restore();
-  const mockManager = ImportMock.mockClass(tsdav, 'DAVClient');
-  // @ts-ignore
-  mockManager.set('login', () => {
-    return;
+
+  tsdav.fetchCalendars = () => [
+    {
+      components: ['VEVENT', 'VTODO'],
+      ctag: 'ABCDE',
+      displayName: 'default',
+      url: 'cal',
+    } as DAVCalendar,
+  ];
+
+  tsdav.createCalendarObject = () => ({
+    url: 'http://localhost:8012/test',
   });
 
-  // @ts-ignore
-  mockManager.set('fetchCalendars', () => {
-    return [
-      {
-        components: ['VEVENT', 'VTODO'],
-        ctag: 'ABCDE',
-        displayName: 'default',
-        url: 'cal',
-      } as DAVCalendar,
-    ];
+  tsdav.deleteObject = () => ({
+    status: 204,
   });
 
-  // @ts-ignore
-  mockManager.set('createCalendarObject', () => {
-    return {
+  tsdav.makeCalendar = () => [
+    {
+      ok: true,
+    },
+  ];
+
+  tsdav.updateCalendarObject = () => ({
+    url: 'http://localhost:8012/test',
+  });
+
+  tsdav.fetchCalendarObjects = () => [
+    {
+      data: icalString,
+      etag: 'ABCDE123',
       url: 'http://localhost:8012/test',
-    };
-  });
+    },
+  ];
 
-  // @ts-ignore
-  mockManager.set('deleteObject', () => {
-    return {
-      status: 204,
-    };
-  });
-
-  // @ts-ignore
-  mockManager.set('makeCalendar', () => {
-    return [
-      {
-        ok: true,
-      },
-    ];
-  });
-
-  // @ts-ignore
-  mockManager.set('updateCalendarObject', () => {
-    return {
-      url: 'http://localhost:8012/test',
-    };
-  });
-
-  // @ts-ignore
-  mockManager.set('fetchCalendarObjects', () => {
-    return [
-      {
-        data: icalString,
-        etag: 'ABCDE123',
-        url: 'http://localhost:8012/test',
-      },
-    ];
-  });
-
-  // @ts-ignore
-  mockManager.set('deleteCalendarObject', () => {
-    return;
-  });
+  tsdav.deleteCalendarObject = () => ({});
 
   const MOCK_URL = 'http://localhost';
 
-  ImportMock.mockFunction(tsdav, 'createAccount', {
-    accountType: 'caldav',
-    serverUrl: MOCK_URL,
-    credentials: {
-      username: 'test',
-      password: 'test',
-    },
-    rootUrl: MOCK_URL,
-    principalUrl: MOCK_URL,
-    homeUrl: MOCK_URL,
-    calendars: [
-      {
-        components: ['VEVENT', 'VTODO'],
-        ctag: 'ABCDE',
-        displayName: 'default',
-        url: 'cal',
+  tsdav.createAccount = () =>
+    ({
+      accountType: 'caldav',
+      serverUrl: MOCK_URL,
+      credentials: {
+        username: 'test',
+        password: 'test',
       },
-    ],
-  } as DAVAccount);
-
-  return mockManager;
+      rootUrl: MOCK_URL,
+      principalUrl: MOCK_URL,
+      homeUrl: MOCK_URL,
+      calendars: [
+        {
+          components: ['VEVENT', 'VTODO'],
+          ctag: 'ABCDE',
+          displayName: 'default',
+          url: 'cal',
+        },
+      ],
+    } as DAVAccount);
 };
 
 export const mockTsDavUnauthorized = () => {
   ImportMock.restore();
 
-  const mockManager = ImportMock.mockClass(tsdav, 'DAVClient');
-  // @ts-ignore
-  mockManager.set('login', () => {
-    throw Error();
+  tsdav.createAccount = () => {
+    throw new Error('Error');
+  };
+
+  tsdav.fetchCalendarObjects = () => {
+    throw new Error('Error');
+  };
+
+  tsdav.createCalendarObject = () => ({
+    status: 305,
   });
-
-  return mockManager;
-};
-
-export const mockIcalStrings = (icalStrings: string[]) => {
-  ImportMock.restore();
-  const mockManager = ImportMock.mockClass(tsdav, 'DAVClient');
-  // @ts-ignore
-  mockManager.set('login', () => {
-    return;
+  tsdav.updateCalendarObject = () => ({
+    status: 305,
   });
-
-  // @ts-ignore
-  mockManager.set('fetchCalendars', () => {
-    return [
-      {
-        components: ['VEVENT', 'VTODO'],
-        ctag: 'ABCDE',
-        displayName: 'default',
-        url: 'cal',
-      } as DAVCalendar,
-    ];
+  tsdav.deleteCalendarObject = () => ({
+    status: 305,
   });
-
-  // @ts-ignore
-  mockManager.set('createCalendarObject', () => {
-    return {
-      url: 'http://localhost:8012/test',
-    };
+  tsdav.makeCalendar = () => ({
+    status: 305,
   });
-
-  // @ts-ignore
-  mockManager.set('deleteObject', () => {
-    return {
-      status: 204,
-    };
+  tsdav.fetchCalendars = () => ({
+    status: 305,
   });
-
-  // @ts-ignore
-  mockManager.set('makeCalendar', () => {
-    return [
-      {
-        ok: true,
-      },
-    ];
+  tsdav.deleteVCard = () => ({
+    status: 305,
   });
-
-  // @ts-ignore
-  mockManager.set('updateCalendarObject', () => {
-    return {
-      url: 'http://localhost:8012/test',
-    };
+  tsdav.createVCard = () => ({
+    status: 305,
   });
-
-  // @ts-ignore
-  mockManager.set('fetchCalendarObjects', () => {
-    return icalStrings.map((icalString) => ({
-      data: icalString,
-      etag: 'ABCDE123',
-      url: 'http://localhost:8012/test',
-    }));
+  tsdav.fetchVCards = () => ({
+    status: 305,
   });
-
-  // @ts-ignore
-  mockManager.set('deleteCalendarObject', () => {
-    return;
-  });
-
-  const MOCK_URL = 'http://localhost';
-
-  ImportMock.mockFunction(tsdav, 'createAccount', {
-    accountType: 'caldav',
-    serverUrl: MOCK_URL,
-    credentials: {
-      username: 'test',
-      password: 'test',
-    },
-    rootUrl: MOCK_URL,
-    principalUrl: MOCK_URL,
-    homeUrl: MOCK_URL,
-    calendars: [
-      {
-        components: ['VEVENT', 'VTODO'],
-        ctag: 'ABCDE',
-        displayName: 'default',
-        url: 'cal',
-      },
-    ],
-  } as DAVAccount);
-
-  return mockManager;
 };

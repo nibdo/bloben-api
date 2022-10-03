@@ -9,14 +9,19 @@ import {
 } from '../../utils/enums';
 import { Job } from 'bullmq';
 import {
+  createCalendarObject,
+  fetchCalendarObjects,
+  updateCalendarObject,
+} from 'tsdav';
+import {
   createEventFromCalendarObject,
   formatPartstatResponseData,
   removeMethod,
 } from '../../utils/davHelper';
 import { emailBullQueue } from '../../service/BullQueue';
 import { find } from 'lodash';
+import { getDavRequestData } from '../../utils/davAccountHelper';
 import { io } from '../../app';
-import { loginToCalDav } from '../../service/davService';
 import { removeOrganizerFromAttendees } from '../../api/app/calDavEvent/handlers/createCalDavEvent';
 import { throwError } from '../../utils/errorCodes';
 import CalDavAccountRepository from '../../data/repository/CalDavAccountRepository';
@@ -53,9 +58,11 @@ export const updatePartstatStatusForAttendee = async (
     throw throwError(404, 'Account not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
 
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
+    headers: davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [href],
   });
@@ -78,7 +85,8 @@ export const updatePartstatStatusForAttendee = async (
     });
     const icalStringNew: string = new ICalHelperV2([eventTemp]).parseTo();
 
-    const response = await client.updateCalendarObject({
+    const response = await updateCalendarObject({
+      headers: davHeaders,
       calendarObject: {
         url: href,
         data: icalStringNew,
@@ -228,9 +236,11 @@ export const processEmailEventJob = async (
           data.userID,
           defaultCalDavCalendarID
         );
-      const client = await loginToCalDav(calDavAccount);
+      const davRequestData = getDavRequestData(calDavAccount);
+      const { davHeaders } = davRequestData;
 
-      await client.createCalendarObject({
+      await createCalendarObject({
+        headers: davHeaders,
         calendar: calDavAccount.calendar,
         filename: `${icalEvent?.uid}.ics`,
         iCalString: removeMethod(data.icalString),

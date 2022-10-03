@@ -3,7 +3,8 @@ import { NextFunction, Request, Response } from 'express';
 import { CommonResponse } from 'bloben-interface';
 import { LOG_TAG } from '../../../../utils/enums';
 import { createCommonResponse } from '../../../../utils/common';
-import { loginToCalDav } from '../../../../service/davService';
+import { deleteVCard } from 'tsdav';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CardDavContactRepository from '../../../../data/repository/CardDavContactRepository';
@@ -36,9 +37,11 @@ export const deleteCardDavContact = async (
 
     const calDavAccount = calDavAccounts[0];
 
-    const client = await loginToCalDav(calDavAccount);
+    const davRequestData = getDavRequestData(calDavAccount);
+    const { davHeaders } = davRequestData;
 
-    const davResponse: any = await client.deleteVCard({
+    const davResponse: any = await deleteVCard({
+      headers: davHeaders,
       vCard: {
         url: contact.url,
         etag: contact.etag,

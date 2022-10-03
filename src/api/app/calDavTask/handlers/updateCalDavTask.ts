@@ -8,10 +8,19 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { createCommonResponse } from '../../../../utils/common';
+import {
+  createCalendarObject,
+  deleteCalendarObject,
+  fetchCalendarObjects,
+  updateCalendarObject,
+} from 'tsdav';
+import {
+  createCommonResponse,
+  handleDavResponse,
+} from '../../../../utils/common';
 import { createTaskFromCalendarObject } from '../../../../utils/davHelperTodo';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CalDavTaskEntity from '../../../../data/entity/CalDavTaskEntity';
@@ -46,7 +55,52 @@ export const updateCalDavTask = async (
     throw throwError(404, 'Task not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
+
+  if (body.prevEvent) {
+    response = await createCalendarObject({
+      headers: davHeaders,
+      calendar: calDavAccount.calendar,
+      filename: `${body.externalID}.ics`,
+      iCalString: body.iCalString,
+    });
+  } else {
+    response = await updateCalendarObject({
+      headers: davHeaders,
+      calendarObject: {
+        url: body.url,
+        data: body.iCalString,
+        etag: body.etag,
+      },
+    });
+  }
+
+  handleDavResponse(response, 'Update task error');
+
+  const fetchedTasks = await fetchCalendarObjects({
+    headers: davHeaders,
+    calendar: calDavAccount.calendar,
+    objectUrls: [response.url],
+  });
+
+  const taskTemp = createTaskFromCalendarObject(
+    fetchedTasks[0],
+    calDavAccount.calendar
+  );
+
+  // delete previous task if calendar was changed
+  if (body.prevEvent) {
+    const responseDelete = await deleteCalendarObject({
+      headers: davHeaders,
+      calendarObject: {
+        url: body.prevEvent.url,
+        etag: body.prevEvent.etag,
+      },
+    });
+
+    handleDavResponse(responseDelete, 'Update task error');
+  }
 
   try {
     connection = await getConnection();
@@ -58,31 +112,7 @@ export const updateCalDavTask = async (
       await queryRunner.manager.delete(CalDavTaskEntity, {
         id: body.id,
       });
-
-      response = await client.createCalendarObject({
-        calendar: calDavAccount.calendar,
-        filename: `${body.externalID}.ics`,
-        iCalString: body.iCalString,
-      });
-    } else {
-      response = await client.updateCalendarObject({
-        calendarObject: {
-          url: body.url,
-          data: body.iCalString,
-          etag: body.etag,
-        },
-      });
     }
-
-    const fetchedTasks = await client.fetchCalendarObjects({
-      calendar: calDavAccount.calendar,
-      objectUrls: [response.url],
-    });
-
-    const taskTemp = createTaskFromCalendarObject(
-      fetchedTasks[0],
-      calDavAccount.calendar
-    );
 
     if (taskTemp) {
       const newTask = new CalDavTaskEntity(taskTemp);
@@ -98,16 +128,6 @@ export const updateCalDavTask = async (
       } else {
         await queryRunner.manager.save(newTask);
       }
-    }
-
-    // delete previous task if calendar was changed
-    if (body.prevEvent) {
-      await client.deleteCalendarObject({
-        calendarObject: {
-          url: body.prevEvent.url,
-          etag: body.prevEvent.etag,
-        },
-      });
     }
 
     await queryRunner.commitTransaction();

@@ -5,6 +5,7 @@ import {
   todoToKeepID,
   todoToUpdateID,
 } from './syncCalDavTodoQueueJob.seed';
+import { mockTsDav } from '../../../__mocks__/tsdav';
 import { syncCalDavTaskQueueJob } from '../../../../jobs/queueJobs/syncCalDavTaskQueueJob';
 import CalDavTaskRepository from '../../../../data/repository/CalDavTaskRepository';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -51,6 +52,8 @@ describe(`syncCalDavTaskQueueJob [QUEUE]`, async function () {
   });
 
   it('Should update changed task', async function () {
+    mockTsDav();
+
     await syncCalDavTaskQueueJob({
       data: { userID },
     } as any);
@@ -66,6 +69,8 @@ describe(`syncCalDavTaskQueueJob [QUEUE]`, async function () {
   });
 
   it('Should delete remote task', async function () {
+    mockTsDav();
+
     await syncCalDavTaskQueueJob({
       data: { userID },
     } as any);
