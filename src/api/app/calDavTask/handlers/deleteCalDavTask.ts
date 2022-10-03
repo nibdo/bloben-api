@@ -6,9 +6,13 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { createCommonResponse } from '../../../../utils/common';
+import {
+  createCommonResponse,
+  handleDavResponse,
+} from '../../../../utils/common';
+import { deleteCalendarObject } from 'tsdav';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CalDavTaskRepository from '../../../../data/repository/CalDavTaskRepository';
@@ -31,14 +35,18 @@ export const deleteCalDavTask = async (
     throw throwError(404, 'Not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
 
-  await client.deleteCalendarObject({
+  const response = await deleteCalendarObject({
+    headers: davHeaders,
     calendarObject: {
       url: body.url,
       etag: body.etag,
     },
   });
+
+  handleDavResponse(response, 'Delete task error');
 
   await CalDavTaskRepository.getRepository().delete({
     href: body.url,

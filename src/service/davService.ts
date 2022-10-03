@@ -1,13 +1,9 @@
 import { CalDavAccount } from '../data/repository/CalDavAccountRepository';
 import { DAVCalendarObject, DAVClient, DAVCredentials } from 'tsdav';
-import { LOG_TAG } from '../utils/enums';
 import { Range } from 'bloben-interface';
 import { createEventsFromCalendarObject } from '../utils/davHelper';
 import { forEach } from 'lodash';
-import { throwError } from '../utils/errorCodes';
 import CalDavCalendarRepository from '../data/repository/CalDavCalendarRepository';
-import RedisService from './RedisService';
-import logger from '../utils/logger';
 
 export const createDavClient = (
   url: string,
@@ -25,37 +21,6 @@ export const createDavClient = (
     authMethod: 'Basic',
     defaultAccountType: 'caldav',
   });
-};
-
-export const loginToCalDav = async (calDavAccount: CalDavAccount) => {
-  try {
-    const client = createDavClient(calDavAccount.url, {
-      username: calDavAccount.username,
-      password: calDavAccount.password,
-    });
-
-    const clientCached = await RedisService.getDavClientCache(calDavAccount.id);
-    if (clientCached) {
-      client.authHeaders = clientCached.authHeaders;
-      client.account = clientCached.account;
-    } else {
-      await client.login();
-
-      await RedisService.setDavClientCache(calDavAccount.id, {
-        authHeaders: client.authHeaders,
-        account: client.account,
-      });
-    }
-
-    return client;
-  } catch (e: any) {
-    logger.error('Cannot login to calDav server', e, [
-      LOG_TAG.REST,
-      LOG_TAG.CALDAV,
-    ]);
-
-    throw throwError(409, 'Cannot login to calDav server');
-  }
 };
 
 export const createAuthHeader = (username: string, password: string) =>

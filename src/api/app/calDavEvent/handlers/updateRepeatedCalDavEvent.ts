@@ -18,18 +18,26 @@ import {
   EventResult,
   UpdateRepeatedCalDavEventRequest,
 } from 'bloben-interface';
-import { DAVClient } from 'tsdav';
 import { DateTime } from 'luxon';
+import {
+  DavRequestData,
+  getDavRequestData,
+} from '../../../../utils/davAccountHelper';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
 import {
   calDavSyncBullQueue,
   emailBullQueue,
 } from '../../../../service/BullQueue';
+import {
+  createCalendarObject,
+  deleteCalendarObject,
+  fetchCalendarObjects,
+  updateCalendarObject,
+} from 'tsdav';
 import { createCommonResponse } from '../../../../utils/common';
 import { forEach } from 'lodash';
 import { formatToIcalDateString } from '../../../../utils/luxonHelper';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../../utils/errorCodes';
 import { v4 } from 'uuid';
@@ -88,7 +96,7 @@ export const eventResultToCalDavEventObj = (
 const handleSingleEventChange = async (
   eventsTemp: CalDavEventObj[],
   body: UpdateRepeatedCalDavEventRequest,
-  client: DAVClient
+  davRequestData: DavRequestData
 ): Promise<RepeatEventUpdateResult> => {
   // filter by recurrence id of updated event
   let eventsData = eventsTemp.filter((event) => {
@@ -111,7 +119,8 @@ const handleSingleEventChange = async (
 
   const iCalString: string = new ICalHelperV2(eventsData).parseTo();
 
-  const response = await client.updateCalendarObject({
+  const response = await updateCalendarObject({
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       data: iCalString,
@@ -133,7 +142,7 @@ const handleSingleEventChange = async (
 const handleChangeAllWithCalendar = async (
   eventsTemp: CalDavEventObj[],
   body: UpdateRepeatedCalDavEventRequest,
-  client: DAVClient,
+  davRequestData: DavRequestData,
   calDavAccount: any,
   userID
 ): Promise<RepeatEventUpdateResult> => {
@@ -192,14 +201,16 @@ const handleChangeAllWithCalendar = async (
 
   const iCalString: string = new ICalHelperV2(eventsData).parseTo();
 
-  const response = await client.createCalendarObject({
+  const response = await createCalendarObject({
+    headers: davRequestData.davHeaders,
     calendar: calDavAccountNew.calendar,
     filename: `${body.externalID}.ics`,
     iCalString: iCalString,
   });
 
   // delete prev event
-  const responseDelete = await client.deleteCalendarObject({
+  const responseDelete = await deleteCalendarObject({
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.prevEvent.url,
       etag: body.prevEvent.etag,
@@ -229,7 +240,7 @@ const handleChangeAllWithCalendar = async (
 const handleChangeAll = async (
   eventsTemp: CalDavEventObj[],
   body: UpdateRepeatedCalDavEventRequest,
-  client: DAVClient,
+  davRequestData: DavRequestData,
   userID: string
 ): Promise<RepeatEventUpdateResult> => {
   // get only event with rrule prop
@@ -277,7 +288,8 @@ const handleChangeAll = async (
 
   const iCalString: string = new ICalHelperV2(eventsData).parseTo();
 
-  const response = await client.updateCalendarObject({
+  const response = await updateCalendarObject({
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       data: iCalString,
@@ -309,7 +321,7 @@ const handleChangeAll = async (
 const handleChangeThisAndFuture = async (
   eventsTemp: CalDavEventObj[],
   body: UpdateRepeatedCalDavEventRequest,
-  client: DAVClient,
+  davRequestData: DavRequestData,
   calDavAccount: any
 ): Promise<RepeatEventUpdateResult> => {
   let originRRule = '';
@@ -353,7 +365,8 @@ const handleChangeThisAndFuture = async (
     eventResultToCalDavEventObj(eventResultNew, eventsData[0].href),
   ]).parseTo();
 
-  await client.updateCalendarObject({
+  await updateCalendarObject({
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       data: iCalString,
@@ -362,7 +375,8 @@ const handleChangeThisAndFuture = async (
   });
 
   // create new event
-  const response = await client.createCalendarObject({
+  const response = await createCalendarObject({
+    headers: davRequestData.davHeaders,
     calendar: calDavAccount.calendar,
     filename: `${idNew}.ics`,
     iCalString: iCalStringNew,
@@ -421,10 +435,12 @@ export const updateRepeatedCalDavEvent = async (
 
   body.event.valarms = body.event.alarms;
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
 
   // get server events
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
+    headers: davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [body.url],
   });
@@ -455,19 +471,19 @@ export const updateRepeatedCalDavEvent = async (
     result = await handleChangeAllWithCalendar(
       eventsTemp,
       body,
-      client,
+      davRequestData,
       calDavAccount,
       userID
     );
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.SINGLE) {
-    result = await handleSingleEventChange(eventsTemp, body, client);
+    result = await handleSingleEventChange(eventsTemp, body, davRequestData);
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.ALL) {
-    result = await handleChangeAll(eventsTemp, body, client, userID);
+    result = await handleChangeAll(eventsTemp, body, davRequestData, userID);
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.THIS_AND_FUTURE) {
     result = await handleChangeThisAndFuture(
       eventsTemp,
       body,
-      client,
+      davRequestData,
       calDavAccount
     );
   }

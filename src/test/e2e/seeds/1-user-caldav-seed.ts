@@ -78,6 +78,9 @@ const createUserWithCaldav = async (
   calDavAccount.principalUrl =
     'http://localhost:6080/dav.php/principals/tester/';
   calDavAccount.accountType = DAV_ACCOUNT_TYPE.CALDAV;
+  calDavAccount.homeUrl = 'http://localhost:6080/dav.php/calendars/tester/';
+  calDavAccount.serverUrl = 'http://localhost:6080/dav.php';
+  calDavAccount.rootUrl = 'http://localhost:6080/dav.php';
 
   await CalDavAccountRepository.create(calDavAccount);
 

@@ -63,7 +63,9 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
     user
   );
   newAccount.principalUrl = accountUrl;
-  newAccount.url = accountUrl;
+  newAccount.serverUrl = accountUrl;
+  newAccount.rootUrl = accountUrl;
+  newAccount.homeUrl = accountUrl;
 
   const calendarIDS = [calendarToUpdateID, calendarToDeleteID];
 
@@ -129,14 +131,7 @@ const prepareMock = (accountUrl: string) => {
     },
   };
 
-  const mockManager = ImportMock.mockClass(tsdav, 'DAVClient');
-  // @ts-ignore
-  mockManager.set('login', () => {
-    return;
-  });
-
-  // @ts-ignore
-  mockManager.set('fetchCalendars', () => {
+  tsdav.fetchCalendars = () => {
     const calendarIDS = [calendarToInsertID, calendarToUpdateID];
 
     return calendarIDS.map((id) => ({
@@ -145,10 +140,9 @@ const prepareMock = (accountUrl: string) => {
       displayName: 'default',
       url: `${accountUrl}/${id}`,
     }));
-  });
+  };
 
-  // @ts-ignore
-  mockManager.set('calendarQuery', () => {
+  tsdav.calendarQuery = () => {
     const eventIDS = [eventToInsertID, eventToUpdateID, eventToKeepID];
 
     return eventIDS.map((id) => ({
@@ -161,10 +155,9 @@ const prepareMock = (accountUrl: string) => {
         getetag: id === eventToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
       },
     }));
-  });
+  };
 
-  // @ts-ignore
-  mockManager.set('fetchCalendarObjects', () => {
+  tsdav.fetchCalendarObjects = () => {
     const eventIDS = [eventToInsertID, eventToUpdateID, eventToKeepID];
 
     const events = eventIDS.map((id) => ({
@@ -195,9 +188,7 @@ const prepareMock = (accountUrl: string) => {
     });
 
     return events;
-  });
-
-  return mockManager;
+  };
 };
 
 /**

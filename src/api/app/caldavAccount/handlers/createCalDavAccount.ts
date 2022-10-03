@@ -9,10 +9,7 @@ import {
   cardDavBullQueue,
 } from '../../../../service/BullQueue';
 import { createAccount } from 'tsdav';
-import {
-  createAuthHeader,
-  createDavClient,
-} from '../../../../service/davService';
+import { createAuthHeader } from '../../../../service/davService';
 import { createCommonResponse } from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
@@ -43,12 +40,17 @@ export const createCalDavAccount = async (
     throw throwError(409, 'Account already exists', req);
   }
 
+  let responseAccount;
   try {
-    const client = createDavClient(url, {
-      username,
-      password,
+    responseAccount = await createAccount({
+      account: {
+        serverUrl: url,
+        accountType,
+      },
+      headers: {
+        authorization: createAuthHeader(username, password),
+      },
     });
-    await client.login();
   } catch (e) {
     logger.error('Cannot connect to Dav server', e, [
       LOG_TAG.REST,
@@ -59,16 +61,6 @@ export const createCalDavAccount = async (
   }
 
   try {
-    const responseAccount = await createAccount({
-      account: {
-        serverUrl: url,
-        accountType,
-      },
-      headers: {
-        authorization: createAuthHeader(username, password),
-      },
-    });
-
     connection = await getConnection();
     queryRunner = await connection.createQueryRunner();
     await queryRunner.connect();
@@ -82,6 +74,9 @@ export const createCalDavAccount = async (
 
     calDavAccount.principalUrl = responseAccount.principalUrl;
     calDavAccount.accountType = responseAccount.accountType;
+    calDavAccount.homeUrl = responseAccount.homeUrl;
+    calDavAccount.rootUrl = responseAccount.rootUrl;
+    calDavAccount.serverUrl = responseAccount.serverUrl;
     calDavAccount.data = JSON.stringify(responseAccount);
 
     await queryRunner.manager.save(calDavAccount);

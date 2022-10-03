@@ -14,14 +14,15 @@ import {
   cardDavBullQueue,
   emailBullQueue,
 } from '../../../../service/BullQueue';
+import { createCalendarObject, createVCard, fetchCalendarObjects } from 'tsdav';
 import { createCommonResponse } from '../../../../utils/common';
 import {
   createEventFromCalendarObject,
   formatInviteData,
 } from '../../../../utils/davHelper';
 import { forEach } from 'lodash';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { parseVcardToString } from '../../../../utils/vcardParser';
 import { processCaldavAlarms } from './updateCalDavEvent';
 import { throwError } from '../../../../utils/errorCodes';
@@ -69,9 +70,11 @@ export const handleCreateContact = async (
     return;
   }
 
-  const client = await loginToCalDav(account);
+  const davRequestData = getDavRequestData(account);
+  const { davHeaders } = davRequestData;
 
-  const response = await client.createVCard({
+  const response = await createVCard({
+    headers: davHeaders,
     addressBook: addressBook.data,
     filename: `${id}.ics`,
     vCardString: parseVcardToString(id, email, fullName),
@@ -113,12 +116,13 @@ export const createCalDavEvent = async (
     throw throwError(404, 'Account with calendar not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const { davHeaders } = getDavRequestData(calDavAccount);
 
-  const response: any = await client.createCalendarObject({
+  const response: any = await createCalendarObject({
     calendar: calDavAccount.calendar,
     filename: `${body.externalID}.ics`,
     iCalString: body.iCalString,
+    headers: davHeaders,
   });
 
   if (response.status >= 300) {
@@ -130,9 +134,10 @@ export const createCalDavEvent = async (
     throw throwError(409, `Cannot create event: ${response.statusText}`);
   }
 
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
     calendar: calDavAccount.calendar,
     objectUrls: [response.url],
+    headers: davHeaders,
   });
 
   const eventTemp = createEventFromCalendarObject(

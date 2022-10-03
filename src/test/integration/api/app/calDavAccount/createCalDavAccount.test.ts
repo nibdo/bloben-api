@@ -44,21 +44,23 @@ describe(`Create calDav account [POST] ${PATH}`, async function () {
   });
 
   it('Should get status 409 already exists', async function () {
-    await request(createTestServerWithSession(userID))
+    const responseFirst = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         username: 'abecede',
         password: 'fefefefaasfaf',
-        url: 'http://localhost:3111',
+        url: 'http://localhost',
         accountType: DAV_ACCOUNT_TYPE.CALDAV,
       } as CreateCalDavAccountRequest);
+
+    assert.equal(responseFirst.status, 200);
 
     const response: any = await request(createTestServerWithSession(userID))
       .post(PATH)
       .send({
         username: 'abecede',
         password: 'fefefefaasfaf',
-        url: 'http://localhost:3111',
+        url: 'http://localhost',
         accountType: DAV_ACCOUNT_TYPE.CALDAV,
       } as CreateCalDavAccountRequest);
 
