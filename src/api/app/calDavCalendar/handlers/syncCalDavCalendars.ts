@@ -14,10 +14,11 @@ import {
   createCalDavCalendar,
   updateCalDavCalendar,
 } from '../../caldavAccount/helpers/createCalDavCalendar';
-import { createDavClient } from '../../../../service/davService';
 import { createSocketCrudMsg } from '../../../../utils/common';
+import { fetchCalendars } from 'tsdav';
 import { find, forEach } from 'lodash';
 import { formatCalendarResponse } from './getCalDavCalendars';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
@@ -52,13 +53,13 @@ export const getRemoteCalDavCalendars = async (userID: string) => {
       queryRunner = await connection.createQueryRunner();
       await queryRunner.startTransaction();
 
-      const client = createDavClient(calDavAccount.url, {
-        username: calDavAccount.username,
-        password: calDavAccount.password,
-      });
-      await client.login();
+      const davRequestData = getDavRequestData(calDavAccount);
+      const { davHeaders, davAccount } = davRequestData;
 
-      const serverCalendars = await client.fetchCalendars({});
+      const serverCalendars = await fetchCalendars({
+        headers: davHeaders,
+        account: davAccount,
+      });
 
       const newCalendarsPromises: any = [];
       const updateCalendarsPromises: Promise<GetCalDavCalendar>[] = [];

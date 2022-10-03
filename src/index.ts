@@ -2,7 +2,7 @@ import { Connection, createConnection } from 'typeorm';
 import dotenv from 'dotenv';
 
 import { Env, loadEnv } from './config/env';
-import { LOG_TAG } from './utils/enums';
+import { LOG_TAG, NODE_ENV } from './utils/enums';
 import { createORMConfig } from './config/ormconfig';
 import { createRedisConfig } from './config/redis';
 import { createWinstonLogger } from './utils/winston';
@@ -28,7 +28,10 @@ export const startServer = async (): Promise<void> => {
     // connect to database
     const connection: Connection = await createConnection(createORMConfig());
     await connection.synchronize();
-    await connection.runMigrations();
+
+    if (env.nodeEnv !== NODE_ENV.TEST) {
+      await connection.runMigrations();
+    }
 
     winstonLogger = createWinstonLogger();
 

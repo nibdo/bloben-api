@@ -13,12 +13,12 @@ export const dropDatabase = async () => {
 export const initDatabase = async () => {
   const prevConnection: Connection = await getConnection();
 
-  if (!prevConnection?.isConnected) {
-    const connection: Connection | null = await createConnection({
-      ...createORMConfig(),
-      synchronize: false,
-    });
-
-    await connection.synchronize(true);
+  if (prevConnection?.isConnected) {
+    await prevConnection.close();
   }
+
+  await createConnection({
+    ...createORMConfig(),
+    synchronize: true,
+  });
 };

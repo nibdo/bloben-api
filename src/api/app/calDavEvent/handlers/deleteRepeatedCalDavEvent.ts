@@ -18,17 +18,27 @@ import {
   CommonResponse,
   DeleteRepeatedCalDavEventRequest,
 } from 'bloben-interface';
-import { DAVClient } from 'tsdav';
+import {
+  DavRequestData,
+  getDavRequestData,
+} from '../../../../utils/davAccountHelper';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
 import {
   calDavSyncBullQueue,
   emailBullQueue,
 } from '../../../../service/BullQueue';
-import { createCommonResponse } from '../../../../utils/common';
+import {
+  createCommonResponse,
+  handleDavResponse,
+} from '../../../../utils/common';
 import { createICalStringForAttendees } from './updateRepeatedCalDavEvent';
+import {
+  deleteCalendarObject,
+  fetchCalendarObjects,
+  updateCalendarObject,
+} from 'tsdav';
 import { forEach, map } from 'lodash';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
@@ -47,11 +57,12 @@ export interface RepeatEventDeleteResult {
 }
 const handleDeleteSingle = async (
   body: DeleteRepeatedCalDavEventRequest,
-  client: DAVClient,
+  davRequestData: DavRequestData,
   calDavAccount: any
 ): Promise<RepeatEventDeleteResult> => {
   // get server events
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
+    headers: davRequestData.davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [body.url],
   });
@@ -75,13 +86,16 @@ const handleDeleteSingle = async (
 
   const iCalString: string = new ICalHelperV2(eventsTemp).parseTo();
 
-  const response = await client.updateCalendarObject({
+  const response = await updateCalendarObject({
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       data: iCalString,
       etag: body.etag,
     },
   });
+
+  handleDavResponse(response, 'Delete caldav event error');
 
   const eventToCancel: CalDavEventObj = {
     ...eventsTemp[0],
@@ -115,12 +129,13 @@ const handleDeleteSingle = async (
 
 const handleDeleteSingleRecurrence = async (
   body: DeleteRepeatedCalDavEventRequest,
-  client: DAVClient,
+  davRequestData: DavRequestData,
   calDavAccount: any,
   userID: string
 ): Promise<RepeatEventDeleteResult> => {
   // get server events
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
+    headers: davRequestData.davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [body.url],
   });
@@ -160,13 +175,16 @@ const handleDeleteSingleRecurrence = async (
 
   const iCalString: string = new ICalHelperV2(eventsData).parseTo();
 
-  const response = await client.updateCalendarObject({
+  const response = await updateCalendarObject({
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       data: iCalString,
       etag: body.etag,
     },
   });
+
+  handleDavResponse(response, 'Delete caldav event error');
 
   await CalDavEventExceptionRepository.getRepository().query(
     `
@@ -198,11 +216,12 @@ const handleDeleteSingleRecurrence = async (
 
 const handleDeleteAll = async (
   body: DeleteRepeatedCalDavEventRequest,
-  client: DAVClient,
+  davRequestData: DavRequestData,
   calDavAccount: any
 ): Promise<RepeatEventDeleteResult> => {
   // get server events
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
+    headers: davRequestData.davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [body.url],
   });
@@ -213,12 +232,15 @@ const handleDeleteAll = async (
     calDavAccount.calendar
   );
 
-  const response = await client.deleteCalendarObject({
+  const response = await deleteCalendarObject({
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       etag: body.etag,
     },
   });
+
+  handleDavResponse(response, 'Delete caldav event error');
 
   return {
     response,
@@ -250,20 +272,20 @@ export const deleteRepeatedCalDavEvent = async (
     throw throwError(404, 'Account not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
 
   let result;
   if (body.type === REPEATED_EVENT_CHANGE_TYPE.ALL) {
-    result = await handleDeleteAll(body, client, calDavAccount);
+    result = await handleDeleteAll(body, davRequestData, calDavAccount);
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.SINGLE_RECURRENCE_ID) {
     result = await handleDeleteSingleRecurrence(
       body,
-      client,
+      davRequestData,
       calDavAccount,
       userID
     );
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.SINGLE) {
-    result = await handleDeleteSingle(body, client, calDavAccount);
+    result = await handleDeleteSingle(body, davRequestData, calDavAccount);
   }
 
   if (result.response.status >= 300) {

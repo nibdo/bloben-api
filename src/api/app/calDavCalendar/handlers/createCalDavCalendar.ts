@@ -6,13 +6,13 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 import { CommonResponse, CreateCalDavCalendarRequest } from 'bloben-interface';
-import { DAVNamespaceShort } from 'tsdav';
+import { DAVNamespaceShort, makeCalendar } from 'tsdav';
 import { Request, Response } from 'express';
 import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
-import { createDavClient } from '../../../../service/davService';
 import { fetch } from 'cross-fetch';
 import { forEach } from 'lodash';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';
 import { v4 } from 'uuid';
@@ -81,12 +81,8 @@ export const createCalDavCalendar = async (
     throw throwError(404, 'CalDav account not found');
   }
 
-  const client = createDavClient(calDavAccount.url, {
-    username: calDavAccount.username,
-    password: calDavAccount.password,
-  });
-
-  await client.login();
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders, davAccount } = davRequestData;
 
   const components = {};
   forEach(body.components, (component) => {
@@ -94,8 +90,9 @@ export const createCalDavCalendar = async (
   });
 
   const remoteID = v4();
-  const result = await client.makeCalendar({
-    url: `${calDavAccount.url}/calendars/${calDavAccount.username}/${remoteID}`,
+  const result = await makeCalendar({
+    headers: davHeaders,
+    url: `${davAccount.serverUrl}/calendars/${calDavAccount.username}/${remoteID}`,
     props: {
       [`${DAVNamespaceShort.DAV}:displayname`]: body.name,
       [`${DAVNamespaceShort.CALDAV}:supported-calendar-component-set`]:
@@ -111,7 +108,7 @@ export const createCalDavCalendar = async (
         body,
         calDavAccount.username,
         calDavAccount.password,
-        calDavAccount.url,
+        davAccount.serverUrl,
         remoteID
       );
 

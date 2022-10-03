@@ -47,7 +47,9 @@ export const seedCardDavAddressBooks = async (
     const newAccount = new CalDavAccountEntity(account, user);
     const newBook = new CardDavAddressBook(undefined, undefined);
     newAccount.principalUrl = `http://${user.username}`;
-    newAccount.url = `http://${user.username}`;
+    newAccount.serverUrl = `http://${user.username}`;
+    newAccount.rootUrl = `http://${user.username}`;
+    newAccount.homeUrl = `http://${user.username}`;
 
     newBook.url = `http://${user.username}`;
     newBook.calDavAccount = newAccount;

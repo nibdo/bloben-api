@@ -40,7 +40,9 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
     user
   );
   newAccount.principalUrl = accountUrl;
-  newAccount.url = accountUrl;
+  newAccount.serverUrl = accountUrl;
+  newAccount.rootUrl = accountUrl;
+  newAccount.homeUrl = accountUrl;
 
   const newAddressBook = new CardDavAddressBook(undefined, undefined);
 
@@ -99,14 +101,7 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
     },
   };
 
-  const mockManager = ImportMock.mockClass(tsdav, 'DAVClient');
-  // @ts-ignore
-  mockManager.set('login', () => {
-    return;
-  });
-
-  // @ts-ignore
-  mockManager.set('fetchAddressBooks', () => {
+  tsdav.fetchAddressBooks = () => {
     return [
       {
         ctag: 'BGTPY123111',
@@ -114,10 +109,9 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
         url: `${calendarUrl}`,
       },
     ];
-  });
+  };
 
-  // @ts-ignore
-  mockManager.set('fetchVCards', () => {
+  tsdav.fetchVCards = () => {
     const ids = [vcalToInsertID, vcalToUpdateID, vcalToKeepID];
 
     return ids.map((id) => ({
@@ -133,9 +127,7 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
       etag: id === todoToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
       url: `${calendarUrl}/${id}`,
     }));
-  });
-
-  return mockManager;
+  };
 };
 
 /**

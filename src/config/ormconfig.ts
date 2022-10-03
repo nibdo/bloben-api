@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const createORMConfig = (): PostgresConnectionOptions => {
+export const createORMConfig = (name?: string): PostgresConnectionOptions => {
   return {
-    name: 'default',
+    name: name || 'default',
     type: 'postgres',
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),

@@ -7,7 +7,15 @@ import {
 import { CALENDAR_METHOD } from './ICalHelper';
 import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { DAVCalendar, DAVCalendarObject, DAVClient } from 'tsdav';
+import {
+  DAVCalendar,
+  DAVCalendarObject,
+  calendarQuery,
+  fetchAddressBooks,
+  fetchCalendarObjects,
+  fetchCalendars,
+  fetchVCards,
+} from 'tsdav';
 import { DateTime } from 'luxon';
 import {
   LOG_TAG,
@@ -22,7 +30,6 @@ import {
   createCalDavCalendar,
   updateCalDavCalendar,
 } from '../api/app/caldavAccount/helpers/createCalDavCalendar';
-import { createDavClient } from '../service/davService';
 import {
   formatEventCancelSubject,
   formatEventEntityToResult,
@@ -43,6 +50,7 @@ import ICalParser, { DateTimeObject, EventJSON } from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 
 import { ATTENDEE_PARTSTAT } from '../data/types/enums';
+import { DavRequestData, getDavRequestData } from './davAccountHelper';
 import { VcardParsed, parseFromVcardString } from './vcardParser';
 import CalendarSettingsRepository from '../data/repository/CalendarSettingsRepository';
 import CardDavAddressBook from '../data/entity/CardDavAddressBook';
@@ -391,8 +399,14 @@ export const createEventsFromCalendarObject = (
   return [formatEventJsonToCalDavEvent(event, calendarObject, calendar)];
 };
 
-export const queryClient = async (client: DAVClient, serverCalendar: any) =>
-  client.calendarQuery({
+export const queryClient = async (
+  davRequestData: DavRequestData,
+  serverCalendar: any
+) => {
+  const { davHeaders } = davRequestData;
+
+  return calendarQuery({
+    headers: davHeaders,
     url: serverCalendar.url,
     // @ts-ignore
     _attributes: {
@@ -400,30 +414,29 @@ export const queryClient = async (client: DAVClient, serverCalendar: any) =>
       'xmlns:C': 'urn:ietf:params:xml:ns:caldav',
     },
     prop: {
-      getetag: {}, // or 'd:getetag'
+      getetag: {},
     },
     filters: {
       'comp-filter': {
         _attributes: {
           name: 'VCALENDAR',
         },
-        // "comp-filter": {
-        //   _attributes: {
-        //     name: "VEVENT",
-        //   },
-        // },
       },
     },
     depth: '1',
   });
+};
 
 export const updateCalDavEvents = async (
   calDavCalendar: any,
-  client: any,
+  davRequestData: DavRequestData,
   queryRunner: QueryRunner,
   userID: string
 ) => {
-  const calDavServerResult: any = await queryClient(client, calDavCalendar);
+  const calDavServerResult: any = await queryClient(
+    davRequestData,
+    calDavCalendar
+  );
 
   // get existing events
   const existingEvents: {
@@ -508,7 +521,7 @@ export const updateCalDavEvents = async (
 
   if (toInsert.length > 0) {
     const toInsertResponse: any = await getCalendarObjectsByUrl(
-      client,
+      davRequestData,
       calDavCalendar,
       toInsert
     );
@@ -581,25 +594,17 @@ export const updateCalDavEvents = async (
 };
 
 export const getCalendarObjectsByUrl = async (
-  client: DAVClient,
+  davRequestData: DavRequestData,
   calDavCalendar: DAVCalendar,
-  // range: any,
   objectUrls: string[]
 ) => {
-  const params: any = {
+  const params = {
+    headers: davRequestData.davHeaders,
     calendar: calDavCalendar,
-    // timeRange: {
-    //   start: range.rangeFrom,
-    //   end: range.rangeTo
-    // },
     objectUrls,
   };
 
-  const response: DAVCalendarObject[] = await client.fetchCalendarObjects(
-    params
-  );
-
-  return response;
+  return await fetchCalendarObjects(params);
 };
 
 const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
@@ -607,14 +612,14 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
     ? calDavAccount.calendars
     : [calDavAccount.calendar];
 
-  const client = createDavClient(calDavAccount.url, {
-    username: calDavAccount.username,
-    password: calDavAccount.password,
-  });
-  await client.login();
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davAccount, davHeaders } = davRequestData;
 
   // fetch calendars
-  const serverCalendars = await client.fetchCalendars();
+  const serverCalendars = await fetchCalendars({
+    headers: davHeaders,
+    account: davAccount,
+  });
 
   const calendarsToInsert: any[] = [];
   const calendarsToUpdate: any[] = [];
@@ -712,7 +717,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
     for (const calendar of localCalendars) {
       await updateCalDavEvents(
         calendar,
-        client,
+        davRequestData,
         queryRunner,
         calDavAccount.userID
       );
@@ -965,15 +970,13 @@ export interface ParsedContact {
 export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
   const addressBooks: AddressBook[] = calDavAccount.addressBooks;
 
-  const client = createDavClient(calDavAccount.url, {
-    username: calDavAccount.username,
-    password: calDavAccount.password,
-  });
-  await client.login();
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders, davAccount } = davRequestData;
 
   // fetch address book
-  const serverAddressBooks = await client.fetchAddressBooks({
-    account: JSON.parse(calDavAccount.data),
+  const serverAddressBooks = await fetchAddressBooks({
+    headers: davHeaders,
+    account: davAccount,
   });
 
   const serverBooksKeyed = keyBy(serverAddressBooks, 'url');
@@ -1049,7 +1052,8 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
   );
 
   for (const addressBook of addressBooksNew) {
-    const vcards = await client.fetchVCards({
+    const vcards = await fetchVCards({
+      headers: davHeaders,
       addressBook: addressBook.data,
     });
 

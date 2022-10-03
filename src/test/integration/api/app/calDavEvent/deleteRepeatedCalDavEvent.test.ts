@@ -65,7 +65,7 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
     assert.equal(status, 404);
   });
 
-  it('Should get status 409 cannot connect to calDav server', async function () {
+  it('Should get status 500 cannot connect to calDav server', async function () {
     ImportMock.restore();
     mockTsDavUnauthorized();
 
@@ -75,7 +75,7 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
 
     const { status } = response;
 
-    assert.equal(status, 409);
+    assert.equal(status, 500);
 
     ImportMock.restore();
     mockTsDav();
@@ -92,6 +92,7 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
   });
 
   it('Should get status 200 single', async function () {
+    mockTsDav();
     const response: any = await request(createTestServerWithSession(userID))
       .delete(PATH)
       .send(createBaseBody(calDavEvent));
@@ -102,6 +103,7 @@ describe(`Delete repeated calDav event [DELETE] ${PATH}`, async function () {
   });
 
   it('Should get status 200 all', async function () {
+    mockTsDav();
     const response: any = await request(createTestServerWithSession(userID))
       .delete(PATH)
       .send(createBaseBody(calDavEvent));

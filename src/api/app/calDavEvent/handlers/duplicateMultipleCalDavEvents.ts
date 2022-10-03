@@ -8,18 +8,22 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 import { DuplicateMultipleCalDavEventsBody } from 'bloben-interface';
-import { createCommonResponse } from '../../../../utils/common';
+import {
+  createCommonResponse,
+  handleDavResponse,
+} from '../../../../utils/common';
 
 import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
 import { CalDavEventObj, formatInviteData } from '../../../../utils/davHelper';
 import { DateTime } from 'luxon';
 import { Job } from 'bullmq';
+import { createCalendarObject } from 'tsdav';
 import { emailBullQueue } from '../../../../service/BullQueue';
 import { eventResultToCalDavEventObj } from './updateRepeatedCalDavEvent';
 import { find, forEach } from 'lodash';
 import { formatEventRawToResult } from '../../../../utils/format';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
-import { loginToCalDav } from '../../../../service/davService';
 import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import { throwError } from '../../../../utils/errorCodes';
@@ -111,13 +115,15 @@ export const duplicateMultipleCalDavEvents = async (
       iCalStrings.push({ id: calDavObj.externalID, data: iCalString });
     });
 
-    const client = await loginToCalDav(calDavAccount);
+    const davRequestData = getDavRequestData(calDavAccount);
+    const { davHeaders } = davRequestData;
 
     const promises: any = [];
 
     forEach(iCalStrings, (item) => {
       promises.push(
-        client.createCalendarObject({
+        createCalendarObject({
+          headers: davHeaders,
           calendar: calDavAccount.calendar,
           filename: `${item.id}.ics`,
           iCalString: item.data,
@@ -126,6 +132,10 @@ export const duplicateMultipleCalDavEvents = async (
     });
 
     const davResponses = await Promise.all(promises);
+
+    forEach(davResponses, (response) => {
+      handleDavResponse(response, 'Duplicate event error');
+    });
 
     let successes = 0;
     let failed = 0;

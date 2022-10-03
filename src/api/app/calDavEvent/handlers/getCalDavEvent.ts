@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 
 import { GetCaldavEventResponse } from 'bloben-interface';
 import { createEventFromCalendarObject } from '../../../../utils/davHelper';
-import { loginToCalDav } from '../../../../service/davService';
+import { fetchCalendarObjects } from 'tsdav';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 
@@ -28,9 +29,11 @@ export const getCalDavEvent = async (
     throw throwError(404, 'Account not found');
   }
 
-  const client = await loginToCalDav(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
+  const { davHeaders } = davRequestData;
 
-  const fetchedEvents = await client.fetchCalendarObjects({
+  const fetchedEvents = await fetchCalendarObjects({
+    headers: davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [url],
     // expand: true,

@@ -4,7 +4,8 @@ import { BULL_QUEUE, LOG_TAG } from '../../../../utils/enums';
 import { CommonResponse } from 'bloben-interface';
 import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
-import { createDavClient } from '../../../../service/davService';
+import { deleteObject } from 'tsdav';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 import logger from '../../../../utils/logger';
@@ -25,14 +26,16 @@ export const deleteCalDavCalendar = async (
     throw throwError(404, 'CalDav calendar not found');
   }
 
-  const client = createDavClient(calDavCalendar.account.url, {
-    username: calDavCalendar.account.username,
-    password: calDavCalendar.account.password,
+  const davRequestData = getDavRequestData({
+    ...calDavCalendar.account,
+    accountType: 'caldav',
   });
+  const { davHeaders } = davRequestData;
 
-  await client.login();
-
-  const response = await client.deleteObject({ url: calDavCalendar.url });
+  const response = await deleteObject({
+    headers: davHeaders,
+    url: calDavCalendar.url,
+  });
 
   if (response.status >= 300) {
     logger.error('Delete caldav calendar error', response.statusText, [

@@ -8,10 +8,13 @@ import CalDavAccountEntity from '../entity/CalDavAccount';
 
 interface CardDavAccountRaw {
   id: string;
-  url: string;
   userID: string;
+  accountType: string;
   username: string;
   password: string;
+  rootUrl: string;
+  homeUrl: string;
+  serverUrl: string;
   principalUrl: string;
   accountData: any;
   data: any;
@@ -32,20 +35,26 @@ export interface AddressBook {
 export interface CardDavAccountWithAddressBooks {
   id: string;
   userID: string;
-  url: string;
+  accountType: string;
+  rootUrl: string;
+  homeUrl: string;
+  serverUrl: string;
+  principalUrl: string;
   data: any;
   username: string;
   password: string;
-  principalUrl: string;
   addressBooks: AddressBook[];
 }
 
 export interface CalDavAccount {
   id: string;
-  url: string;
+  accountType: any;
+  rootUrl: string;
+  homeUrl: string;
+  serverUrl: string;
+  principalUrl: string;
   username: string;
   password: string;
-  principalUrl: string;
 }
 
 export interface CalendarFromAccount extends DAVCalendar {
@@ -53,16 +62,22 @@ export interface CalendarFromAccount extends DAVCalendar {
   id: string;
   lastUpdateAt?: any;
   color: string;
-  url: string;
+  rootUrl: string;
+  homeUrl: string;
+  serverUrl: string;
+  principalUrl: string;
 }
 
 interface BaseAccount {
   id: string;
-  url: string;
+  accountType: any;
+  rootUrl: string;
+  homeUrl: string;
+  serverUrl: string;
+  principalUrl: string;
   userID: string;
   username: string;
   password: string;
-  principalUrl: string;
   calendarID: string;
   calendarColor: string;
   calendarUrl: string;
@@ -98,10 +113,13 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
       `
       SELECT 
         id,
-        url,
+        server_url as "serverUrl",
+        home_url as "homeUrl",
+        principal_url as "principalUrl",
+        root_url as "rootUrl",
+        account_type as "accountType",
         username,
-        password,
-        principal_url as "principalUrl"
+        password
       FROM 
         caldav_accounts
       WHERE 
@@ -124,10 +142,13 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
       `
       SELECT 
         id,
-        url,
+        server_url as "serverUrl",
+        home_url as "homeUrl",
+        principal_url as "principalUrl",
+        root_url as "rootUrl",
+        account_type as "accountType",
         username,
-        password,
-        principal_url as "principalUrl"
+        password
       FROM 
         caldav_accounts
       WHERE
@@ -149,10 +170,13 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
       `
       SELECT 
         id,
-        url,
         username,
         password,
-        principal_url as "principalUrl"
+        account_type as "accountType",
+        server_url as "serverUrl",
+        home_url as "homeUrl",
+        principal_url as "principalUrl",
+        root_url as "rootUrl"
       FROM 
         caldav_accounts
       WHERE
@@ -175,10 +199,13 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
       `
       SELECT 
         ca.id as id,
-        ca.url as url,
+        server_url as "serverUrl",
+        home_url as "homeUrl",
+        principal_url as "principalUrl",
+        root_url as "rootUrl",
+        account_type as "accountType",
         ca.username as username,
-        ca.password as password,
-        ca.principal_url as "principalUrl"
+        ca.password as password
       FROM 
         caldav_accounts ca
       INNER JOIN carddav_address_books ab ON ab.caldav_account_id = ca.id
@@ -197,7 +224,7 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
 
   public static async getByUrlAndUsername(
     username: string,
-    url: string,
+    serverUrl: string,
     userID: string,
     accountType: DAV_ACCOUNT_TYPE
   ): Promise<CalDavAccount | null> {
@@ -209,12 +236,12 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         caldav_accounts
       WHERE
         user_id = $1
-        AND url = $2
+        AND server_url = $2
         AND username = $3
         AND account_type = $4
         AND deleted_at IS NULL;
     `,
-      [userID, url, username, accountType]
+      [userID, serverUrl, username, accountType]
     );
 
     return getOneResult(result);
@@ -229,11 +256,14 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         `
     SELECT 
         ca.id as id,
-        ca.url as url,
+        ca.account_type as "accountType",
+        ca.server_url as "serverUrl",
+        ca.home_url as "homeUrl",
+        ca.principal_url as "principalUrl",
+        ca.root_url as "rootUrl",
         ca.user_id as "userID",
         ca.username as username,
         ca.password as password,
-        ca.principal_url as "principalUrl",
         cc.id as "calendarID",
         cc.data as "calendar",
         cc.color as "calendarColor",
@@ -285,11 +315,14 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         `
     SELECT 
         ca.id as id,
-        ca.url as url,
+        ca.account_type as "accountType",
         ca.user_id as "userID",
         ca.username as username,
         ca.password as password,
+        ca.server_url as "serverUrl",
+        ca.home_url as "homeUrl",
         ca.principal_url as "principalUrl",
+        ca.root_url as "rootUrl",
         cc.id as "calendarID",
         cc.data as "calendar",
         cc.url as "calendarUrl",
@@ -351,11 +384,14 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         `
     SELECT 
         ca.id as id,
-        ca.url as url,
+        ca.account_type as "accountType",
+        ca.server_url as "serverUrl",
+        ca.home_url as "homeUrl",
+        ca.principal_url as "principalUrl",
+        ca.root_url as "rootUrl",
         ca.user_id as "userID",
         ca.username as username,
         ca.password as password,
-        ca.principal_url as "principalUrl",
         cc.id as "calendarID",
         cc.color as "calendarColor",
         cc.data as "calendar"
@@ -414,11 +450,14 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         `
     SELECT 
         ca.id as id,
-        ca.url as url,
+        ca.account_type as "accountType",
         ca.user_id as "userID",
         ca.username as username,
         ca.password as password,
+        ca.server_url as "serverUrl",
+        ca.home_url as "homeUrl",
         ca.principal_url as "principalUrl",
+        ca.root_url as "rootUrl",
         ca.user_id as "userID",
         ca.data as "accountData",
         ab.data as "data",
@@ -463,12 +502,15 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
 
       result.push({
         id: baseItem.id,
-        url: baseItem.url,
+        serverUrl: baseItem.addressBookUrl,
+        accountType: baseItem.accountType,
+        homeUrl: baseItem.homeUrl,
+        rootUrl: baseItem.rootUrl,
+        principalUrl: baseItem.principalUrl,
         data: baseItem.accountData,
         userID: baseItem.userID,
         username: baseItem.username,
         password: baseItem.password,
-        principalUrl: baseItem.principalUrl,
         addressBooks,
       });
     });

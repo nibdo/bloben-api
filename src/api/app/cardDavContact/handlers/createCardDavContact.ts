@@ -3,7 +3,8 @@ import { NextFunction, Request, Response } from 'express';
 import { CommonResponse, CreateCardDavContactRequest } from 'bloben-interface';
 import { LOG_TAG } from '../../../../utils/enums';
 import { createCommonResponse } from '../../../../utils/common';
-import { loginToCalDav } from '../../../../service/davService';
+import { createVCard, fetchVCards } from 'tsdav';
+import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import {
   parseFromVcardString,
   parseVcardToString,
@@ -46,11 +47,13 @@ export const createCardDavContact = async (
 
     const calDavAccount = calDavAccounts[0];
 
-    const client = await loginToCalDav(calDavAccount);
+    const davRequestData = getDavRequestData(calDavAccount);
+    const { davHeaders } = davRequestData;
 
     const id = v4();
 
-    const davResponse = await client.createVCard({
+    const davResponse = await createVCard({
+      headers: davHeaders,
       addressBook: addressBook.data,
       filename: `${id}.ics`,
       vCardString: parseVcardToString(
@@ -69,7 +72,8 @@ export const createCardDavContact = async (
       throw throwError(409, `Cannot create contact: ${davResponse.statusText}`);
     }
 
-    const vcards = await client.fetchVCards({
+    const vcards = await fetchVCards({
+      headers: davHeaders,
       objectUrls: [davResponse.url],
       addressBook: addressBook.data,
     });

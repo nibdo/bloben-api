@@ -15,7 +15,10 @@ export interface CalDavCalendarWithAccountInterface {
     id: string;
     username: string;
     password: string;
-    url: string;
+    rootUrl: string;
+    homeUrl: string;
+    serverUrl: string;
+    principalUrl: string;
   };
 }
 
@@ -92,7 +95,10 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
         ca.id as "accountID",
         ca.username as "accountUsername",
         ca.password as "accountPassword",
-        ca.url as "accountUrl"
+        ca.server_url as "serverUrl",
+        ca.home_url as "homeUrl",
+        ca.principal_url as "principalUrl",
+        ca.root_url as "rootUrl"
       FROM 
         caldav_calendars cc
       INNER JOIN caldav_accounts ca on ca.id = cc.caldav_account_id
@@ -115,7 +121,10 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
           id: oneResult.accountID,
           username: oneResult.accountUsername,
           password: oneResult.accountPassword,
-          url: oneResult.accountUrl,
+          serverUrl: oneResult.serverUrl,
+          rootUrl: oneResult.rootUrl,
+          homeUrl: oneResult.homeUrl,
+          principalUrl: oneResult.principalUrl,
         },
       };
     }
