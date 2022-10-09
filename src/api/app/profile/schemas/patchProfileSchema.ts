@@ -1,4 +1,4 @@
-import { allowedLanguages } from 'bloben-interface';
+import { allowedLanguages } from 'bloben-interface/enums';
 import Joi from 'joi';
 
 const allowedLanguagesValues = allowedLanguages.map((item) => item.value);

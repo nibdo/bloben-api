@@ -2,17 +2,22 @@ import { Request, Response } from 'express';
 
 import { DateTime } from 'luxon';
 import { EventResult } from 'bloben-interface';
-import { formatEventRawToResult } from '../../../../utils/format';
+import {
+  formatEventRawToResult,
+  formatTaskRawToResult,
+} from '../../../../utils/format';
 import { getRepeatedEvents } from '../helpers/getRepeatedEvents';
 import { getWebcalEvents } from '../helpers/getWebCalEvents';
 import { map } from 'lodash';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
+import CalDavTaskRepository from '../../../../data/repository/CalDavTaskRepository';
 import LuxonHelper from '../../../../utils/luxonHelper';
 
 interface Query {
   rangeFrom: string;
   rangeTo: string;
   isDark: string;
+  showTasks: string;
 }
 
 /**
@@ -25,7 +30,8 @@ export const getEventsInRange = async (
   res: Response
 ): Promise<unknown> => {
   const { userID } = res.locals;
-  const { rangeFrom, rangeTo, isDark } = req.query as unknown as Query;
+  const { rangeFrom, rangeTo, isDark, showTasks } =
+    req.query as unknown as Query;
 
   let result: EventResult[] = [];
 
@@ -45,17 +51,20 @@ export const getEventsInRange = async (
     rangeTo as string
   );
 
-  const normalEvents = await CalDavEventRepository.getEventsInRange(
-    userID,
-    rangeFrom,
-    rangeTo
-  );
+  const promises: any[] = [
+    CalDavEventRepository.getEventsInRange(userID, rangeFrom, rangeTo),
+    getRepeatedEvents(userID, rangeFromDateTime, rangeToDateTime),
+    getWebcalEvents(userID, rangeFrom, rangeTo, isDark === 'true'),
+  ];
 
-  const repeatedEvents = await getRepeatedEvents(
-    userID,
-    rangeFromDateTime,
-    rangeToDateTime
-  );
+  if (showTasks === 'true') {
+    promises.push(
+      CalDavTaskRepository.getTasksInRange(userID, rangeFrom, rangeTo)
+    );
+  }
+
+  const [normalEvents, repeatedEvents, webCalEvents, normalTasks] =
+    await Promise.all(promises);
 
   const calDavEventsNormal = map(normalEvents, (event) =>
     formatEventRawToResult(event, isDark === 'true')
@@ -64,14 +73,21 @@ export const getEventsInRange = async (
     formatEventRawToResult(event, isDark === 'true')
   );
 
-  const webCalEvents = await getWebcalEvents(
-    userID,
-    rangeFrom,
-    rangeTo,
-    isDark === 'true'
-  );
+  let tasksFormatted = [];
 
-  result = [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
+  if (showTasks === 'true') {
+    tasksFormatted = map(normalTasks, (task) =>
+      formatTaskRawToResult(task, isDark === 'true')
+    );
+  }
+
+  // @ts-ignore
+  result = [
+    ...calDavEventsNormal,
+    ...calDavEventsRepeated,
+    ...webCalEvents,
+    ...tasksFormatted,
+  ];
 
   return result;
 };

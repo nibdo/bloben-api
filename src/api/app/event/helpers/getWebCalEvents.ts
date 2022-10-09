@@ -3,9 +3,10 @@ import { filter, find, forEach, groupBy, map } from 'lodash';
 import {
   ATTENDEE_PARTSTAT,
   ATTENDEE_ROLE,
-  EVENT_TYPE,
+  SOURCE_TYPE,
 } from '../../../../data/types/enums';
 import { DateTime } from 'luxon';
+import { EVENT_TYPE } from 'bloben-interface/enums';
 import { EventResult, EventStyle } from 'bloben-interface';
 import { getOccurrences } from './getRepeatedEvents';
 import LuxonHelper from '../../../../utils/luxonHelper';
@@ -211,7 +212,8 @@ export const getWebcalEventByID = async (
     timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.WEBCAL,
+    sourceType: SOURCE_TYPE.WEBCAL,
+    type: EVENT_TYPE.EVENT,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   };
@@ -402,7 +404,8 @@ export const getWebcalEvents = async (
     timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.WEBCAL,
+    sourceType: SOURCE_TYPE.WEBCAL,
+    type: EVENT_TYPE.EVENT,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
     style: parseWebcalStyle(event, isDark),
@@ -594,7 +597,8 @@ export const getSharedWebcalEvents = async (
     timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.WEBCAL,
+    sourceType: SOURCE_TYPE.WEBCAL,
+    type: EVENT_TYPE.EVENT,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
     style: parseWebcalStyle(event, isDark),

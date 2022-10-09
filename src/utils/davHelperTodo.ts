@@ -45,6 +45,8 @@ export const formatTodoJsonToCalDavTodo = (
   calendarObject: DAVCalendarObject,
   calendar: CalDavCalendarEntity
 ): CalDavEventObj => {
+  const isAllDay = item?.dtstart?.value?.length === '20220318'.length;
+
   return {
     ...{ ...calendarObject, data: null }, // clear ical data prop
     calendarID: calendar.id,
@@ -54,6 +56,7 @@ export const formatTodoJsonToCalDavTodo = (
     timezone: item.dtstart?.timezone || null,
     isRepeated: item.rrule !== undefined || false,
     rRule: item.rrule || null,
+    allDay: isAllDay,
     summary: item.summary || '',
     location: item.location || null,
     description: item.description || null,
@@ -61,7 +64,7 @@ export const formatTodoJsonToCalDavTodo = (
     color: calendar.color || 'indigo',
     alarms: item.alarms,
     href: calendarObject.url,
-    status: item.status,
+    status: item.status || 'NEEDS-ACTION',
   };
 };
 

@@ -1,4 +1,4 @@
-import { EVENT_TYPE } from '../../../../data/types/enums';
+import { SOURCE_TYPE } from '../../../../data/types/enums';
 import Joi from 'joi';
 
 export const getEventSchema = Joi.object({
@@ -6,7 +6,7 @@ export const getEventSchema = Joi.object({
     id: Joi.string().required(),
   }),
   query: Joi.object({
-    type: Joi.string().valid(EVENT_TYPE.CALDAV, EVENT_TYPE.WEBCAL).required(),
+    type: Joi.string().valid(SOURCE_TYPE.CALDAV, SOURCE_TYPE.WEBCAL).required(),
     isDark: Joi.boolean().required(),
   }),
   body: Joi.object(),

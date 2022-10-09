@@ -1,6 +1,6 @@
-import { EVENT_TYPE } from '../../../../data/types/enums';
 import { EventResult } from 'bloben-interface';
 import { Request, Response } from 'express';
+import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getWebcalEventByID } from '../helpers/getWebCalEvents';
 import { throwError } from '../../../../utils/errorCodes';
@@ -21,13 +21,13 @@ export const getEvent = async (
 
   let result: EventResult | null = null;
 
-  if (type === EVENT_TYPE.CALDAV) {
+  if (type === SOURCE_TYPE.CALDAV) {
     const eventRaw = await CalDavEventRepository.getEventByID(userID, id);
 
     if (eventRaw) {
       result = formatEventRawToResult(eventRaw, isDark === 'true');
     }
-  } else if (type === EVENT_TYPE.WEBCAL) {
+  } else if (type === SOURCE_TYPE.WEBCAL) {
     result = await getWebcalEventByID(userID, id);
   }
 

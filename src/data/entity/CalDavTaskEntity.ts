@@ -9,6 +9,7 @@ import {
 import { CalDavEventObj } from '../../utils/davHelper';
 
 import { DateTime } from 'luxon';
+import { TASK_STATUS } from 'bloben-interface/enums';
 import CalDavCalendarEntity from './CalDavCalendar';
 
 @Entity('caldav_tasks')
@@ -25,20 +26,16 @@ export default class CalDavTaskEntity {
   @Column({ type: 'timestamptz', name: 'start_at', nullable: true })
   startAt: Date;
 
-  @Column({ name: 'timezone_start_at', nullable: true })
-  timezoneStartAt: string;
-
-  @Column({ type: 'timestamptz', name: 'end_at', nullable: true })
-  endAt: Date;
-
-  @Column({ name: 'timezone_end_at', nullable: true })
-  timezoneEndAt: string;
-
   @Column({ name: 'all_day', default: false })
   allDay: boolean;
 
-  @Column({ name: 'status', nullable: false })
-  status: string;
+  @Column({
+    name: 'status',
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+  })
+  status: TASK_STATUS;
 
   @Column({ name: 'is_repeated', default: false })
   isRepeated: boolean;
@@ -60,9 +57,6 @@ export default class CalDavTaskEntity {
 
   @Column({ nullable: true })
   description: string;
-
-  @Column({ nullable: true })
-  location: string;
 
   @Column({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
@@ -99,16 +93,11 @@ export default class CalDavTaskEntity {
       this.startAt = item.startAt
         ? DateTime.fromISO(item.startAt).toUTC().toJSDate()
         : null;
-      this.endAt = item.endAt
-        ? DateTime.fromISO(item.endAt).toUTC().toJSDate()
-        : null;
-      this.timezoneStartAt = item.timezone;
-      this.timezoneEndAt = item.timezone;
       this.etag = item.etag;
-      this.location = item.location;
       this.description = item.description;
       this.isRepeated = item.isRepeated;
       this.rRule = item.rRule;
+      this.allDay = item.allDay;
       this.summary = item.summary;
       this.status = item.status;
       this.calendar = calendar;

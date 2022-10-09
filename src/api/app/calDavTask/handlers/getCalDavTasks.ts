@@ -13,10 +13,7 @@ export const getCalDavTasks = async (
       SELECT 
         t.id as "id",
         t.start_at as "startAt",
-        t.end_at as "endAt",
-        t.timezone_start_at as "timezoneStartAt",
         t.summary as "summary",
-        t.location as "location",
         t.description as "description",
         t.all_day as "allDay",
         t.status as "status",
