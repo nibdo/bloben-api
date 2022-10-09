@@ -165,7 +165,7 @@ const syncTasksForAccount = async (calDavAccount: AccountWithCalendars) => {
       // update ctag
       await queryRunner.manager.update(
         CalDavCalendarEntity,
-        { id: calendarsToCheck.id },
+        { id: calendarToCheck.id },
         {
           ctagTasks: calendarsToUpdateCtag[calendarToCheck.id].newCtag,
         }
@@ -323,7 +323,7 @@ export const syncCalDavTasks = async (userID: string, calDavAccounts: any) => {
     if (wasChanged) {
       io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
         SOCKET_CHANNEL.SYNC,
-        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_TASKS })
+        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
       );
     }
   }

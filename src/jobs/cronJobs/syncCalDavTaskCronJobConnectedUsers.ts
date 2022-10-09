@@ -1,5 +1,5 @@
 import { BULL_QUEUE } from '../../utils/enums';
-import { calDavSyncBullQueue } from '../../service/BullQueue';
+import { calDavTaskSyncBullQueue } from '../../service/BullQueue';
 import { getUserIDFromWsRoom } from '../../utils/common';
 import { io } from '../../app';
 
@@ -19,7 +19,7 @@ export const syncCalDavTaskCronJobConnectedUsers = async (): Promise<void> => {
 
   // schedule sync job for each user
   for (const userID of activeUserIDs) {
-    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_TASK_SYNC, {
+    await calDavTaskSyncBullQueue.add(BULL_QUEUE.CALDAV_TASK_SYNC, {
       userID: userID,
     });
   }
