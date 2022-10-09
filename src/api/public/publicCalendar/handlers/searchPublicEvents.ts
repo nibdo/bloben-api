@@ -1,5 +1,6 @@
-import { EVENT_TYPE } from '../../../../data/types/enums';
+import { EVENT_TYPE } from 'bloben-interface/enums';
 import { NextFunction, Request, Response } from 'express';
+import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { SearchEventsResponse } from 'bloben-interface';
 import { SearchResult } from '../../../app/event/handlers/searchEvents';
 import { map } from 'lodash';
@@ -75,7 +76,8 @@ export const searchPublicEvents = async (
 
     const caldavResultFormatted = map(calDavResult, (item) => ({
       ...item,
-      type: EVENT_TYPE.CALDAV,
+      sourceType: SOURCE_TYPE.CALDAV,
+      type: EVENT_TYPE.EVENT,
     }));
 
     const webcalResultFormatted = map(webcalResult, (item) => ({
@@ -84,7 +86,8 @@ export const searchPublicEvents = async (
       startAt: item.startAt,
       endAt: item.endAt,
       timezoneStartAt: item.timezoneStartAt || null,
-      type: EVENT_TYPE.WEBCAL,
+      sourceType: SOURCE_TYPE.WEBCAL,
+      type: EVENT_TYPE.EVENT,
     }));
 
     const response: SearchEventsResponse[] = [

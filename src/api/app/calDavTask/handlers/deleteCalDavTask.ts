@@ -55,7 +55,7 @@ export const deleteCalDavTask = async (
 
   io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_TASKS })
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
   );
 
   return createCommonResponse('Task deleted');

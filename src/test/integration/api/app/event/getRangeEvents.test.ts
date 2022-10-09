@@ -22,7 +22,7 @@ describe(`Get events [GET] ${PATH}`, async function () {
 
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer()).get(
-      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&isDark=true`
+      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&showTasks=true&isDark=true`
     );
 
     const { status } = response;
@@ -34,7 +34,7 @@ describe(`Get events [GET] ${PATH}`, async function () {
     const response: any = await request(
       createTestServerWithSession(demoUserID)
     ).get(
-      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&isDark=true`
+      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&showTasks=true&isDark=true`
     );
 
     const { status } = response;
@@ -46,7 +46,7 @@ describe(`Get events [GET] ${PATH}`, async function () {
     const response: any = await request(
       createTestServerWithSession(userID)
     ).get(
-      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&isDark=true`
+      `${PATH}?rangeFrom=2021-08-01T20:00:00.364Z&rangeTo=2021-08-29T20:00:00.364Z&showTasks=true&isDark=true`
     );
 
     const { status } = response;

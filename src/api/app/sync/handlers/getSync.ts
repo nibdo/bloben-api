@@ -8,6 +8,7 @@ import { CommonResponse } from 'bloben-interface';
 import { Request, Response } from 'express';
 import {
   calDavSyncBullQueue,
+  calDavTaskSyncBullQueue,
   cardDavBullQueue,
   webcalSyncBullQueue,
 } from '../../../../service/BullQueue';
@@ -28,6 +29,7 @@ export const getSync = async (
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
   await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID });
   await cardDavBullQueue.add(BULL_QUEUE.CARDDAV_SYNC, { userID });
+  await calDavTaskSyncBullQueue.add(BULL_QUEUE.CALDAV_TASK_SYNC, { userID });
 
   return createCommonResponse('Sync success');
 };
