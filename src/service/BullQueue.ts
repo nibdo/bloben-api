@@ -12,6 +12,7 @@ import { syncWebcalEventsQueueJob } from '../jobs/queueJobs/syncWebcalEventsQueu
 export let calDavSyncBullWorker;
 export let calDavSyncBullQueue;
 export let calDavTaskSyncBullQueue;
+export let calDavTaskSyncBullWorker;
 export let webcalSyncBullWorker;
 export let webcalSyncBullQueue;
 export let emailBullQueue;
@@ -143,7 +144,7 @@ export const initBullQueue = async () => {
   webcalSyncBullWorker = await createWebcalSyncBullWorker();
 
   calDavTaskSyncBullQueue = createBullQueue(BULL_QUEUE.CALDAV_TASK_SYNC);
-  calDavSyncBullWorker = await createCalDavTaskSyncBullWorker();
+  calDavTaskSyncBullWorker = await createCalDavTaskSyncBullWorker();
 
   emailBullQueue = createBullQueue(BULL_QUEUE.EMAIL);
   emailBullWorker = await createEmailBullWorker();
