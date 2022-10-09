@@ -1,4 +1,4 @@
-import { EVENT_TYPE } from '../../../../../data/types/enums';
+import { SOURCE_TYPE } from '../../../../../data/types/enums';
 import {
   createTestServer,
   createTestServerWithSession,
@@ -12,7 +12,7 @@ const assert = require('assert');
 const request = require('supertest');
 
 const PATH = (id: string) =>
-  `/api/app/v1/events/${id}?type=${EVENT_TYPE.CALDAV}&isDark=false`;
+  `/api/app/v1/events/${id}?type=${SOURCE_TYPE.CALDAV}&isDark=false`;
 
 describe(`Get event by ID [GET] ${PATH}`, async function () {
   let id = null;

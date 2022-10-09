@@ -1,7 +1,7 @@
 import {
   CALDAV_COMPONENTS,
-  EVENT_TYPE,
   REPEATED_EVENT_CHANGE_TYPE,
+  SOURCE_TYPE,
 } from '../../../data/types/enums';
 import { CALDAV_TEST_ACCOUNT } from '../seeds/1-user-caldav-seed';
 import {
@@ -285,7 +285,7 @@ export const createRepeatedEventBodyJSON = (
       url,
       isRepeated: true,
       rRule: rRule || null,
-      type: EVENT_TYPE.CALDAV,
+      type: SOURCE_TYPE.CALDAV,
       valarms: [],
       attendees: attendees || [],
       exdates: [],

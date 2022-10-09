@@ -31,5 +31,6 @@ export const getCalendarSettings = async (
     showWeekNumbers: calendarSettings.showWeekNumbers,
     defaultAddressBookID: calendarSettings.defaultAddressBookID,
     saveContactsAuto: calendarSettings.saveContactsAuto,
+    showTasks: calendarSettings.showTasks,
   };
 };

@@ -1,7 +1,9 @@
-import { ATTENDEE_PARTSTAT, EVENT_TYPE } from '../data/types/enums';
+import { ATTENDEE_PARTSTAT, SOURCE_TYPE } from '../data/types/enums';
 import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
+import { CalDavTaskRaw } from '../data/repository/CalDavTaskRepository';
 import { DateTime } from 'luxon';
+import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
 import { find } from 'lodash';
 import { getEventStyle } from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
@@ -56,7 +58,8 @@ export const formatEventEntityToResult = (
   etag: event.etag,
   url: event.href,
   props: event.props || null,
-  type: EVENT_TYPE.CALDAV,
+  sourceType: SOURCE_TYPE.CALDAV,
+  type: EVENT_TYPE.EVENT,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
 });
@@ -86,7 +89,8 @@ export const formatEventRawToResult = (
     url: event.href,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.CALDAV,
+    sourceType: SOURCE_TYPE.CALDAV,
+    type: EVENT_TYPE.EVENT,
     valarms: event.valarms,
     attendees: event.attendees,
     exdates: event.exdates,
@@ -96,6 +100,53 @@ export const formatEventRawToResult = (
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
     style: parseCalDavStyle(event, eventColor, isDark),
+  };
+};
+
+export const formatTaskRawToResult = (
+  event: CalDavTaskRaw,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  isDark: boolean
+): EventResult => {
+  const eventColor = event.customCalendarColor || event.color;
+  return {
+    id: event.id,
+    externalID: event.externalID,
+    internalID: event.internalID,
+    summary: event.summary,
+    location: null,
+    // @ts-ignore
+    status: event.status,
+    description: event.description,
+    allDay: event.allDay,
+    calendarID: event.calendarID,
+    color: eventColor,
+    startAt: event.startAt,
+    endAt: DateTime.fromJSDate(event.startAt as any)
+      .plus({ minutes: 45 })
+      .toUTC()
+      .toString(),
+    timezoneEndAt: 'floating',
+    timezoneStartAt: 'floating',
+    etag: event.etag,
+    url: event.href,
+    isRepeated: event.isRepeated,
+    rRule: event.rRule,
+    sourceType: SOURCE_TYPE.CALDAV,
+    type: EVENT_TYPE.TASK,
+    valarms: event.valarms,
+    attendees: null,
+    exdates: null,
+    organizer: null,
+    recurrenceID: event.recurrenceID,
+    props: event.props || null,
+    createdAt: event.createdAt,
+    updatedAt: event.updatedAt,
+    isTaskChecked: event.status === TASK_STATUS.COMPLETED,
+    style:
+      event.status === TASK_STATUS.COMPLETED
+        ? { textDecoration: 'line-through' }
+        : null,
   };
 };
 

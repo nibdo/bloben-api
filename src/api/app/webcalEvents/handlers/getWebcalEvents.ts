@@ -2,8 +2,9 @@ import { Request, Response } from 'express';
 import { forEach, groupBy, map } from 'lodash';
 
 import { DateTime } from 'luxon';
-import { EVENT_TYPE } from '../../../../data/types/enums';
+import { EVENT_TYPE } from 'bloben-interface/enums';
 import { EventResult } from 'bloben-interface';
+import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { getOccurrences } from '../../event/helpers/getRepeatedEvents';
 import LuxonHelper from '../../../../utils/luxonHelper';
 import WebcalEventEntity from '../../../../data/entity/WebcalEventEntity';
@@ -274,7 +275,8 @@ export const getWebcalEvents = async (
     timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.WEBCAL,
+    sourceType: SOURCE_TYPE.WEBCAL,
+    type: EVENT_TYPE.EVENT,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
     deletedAt: event.deletedAt?.toISOString(),
