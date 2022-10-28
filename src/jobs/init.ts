@@ -9,7 +9,6 @@ import { getImapEmails } from './cronJobs/getImapEmails';
 import { groupLogsCronJob } from './cronJobs/groupLogsCronJob';
 import { resetEmailDailyLimit } from './cronJobs/resetEmailDailyLimit';
 import { sendNotification } from './cronJobs/sendNotification';
-import { syncCalDavTaskCronJobConnectedUsers } from './cronJobs/syncCalDavTaskCronJobConnectedUsers';
 import { syncCardDavCronJobConnectedUsers } from './cronJobs/syncCardDavCronJobConnectedUsers';
 import { webcalSyncQueueSocketJob } from './queueJobs/syncWebcalEventsQueueJob';
 
@@ -35,12 +34,6 @@ export const initCronJobs = () => {
     syncCalDavCronJobConnectedUsers
   ); // every ten minutes
   syncCalDavConnectedUsersJob.start();
-
-  const syncCalDavTodoConnectedUsersJob = new CronJob(
-    '*/10 * * * *',
-    syncCalDavTaskCronJobConnectedUsers
-  );
-  syncCalDavTodoConnectedUsersJob.start();
 
   const groupLogsJob = new CronJob('10 */3 * * *', groupLogsCronJob); // At
   // minute 10 past every 3rd hour

@@ -11,6 +11,7 @@ import {
 } from 'bloben-interface';
 import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
+import { EVENT_TYPE } from 'bloben-interface/enums';
 import { createCalDavCalendar } from '../../../api/app/calDavCalendar/handlers/createCalDavCalendar';
 import { createCalDavEvent } from '../../../api/app/calDavEvent/handlers/createCalDavEvent';
 import { formatIcalDate } from '../../../utils/davHelper';
@@ -115,7 +116,7 @@ export const createTestCalendarCalendar = async (
         accountID: account.id,
         name: 'test',
         color: 'blue',
-        components: ['VEVENT'],
+        components: ['VEVENT', 'VTODO'],
       },
     } as any,
     { locals: { userID } } as any
@@ -285,7 +286,8 @@ export const createRepeatedEventBodyJSON = (
       url,
       isRepeated: true,
       rRule: rRule || null,
-      type: SOURCE_TYPE.CALDAV,
+      sourceType: SOURCE_TYPE.CALDAV,
+      type: EVENT_TYPE.EVENT,
       valarms: [],
       attendees: attendees || [],
       exdates: [],

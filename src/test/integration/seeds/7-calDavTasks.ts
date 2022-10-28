@@ -3,10 +3,10 @@ import { forEach } from 'lodash';
 
 import { CreateCalDavEventRequest } from 'bloben-interface';
 import { DAVCalendarObject } from 'tsdav';
-import { formatTodoJsonToCalDavTodo } from '../../../utils/davHelperTodo';
+import { formatTodoJsonToCalDavTodo } from '../../../utils/davHelper';
 import { seedCalDavCalendars } from './3-calDavCalendars';
 import { v4 } from 'uuid';
-import CalDavTaskEntity from '../../../data/entity/CalDavTaskEntity';
+import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import ICalParser, { TodoJSON } from 'ical-js-parser';
 import UserEntity from '../../../data/entity/UserEntity';
 
@@ -66,7 +66,7 @@ export const testTodosData: CreateCalDavEventRequest[] = [
 
 export const seedTasks = async (
   userID: string
-): Promise<{ task: CalDavTaskEntity }> => {
+): Promise<{ task: CalDavEventEntity }> => {
   // @ts-ignore
   const connection: Connection = await getConnection();
 
@@ -81,7 +81,7 @@ export const seedTasks = async (
 
   const { calDavCalendar } = await seedCalDavCalendars(userID);
 
-  const todos: CalDavTaskEntity[] = [];
+  const todos: CalDavEventEntity[] = [];
 
   forEach(testTodosData, (todo) => {
     const icalJS = ICalParser.toJSON(todo.iCalString);
@@ -96,7 +96,7 @@ export const seedTasks = async (
       calDavCalendar
     );
 
-    todos.push(new CalDavTaskEntity(todoObj));
+    todos.push(new CalDavEventEntity(todoObj));
   });
 
   await connection.manager.save(todos);

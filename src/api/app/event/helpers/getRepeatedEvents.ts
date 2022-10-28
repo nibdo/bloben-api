@@ -31,15 +31,33 @@ export const getOccurrences = (
 ) => {
   const result: any = [];
 
+  let endAtISO;
+  let endAtDate;
+
+  if (!event.startAt) {
+    return [];
+  }
+
   const startAtISO =
     typeof event.startAt === 'string'
       ? event.startAt
       : event.startAt.toISOString();
-  const endAtISO =
-    typeof event.endAt === 'string' ? event.endAt : event.endAt.toISOString();
+
+  if (event.endAt) {
+    endAtISO =
+      typeof event.endAt === 'string' ? event.endAt : event.endAt.toISOString();
+  }
 
   const startAtDate = DateTime.fromISO(startAtISO).toUTC().toString();
-  const endAtDate = DateTime.fromISO(endAtISO).toUTC().toString();
+
+  if (endAtISO) {
+    endAtDate = DateTime.fromISO(endAtISO).toUTC().toString();
+  } else {
+    endAtDate = DateTime.fromISO(startAtISO)
+      .plus({ minutes: 30 })
+      .toUTC()
+      .toString();
+  }
 
   const rRule = RRule.fromString(formatToRRule(event.rRule, startAtISO));
 
@@ -108,17 +126,20 @@ export const getRepeatedEvents = async (
   userID: string | null,
   rangeFromDateTime: DateTime,
   rangeToDateTime: DateTime,
-  sharedIDs?: string[]
+  sharedIDs?: string[],
+  showTasks?: boolean
 ) => {
   let repeatedEventEntities: CalDavEventsRaw[] = [];
 
   if (userID) {
     repeatedEventEntities = await CalDavEventRepository.getRepeatedEvents(
-      userID
+      userID,
+      showTasks
     );
   } else if (sharedIDs) {
     repeatedEventEntities = await CalDavEventRepository.getPublicRepeatedEvents(
-      sharedIDs
+      sharedIDs,
+      showTasks
     );
   }
 

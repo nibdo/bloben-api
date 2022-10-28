@@ -2,15 +2,11 @@ import { Request, Response } from 'express';
 
 import { DateTime } from 'luxon';
 import { EventResult } from 'bloben-interface';
-import {
-  formatEventRawToResult,
-  formatTaskRawToResult,
-} from '../../../../utils/format';
+import { formatEventRawToResult } from '../../../../utils/format';
 import { getRepeatedEvents } from '../helpers/getRepeatedEvents';
 import { getWebcalEvents } from '../helpers/getWebCalEvents';
 import { map } from 'lodash';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
-import CalDavTaskRepository from '../../../../data/repository/CalDavTaskRepository';
 import LuxonHelper from '../../../../utils/luxonHelper';
 
 interface Query {
@@ -52,19 +48,25 @@ export const getEventsInRange = async (
   );
 
   const promises: any[] = [
-    CalDavEventRepository.getEventsInRange(userID, rangeFrom, rangeTo),
-    getRepeatedEvents(userID, rangeFromDateTime, rangeToDateTime),
+    CalDavEventRepository.getEventsInRange(
+      userID,
+      rangeFrom,
+      rangeTo,
+      showTasks === 'true'
+    ),
+    getRepeatedEvents(
+      userID,
+      rangeFromDateTime,
+      rangeToDateTime,
+      undefined,
+      showTasks === 'true'
+    ),
     getWebcalEvents(userID, rangeFrom, rangeTo, isDark === 'true'),
   ];
 
-  if (showTasks === 'true') {
-    promises.push(
-      CalDavTaskRepository.getTasksInRange(userID, rangeFrom, rangeTo)
-    );
-  }
-
-  const [normalEvents, repeatedEvents, webCalEvents, normalTasks] =
-    await Promise.all(promises);
+  const [normalEvents, repeatedEvents, webCalEvents] = await Promise.all(
+    promises
+  );
 
   const calDavEventsNormal = map(normalEvents, (event) =>
     formatEventRawToResult(event, isDark === 'true')
@@ -73,21 +75,8 @@ export const getEventsInRange = async (
     formatEventRawToResult(event, isDark === 'true')
   );
 
-  let tasksFormatted = [];
-
-  if (showTasks === 'true') {
-    tasksFormatted = map(normalTasks, (task) =>
-      formatTaskRawToResult(task, isDark === 'true')
-    );
-  }
-
   // @ts-ignore
-  result = [
-    ...calDavEventsNormal,
-    ...calDavEventsRepeated,
-    ...webCalEvents,
-    ...tasksFormatted,
-  ];
+  result = [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
 
   return result;
 };

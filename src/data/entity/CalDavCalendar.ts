@@ -12,7 +12,6 @@ import {
 import { CalendarAlarms } from 'bloben-interface';
 import CalDavAccountEntity from './CalDavAccount';
 import CalDavEventEntity from './CalDavEventEntity';
-import CalDavTaskEntity from './CalDavTaskEntity';
 import CalDavTaskSettingsEntity from './CalDavTaskSettings';
 import SharedLinkCalendarEntity from './SharedLinkCalendars';
 
@@ -79,9 +78,6 @@ export default class CalDavCalendarEntity {
 
   @OneToMany(() => CalDavEventEntity, (event) => event.calendar)
   events: CalDavEventEntity[];
-
-  @OneToMany(() => CalDavTaskEntity, (task) => task.calendar)
-  tasks: CalDavTaskEntity[];
 
   @OneToMany(
     () => CalDavTaskSettingsEntity,

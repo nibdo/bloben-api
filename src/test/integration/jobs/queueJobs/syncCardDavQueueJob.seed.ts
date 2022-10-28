@@ -7,7 +7,6 @@ import { generateRandomString } from '../../../../utils/common';
 import { io } from '../../../../app';
 import { parseFromVcardString } from '../../../../utils/vcardParser';
 import { seedUserWithEntity } from '../../seeds/1-user-seed';
-import { todoToKeepID } from './syncCalDavTodoQueueJob.seed';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CardDavAddressBook from '../../../../data/entity/CardDavAddressBook';
@@ -64,7 +63,7 @@ const prepareData = async (accountUrl: string, calendarUrl: string) => {
 
     return {
       ...itemJson,
-      etag: id === todoToKeepID ? etagToKeep : generateRandomString(20),
+      etag: id === vcalToKeepID ? etagToKeep : generateRandomString(20),
       url: `${calendarUrl}/${id}`,
     };
   });
@@ -122,9 +121,9 @@ const prepareMock = (accountUrl: string, calendarUrl: string) => {
       ok: true,
       data: createTestVcal(
         id,
-        id === todoToKeepID ? undefined : 'abcde@bloben.com'
+        id === vcalToKeepID ? undefined : 'abcde@bloben.com'
       ),
-      etag: id === todoToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
+      etag: id === vcalToKeepID ? etagToKeep : 'xxv1v87sd4v7sd8v1sd7v',
       url: `${calendarUrl}/${id}`,
     }));
   };

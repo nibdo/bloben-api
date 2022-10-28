@@ -1,9 +1,7 @@
 import { ATTENDEE_PARTSTAT, SOURCE_TYPE } from '../data/types/enums';
 import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
-import { CalDavTaskRaw } from '../data/repository/CalDavTaskRepository';
 import { DateTime } from 'luxon';
-import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
 import { find } from 'lodash';
 import { getEventStyle } from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
@@ -43,8 +41,8 @@ export const formatEventEntityToResult = (
   calendarID: event.calendar.id,
   color: event.calendar.color,
   // data: event.data,
-  startAt: event.startAt.toISOString(),
-  endAt: event.endAt.toISOString(),
+  startAt: event.startAt?.toISOString(),
+  endAt: event.endAt?.toISOString(),
   timezoneEndAt: event.timezoneStartAt,
   timezoneStartAt: event.timezoneStartAt,
   // externalID: event.externalID,
@@ -59,7 +57,7 @@ export const formatEventEntityToResult = (
   url: event.href,
   props: event.props || null,
   sourceType: SOURCE_TYPE.CALDAV,
-  type: EVENT_TYPE.EVENT,
+  type: event.type,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
 });
@@ -90,7 +88,9 @@ export const formatEventRawToResult = (
     isRepeated: event.isRepeated,
     rRule: event.rRule,
     sourceType: SOURCE_TYPE.CALDAV,
-    type: EVENT_TYPE.EVENT,
+    type: event.type,
+    // @ts-ignore
+    status: event.status,
     valarms: event.valarms,
     attendees: event.attendees,
     exdates: event.exdates,
@@ -100,53 +100,6 @@ export const formatEventRawToResult = (
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
     style: parseCalDavStyle(event, eventColor, isDark),
-  };
-};
-
-export const formatTaskRawToResult = (
-  event: CalDavTaskRaw,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isDark: boolean
-): EventResult => {
-  const eventColor = event.customCalendarColor || event.color;
-  return {
-    id: event.id,
-    externalID: event.externalID,
-    internalID: event.internalID,
-    summary: event.summary,
-    location: null,
-    // @ts-ignore
-    status: event.status,
-    description: event.description,
-    allDay: event.allDay,
-    calendarID: event.calendarID,
-    color: eventColor,
-    startAt: event.startAt,
-    endAt: DateTime.fromJSDate(event.startAt as any)
-      .plus({ minutes: 45 })
-      .toUTC()
-      .toString(),
-    timezoneEndAt: 'floating',
-    timezoneStartAt: 'floating',
-    etag: event.etag,
-    url: event.href,
-    isRepeated: event.isRepeated,
-    rRule: event.rRule,
-    sourceType: SOURCE_TYPE.CALDAV,
-    type: EVENT_TYPE.TASK,
-    valarms: event.valarms,
-    attendees: null,
-    exdates: null,
-    organizer: null,
-    recurrenceID: event.recurrenceID,
-    props: event.props || null,
-    createdAt: event.createdAt,
-    updatedAt: event.updatedAt,
-    isTaskChecked: event.status === TASK_STATUS.COMPLETED,
-    style:
-      event.status === TASK_STATUS.COMPLETED
-        ? { textDecoration: 'line-through' }
-        : null,
   };
 };
 
