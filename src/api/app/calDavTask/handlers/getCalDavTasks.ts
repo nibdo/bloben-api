@@ -39,6 +39,8 @@ export const getCalDavTasks = async (
         e.id as "id",
         e.type as type,
         e.start_at as "startAt",
+        e.end_at as "endAt",
+        e.timezone_start_at as "timezoneStartAt",
         e.summary as "summary",
         e.description as "description",
         e.all_day as "allDay",
@@ -66,7 +68,9 @@ export const getCalDavTasks = async (
         AND c.id = $2
         AND e.type = $5
       ORDER BY
-        e.external_created_at DESC
+        e.external_created_at DESC,
+        e.created_at DESC,
+        e.summary ASC
       LIMIT $3
       OFFSET $4
       `,

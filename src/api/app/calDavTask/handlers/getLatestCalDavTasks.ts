@@ -17,6 +17,8 @@ export const getLatestCalDavTasks = async (
         e.id as "id",
         e.type as type,
         e.start_at as "startAt",
+        e.end_at as "endAt",
+        e.timezone_start_at as "timezoneStartAt",
         e.summary as "summary",
         e.description as "description",
         e.all_day as "allDay",
@@ -43,7 +45,9 @@ export const getLatestCalDavTasks = async (
         AND ca.user_id = $1
         AND e.type = $2
       ORDER BY
-        e.external_created_at DESC
+        e.external_created_at DESC,
+        e.created_at DESC,
+        e.summary ASC
       LIMIT 20
       `,
     [userID, EVENT_TYPE.TASK]

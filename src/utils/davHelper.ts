@@ -1184,7 +1184,7 @@ export const formatTodoJsonToCalDavTodo = (
     location: item.location || null,
     description: item.description || null,
     etag: calendarObject.etag,
-    created: item.created?.value,
+    created: item.created?.value || item.dtstamp?.value,
     color: calendar.color || 'indigo',
     alarms: item.alarms,
     href: calendarObject.url,
