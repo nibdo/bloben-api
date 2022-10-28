@@ -1,46 +1,108 @@
 import { CalDavTask } from 'bloben-interface';
+import { EVENT_TYPE } from 'bloben-interface/enums';
 import { Request, Response } from 'express';
-import CalDavTaskRepository from '../../../../data/repository/CalDavTaskRepository';
+import { SOURCE_TYPE } from '../../../../data/types/enums';
+import { map } from 'lodash';
+import { throwError } from '../../../../utils/errorCodes';
+import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
+import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 
+interface GetCalDavTasksResponse {
+  todos: CalDavTask[];
+  pagination: {
+    page: any;
+    limit: any;
+    total: number;
+  };
+}
 export const getCalDavTasks = async (
   req: Request,
   res: Response
-): Promise<CalDavTask[]> => {
+): Promise<GetCalDavTasksResponse> => {
   const { userID } = res.locals;
+  const { calendarID, page, limit } = req.query;
 
-  const todos: CalDavTask[] = await CalDavTaskRepository.getRepository().query(
+  const offset = (Number(page) - 1) * Number(limit);
+
+  const calendar = await CalDavCalendarRepository.getByID(
+    calendarID as string,
+    userID
+  );
+
+  if (!calendar) {
+    throw throwError(404, 'Calendar not found');
+  }
+
+  const todos: CalDavTask[] = await CalDavEventRepository.getRepository().query(
     `
       SELECT 
-        t.id as "id",
-        t.start_at as "startAt",
-        t.summary as "summary",
-        t.description as "description",
-        t.all_day as "allDay",
-        t.status as "status",
-        t.is_repeated as "isRepeated",
-        t.r_rule as "rRule",
-        t.external_id as "externalID",
-        t.etag as "etag",
-        t.href as "href",
-        t.status as "status",
-        t.created_at as "createdAt",
-        t.updated_at as "updatedAt",
+        e.id as "id",
+        e.type as type,
+        e.start_at as "startAt",
+        e.summary as "summary",
+        e.description as "description",
+        e.all_day as "allDay",
+        e.status as "status",
+        e.is_repeated as "isRepeated",
+        e.r_rule as "rRule",
+        e.external_id as "externalID",
+        e.etag as "etag",
+        e.href as "url",
+        e.status as "status",
+        e.created_at as "createdAt",
+        e.updated_at as "updatedAt",
         c.color as "color",
         c.id as "calendarID"
       FROM
-        caldav_tasks t
+        caldav_events e
       INNER JOIN
-        caldav_calendars c ON c.id = t.caldav_calendar_id
+        caldav_calendars c ON c.id = e.caldav_calendar_id
       INNER JOIN
         caldav_accounts ca ON ca.id = c.caldav_account_id
       WHERE
-        t.deleted_at IS NULL
-        AND c.deleted_at IS NULL
+        c.deleted_at IS NULL
         AND ca.deleted_at IS NULL
         AND ca.user_id = $1
+        AND c.id = $2
+        AND e.type = $5
+      ORDER BY
+        e.external_created_at DESC
+      LIMIT $3
+      OFFSET $4
       `,
-    [userID]
+    [userID, calendarID, limit, offset, EVENT_TYPE.TASK]
   );
 
-  return todos;
+  const count: { count: number } =
+    await CalDavEventRepository.getRepository().query(
+      `
+      SELECT
+        COUNT(DISTINCT e.id) as count
+      FROM
+        caldav_events e
+      INNER JOIN
+        caldav_calendars c ON c.id = e.caldav_calendar_id
+      INNER JOIN
+        caldav_accounts ca ON ca.id = c.caldav_account_id
+      WHERE
+        c.deleted_at IS NULL
+        AND ca.deleted_at IS NULL
+        AND ca.user_id = $1
+        AND c.id = $2
+        AND e.type = $3
+    `,
+      [userID, calendarID, EVENT_TYPE.TASK]
+    );
+
+  return {
+    todos: map(todos, (todo) => ({
+      ...todo,
+      sourceType: SOURCE_TYPE.CALDAV,
+    })),
+    pagination: {
+      page,
+      limit,
+      total: count?.[0]?.count,
+    },
+  };
 };

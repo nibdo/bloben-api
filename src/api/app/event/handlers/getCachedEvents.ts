@@ -36,7 +36,8 @@ export const getCachedEvents = async (
   const normalEvents = await CalDavEventRepository.getEventsInRange(
     userID,
     rangeFrom,
-    rangeTo
+    rangeTo,
+    true
   );
 
   const repeatedEvents = await getRepeatedEvents(
