@@ -9,6 +9,9 @@ import {
 
 import { CalDavEventObj } from '../../utils/davHelper';
 import { DateTime } from 'luxon';
+import { EVENT_TYPE } from 'bloben-interface';
+import { FLOATING_DATETIME } from 'kalend/layout/constants';
+import { TASK_STATUS } from 'bloben-interface/enums';
 import { map } from 'lodash';
 import { removeArtifacts, validateStringDate } from '../../utils/common';
 import CalDavCalendarEntity from './CalDavCalendar';
@@ -36,13 +39,13 @@ export default class CalDavEventEntity {
   @Column({ nullable: true })
   color: string;
 
-  @Column({ type: 'timestamptz', name: 'start_at' })
+  @Column({ type: 'timestamptz', name: 'start_at', nullable: true })
   startAt: Date;
 
   @Column({ name: 'timezone_start_at', nullable: true })
   timezoneStartAt: string;
 
-  @Column({ type: 'timestamptz', name: 'end_at' })
+  @Column({ type: 'timestamptz', name: 'end_at', nullable: true })
   endAt: Date;
 
   @Column({ name: 'timezone_end_at', nullable: true })
@@ -108,6 +111,12 @@ export default class CalDavEventEntity {
   @Column({ nullable: true })
   location: string;
 
+  @Column({ type: 'varchar', default: EVENT_TYPE.EVENT })
+  type: EVENT_TYPE;
+
+  @Column({ type: 'timestamptz', name: 'external_created_at', nullable: true })
+  externalCreatedAt: Date;
+
   @Column({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 
@@ -132,6 +141,14 @@ export default class CalDavEventEntity {
   )
   exceptions: CalDavEventExceptionEntity[];
 
+  @Column({
+    name: 'status',
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+  })
+  status: TASK_STATUS;
+
   parseRRule(rRule: string | null) {
     if (rRule) {
       const partA: string = rRule.slice(0, rRule.indexOf('UNTIL'));
@@ -145,19 +162,47 @@ export default class CalDavEventEntity {
 
   constructor(item?: CalDavEventObj) {
     if (item) {
-      validateStringDate(item.startAt);
-      validateStringDate(item.endAt);
+      if (item.startAt) {
+        validateStringDate(item.startAt);
+        this.startAt = DateTime.fromISO(item.startAt).toUTC().toJSDate();
+      }
+      if (item.endAt) {
+        validateStringDate(item.endAt);
+        this.endAt = DateTime.fromISO(item.endAt).toUTC().toJSDate();
+      }
 
       const calendar = new CalDavCalendarEntity();
       calendar.id = item.calendarID;
 
+      if (item.timezone) {
+        this.timezoneStartAt = item.timezone;
+        this.timezoneEndAt = item.timezone;
+      }
+
+      if (item.status) {
+        this.status = item.status;
+      }
+
+      if (item.created) {
+        this.externalCreatedAt = DateTime.fromISO(item.created)
+          .toUTC()
+          .toJSDate();
+      }
+
+      this.type = item.type;
+
+      if (item.type === EVENT_TYPE.TASK && item.startAt) {
+        this.endAt = DateTime.fromJSDate(this.startAt)
+          .plus({ minutes: 30 })
+          .toUTC()
+          .toJSDate();
+        this.timezoneStartAt = FLOATING_DATETIME;
+      }
+
       this.props = item.props;
       this.externalID = item.externalID;
       this.recurrenceID = item.recurrenceID;
-      this.startAt = DateTime.fromISO(item.startAt).toUTC().toJSDate();
-      this.endAt = DateTime.fromISO(item.endAt).toUTC().toJSDate();
-      this.timezoneStartAt = item.timezone;
-      this.timezoneEndAt = item.timezone;
+
       this.etag = item.etag;
       this.allDay = item.allDay;
       this.color = item.color || null;

@@ -5,14 +5,11 @@ import { env } from '../index';
 import { processEmailEventJob } from '../jobs/queueJobs/processEmailEventJob';
 import { sendEmailQueueJob } from '../jobs/queueJobs/sendEmailQueueJob';
 import { syncCalDavQueueJob } from '../jobs/queueJobs/syncCalDavQueueJob';
-import { syncCalDavTaskQueueJob } from '../jobs/queueJobs/syncCalDavTaskQueueJob';
 import { syncCardDavQueueJob } from '../jobs/queueJobs/syncCardDavQueueJob';
 import { syncWebcalEventsQueueJob } from '../jobs/queueJobs/syncWebcalEventsQueueJob';
 
 export let calDavSyncBullWorker;
 export let calDavSyncBullQueue;
-export let calDavTaskSyncBullQueue;
-export let calDavTaskSyncBullWorker;
 export let webcalSyncBullWorker;
 export let webcalSyncBullQueue;
 export let emailBullQueue;
@@ -52,20 +49,6 @@ export const createEmailBullWorker = async () => {
     BULL_QUEUE.EMAIL,
     async (job) => {
       await sendEmailQueueJob(job);
-    },
-    {
-      connection: {
-        host: env.redis.host,
-        port: Number(env.redis.port),
-      },
-    }
-  );
-};
-export const createCalDavTaskSyncBullWorker = async () => {
-  return new Worker(
-    BULL_QUEUE.CALDAV_TASK_SYNC,
-    async (job) => {
-      await syncCalDavTaskQueueJob(job);
     },
     {
       connection: {
@@ -142,9 +125,6 @@ export const initBullQueue = async () => {
 
   webcalSyncBullQueue = createBullQueue(BULL_QUEUE.WEBCAL_SYNC);
   webcalSyncBullWorker = await createWebcalSyncBullWorker();
-
-  calDavTaskSyncBullQueue = createBullQueue(BULL_QUEUE.CALDAV_TASK_SYNC);
-  calDavTaskSyncBullWorker = await createCalDavTaskSyncBullWorker();
 
   emailBullQueue = createBullQueue(BULL_QUEUE.EMAIL);
   emailBullWorker = await createEmailBullWorker();
