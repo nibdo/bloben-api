@@ -2,8 +2,12 @@ import { ATTENDEE_PARTSTAT, SOURCE_TYPE } from '../data/types/enums';
 import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
+import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
 import { find } from 'lodash';
-import { getEventStyle } from '../api/app/event/helpers/getWebCalEvents';
+import {
+  getEventStyle,
+  getTaskStyle,
+} from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 
 const parseCalDavStyle = (
@@ -25,7 +29,25 @@ const parseCalDavStyle = (
     style = getEventStyle(partstat, userAttendee?.['ROLE'], color, isDark);
   }
 
+  if (event.type === EVENT_TYPE.TASK) {
+    const isChecked = event.status === TASK_STATUS.COMPLETED;
+
+    style = getTaskStyle(isChecked);
+  }
+
   return style;
+};
+
+export const getTaskCheckedStatus = (event: CalDavEventsRaw) => {
+  if (event.type === EVENT_TYPE.TASK) {
+    if (event.status === TASK_STATUS.COMPLETED) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  return false;
 };
 
 export const formatEventEntityToResult = (
@@ -100,6 +122,7 @@ export const formatEventRawToResult = (
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
     style: parseCalDavStyle(event, eventColor, isDark),
+    isTaskChecked: getTaskCheckedStatus(event),
   };
 };
 
