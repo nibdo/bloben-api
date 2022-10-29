@@ -5,6 +5,7 @@ import {
   ATTENDEE_ROLE,
   SOURCE_TYPE,
 } from '../../../../data/types/enums';
+
 import { DateTime } from 'luxon';
 import { EVENT_TYPE } from 'bloben-interface/enums';
 import { EventResult, EventStyle } from 'bloben-interface';
@@ -35,6 +36,16 @@ export const getEventStyle = (
     style.border = `solid 1px ${color}`;
     style.backgroundColor = isDark ? 'rgb(29, 31, 38)' : 'white';
     style.color = isDark ? 'white' : 'black';
+  }
+
+  return style;
+};
+
+export const getTaskStyle = (isChecked: boolean) => {
+  const style: EventStyle = {};
+
+  if (isChecked) {
+    style.textDecoration = 'line-through';
   }
 
   return style;
