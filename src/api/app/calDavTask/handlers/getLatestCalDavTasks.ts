@@ -1,5 +1,4 @@
-import { CalDavTask } from 'bloben-interface';
-import { EVENT_TYPE } from 'bloben-interface/enums';
+import { CalDavTask, EVENT_TYPE } from 'bloben-interface';
 import { Request, Response } from 'express';
 import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { map } from 'lodash';

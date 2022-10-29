@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import { forEach, groupBy, map } from 'lodash';
 
 import { DateTime } from 'luxon';
-import { EVENT_TYPE } from 'bloben-interface/enums';
-import { EventResult } from 'bloben-interface';
+import { EVENT_TYPE, EventResult } from 'bloben-interface';
 import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { getOccurrences } from '../../event/helpers/getRepeatedEvents';
 import LuxonHelper from '../../../../utils/luxonHelper';
