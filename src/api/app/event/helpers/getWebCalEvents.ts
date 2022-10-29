@@ -6,8 +6,7 @@ import {
   SOURCE_TYPE,
 } from '../../../../data/types/enums';
 import { DateTime } from 'luxon';
-import { EVENT_TYPE } from 'bloben-interface/enums';
-import { EventResult, EventStyle } from 'bloben-interface';
+import { EVENT_TYPE, EventResult, EventStyle } from 'bloben-interface';
 import { getOccurrences } from './getRepeatedEvents';
 import LuxonHelper from '../../../../utils/luxonHelper';
 import WebcalEventExceptionRepository from '../../../../data/repository/WebcalEventExceptionRepository';

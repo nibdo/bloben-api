@@ -1,6 +1,6 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
-import { EVENT_TYPE } from 'bloben-interface/enums';
+import { EVENT_TYPE } from 'bloben-interface';
 import { getOneResult } from '../../utils/common';
 import CalDavEventEntity from '../entity/CalDavEventEntity';
 

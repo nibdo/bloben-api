@@ -17,6 +17,7 @@ import {
   fetchVCards,
 } from 'tsdav';
 import { DateTime } from 'luxon';
+import { EVENT_TYPE, Range } from 'bloben-interface';
 import {
   LOG_TAG,
   SOCKET_CHANNEL,
@@ -24,7 +25,6 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from './enums';
 import { RRule } from 'rrule';
-import { Range } from 'bloben-interface';
 import { cloneDeep, find, forEach, keyBy, map } from 'lodash';
 import {
   createCalDavCalendar,
@@ -55,7 +55,6 @@ import LuxonHelper from './luxonHelper';
 
 import { ATTENDEE_PARTSTAT } from '../data/types/enums';
 import { DavRequestData, getDavRequestData } from './davAccountHelper';
-import { EVENT_TYPE } from 'bloben-interface/enums';
 import { VcardParsed, parseFromVcardString } from './vcardParser';
 import CalendarSettingsRepository from '../data/repository/CalendarSettingsRepository';
 import CardDavAddressBook from '../data/entity/CardDavAddressBook';

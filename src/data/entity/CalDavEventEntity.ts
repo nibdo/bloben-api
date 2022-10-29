@@ -9,7 +9,7 @@ import {
 
 import { CalDavEventObj } from '../../utils/davHelper';
 import { DateTime } from 'luxon';
-import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
+import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface';
 import { FLOATING_DATETIME } from 'kalend/layout/constants';
 import { map } from 'lodash';
 import { removeArtifacts, validateStringDate } from '../../utils/common';

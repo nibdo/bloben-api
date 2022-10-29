@@ -35,6 +35,30 @@ describe(`Update user admin [PATCH] ${PATH}`, async function () {
     assert.equal(status, 200);
   });
 
+  it('Should get status 200', async function () {
+    const server: any = createTestServerWithSession(adminID);
+
+    const response: any = await request(server).patch(PATH(userID)).send({
+      username: 'tester2',
+    });
+
+    const { status } = response;
+
+    assert.equal(status, 200);
+  });
+
+  it('Should get status 200', async function () {
+    const server: any = createTestServerWithSession(adminID);
+
+    const response: any = await request(server).patch(PATH(userID)).send({
+      password: '123456',
+    });
+
+    const { status } = response;
+
+    assert.equal(status, 200);
+  });
+
   it('Should get status 404 not found', async function () {
     const server: any = createTestServerWithSession(adminID);
 
