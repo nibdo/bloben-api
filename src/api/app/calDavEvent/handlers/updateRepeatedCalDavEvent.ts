@@ -90,6 +90,7 @@ export const eventResultToCalDavEventObj = (
     exdates: eventResult?.exdates || [],
     rRule: eventResult.rRule,
     href: href,
+    type: eventResult.type,
   };
 };
 
@@ -453,6 +454,8 @@ export const updateRepeatedCalDavEvent = async (
 
   if (
     body.type !== REPEATED_EVENT_CHANGE_TYPE.ALL &&
+    body.event.attendees &&
+    eventsTemp?.[0]?.attendees &&
     body.event.attendees.length !== eventsTemp?.[0].attendees.length
   ) {
     throw throwError(409, 'Attendees can be changed only for all instances');

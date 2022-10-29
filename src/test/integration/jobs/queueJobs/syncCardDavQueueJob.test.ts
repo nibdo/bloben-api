@@ -9,7 +9,6 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 import { syncCardDavQueueJob } from '../../../../jobs/queueJobs/syncCardDavQueueJob';
-import { todoToUpdateID } from './syncCalDavTodoQueueJob.seed';
 import CardDavContactRepository from '../../../../data/repository/CardDavContactRepository';
 
 describe(`syncCardDavQueueJob [QUEUE]`, async function () {
@@ -62,7 +61,7 @@ describe(`syncCardDavQueueJob [QUEUE]`, async function () {
       },
     });
 
-    assert.equal(item.externalID, todoToUpdateID);
+    assert.equal(item.externalID, vcalToUpdateID);
   });
 
   it('Should delete remote contact', async function () {

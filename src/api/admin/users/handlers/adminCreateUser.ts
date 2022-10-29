@@ -10,6 +10,12 @@ import UserRepository from '../../../../data/repository/UserRepository';
 import bcrypt from 'bcrypt';
 import logger from '../../../../utils/logger';
 
+export const validateUsername = (username: string) => {
+  if (username.includes(' ')) {
+    throw throwError(403, 'Username cannot contains spaces');
+  }
+};
+
 export const adminCreateUser = async (
   req: Request
 ): Promise<CommonResponse> => {
@@ -17,6 +23,8 @@ export const adminCreateUser = async (
   let queryRunner: QueryRunner | null;
 
   const body: AdminCreateUserRequest = req.body;
+
+  validateUsername(body.username);
 
   const user: UserEntity | undefined = await UserRepository.findByUsername(
     body.username

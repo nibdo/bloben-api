@@ -1,9 +1,13 @@
-import { ATTENDEE_PARTSTAT, EVENT_TYPE } from '../data/types/enums';
+import { ATTENDEE_PARTSTAT, SOURCE_TYPE } from '../data/types/enums';
 import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
+import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
 import { find } from 'lodash';
-import { getEventStyle } from '../api/app/event/helpers/getWebCalEvents';
+import {
+  getEventStyle,
+  getTaskStyle,
+} from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
 
 const parseCalDavStyle = (
@@ -25,7 +29,25 @@ const parseCalDavStyle = (
     style = getEventStyle(partstat, userAttendee?.['ROLE'], color, isDark);
   }
 
+  if (event.type === EVENT_TYPE.TASK) {
+    const isChecked = event.status === TASK_STATUS.COMPLETED;
+
+    style = getTaskStyle(isChecked);
+  }
+
   return style;
+};
+
+export const getTaskCheckedStatus = (event: CalDavEventsRaw) => {
+  if (event.type === EVENT_TYPE.TASK) {
+    if (event.status === TASK_STATUS.COMPLETED) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  return false;
 };
 
 export const formatEventEntityToResult = (
@@ -41,8 +63,8 @@ export const formatEventEntityToResult = (
   calendarID: event.calendar.id,
   color: event.calendar.color,
   // data: event.data,
-  startAt: event.startAt.toISOString(),
-  endAt: event.endAt.toISOString(),
+  startAt: event.startAt?.toISOString(),
+  endAt: event.endAt?.toISOString(),
   timezoneEndAt: event.timezoneStartAt,
   timezoneStartAt: event.timezoneStartAt,
   // externalID: event.externalID,
@@ -56,7 +78,8 @@ export const formatEventEntityToResult = (
   etag: event.etag,
   url: event.href,
   props: event.props || null,
-  type: EVENT_TYPE.CALDAV,
+  sourceType: SOURCE_TYPE.CALDAV,
+  type: event.type,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
 });
@@ -86,7 +109,10 @@ export const formatEventRawToResult = (
     url: event.href,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.CALDAV,
+    sourceType: SOURCE_TYPE.CALDAV,
+    type: event.type,
+    // @ts-ignore
+    status: event.status,
     valarms: event.valarms,
     attendees: event.attendees,
     exdates: event.exdates,
@@ -96,6 +122,7 @@ export const formatEventRawToResult = (
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
     style: parseCalDavStyle(event, eventColor, isDark),
+    isTaskChecked: getTaskCheckedStatus(event),
   };
 };
 

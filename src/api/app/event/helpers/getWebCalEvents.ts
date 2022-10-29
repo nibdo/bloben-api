@@ -3,10 +3,11 @@ import { filter, find, forEach, groupBy, map } from 'lodash';
 import {
   ATTENDEE_PARTSTAT,
   ATTENDEE_ROLE,
-  EVENT_TYPE,
+  SOURCE_TYPE,
 } from '../../../../data/types/enums';
+
 import { DateTime } from 'luxon';
-import { EventResult, EventStyle } from 'bloben-interface';
+import { EVENT_TYPE, EventResult, EventStyle } from 'bloben-interface';
 import { getOccurrences } from './getRepeatedEvents';
 import LuxonHelper from '../../../../utils/luxonHelper';
 import WebcalEventExceptionRepository from '../../../../data/repository/WebcalEventExceptionRepository';
@@ -34,6 +35,16 @@ export const getEventStyle = (
     style.border = `solid 1px ${color}`;
     style.backgroundColor = isDark ? 'rgb(29, 31, 38)' : 'white';
     style.color = isDark ? 'white' : 'black';
+  }
+
+  return style;
+};
+
+export const getTaskStyle = (isChecked: boolean) => {
+  const style: EventStyle = {};
+
+  if (isChecked) {
+    style.textDecoration = 'line-through';
   }
 
   return style;
@@ -211,7 +222,8 @@ export const getWebcalEventByID = async (
     timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.WEBCAL,
+    sourceType: SOURCE_TYPE.WEBCAL,
+    type: EVENT_TYPE.EVENT,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   };
@@ -402,7 +414,8 @@ export const getWebcalEvents = async (
     timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.WEBCAL,
+    sourceType: SOURCE_TYPE.WEBCAL,
+    type: EVENT_TYPE.EVENT,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
     style: parseWebcalStyle(event, isDark),
@@ -594,7 +607,8 @@ export const getSharedWebcalEvents = async (
     timezoneStartAt: event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    type: EVENT_TYPE.WEBCAL,
+    sourceType: SOURCE_TYPE.WEBCAL,
+    type: EVENT_TYPE.EVENT,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
     style: parseWebcalStyle(event, isDark),

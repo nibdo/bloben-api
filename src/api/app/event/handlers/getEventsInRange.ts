@@ -13,6 +13,7 @@ interface Query {
   rangeFrom: string;
   rangeTo: string;
   isDark: string;
+  showTasks: string;
 }
 
 /**
@@ -25,7 +26,8 @@ export const getEventsInRange = async (
   res: Response
 ): Promise<unknown> => {
   const { userID } = res.locals;
-  const { rangeFrom, rangeTo, isDark } = req.query as unknown as Query;
+  const { rangeFrom, rangeTo, isDark, showTasks } =
+    req.query as unknown as Query;
 
   let result: EventResult[] = [];
 
@@ -45,16 +47,25 @@ export const getEventsInRange = async (
     rangeTo as string
   );
 
-  const normalEvents = await CalDavEventRepository.getEventsInRange(
-    userID,
-    rangeFrom,
-    rangeTo
-  );
+  const promises: any[] = [
+    CalDavEventRepository.getEventsInRange(
+      userID,
+      rangeFrom,
+      rangeTo,
+      showTasks === 'true'
+    ),
+    getRepeatedEvents(
+      userID,
+      rangeFromDateTime,
+      rangeToDateTime,
+      undefined,
+      showTasks === 'true'
+    ),
+    getWebcalEvents(userID, rangeFrom, rangeTo, isDark === 'true'),
+  ];
 
-  const repeatedEvents = await getRepeatedEvents(
-    userID,
-    rangeFromDateTime,
-    rangeToDateTime
+  const [normalEvents, repeatedEvents, webCalEvents] = await Promise.all(
+    promises
   );
 
   const calDavEventsNormal = map(normalEvents, (event) =>
@@ -64,13 +75,7 @@ export const getEventsInRange = async (
     formatEventRawToResult(event, isDark === 'true')
   );
 
-  const webCalEvents = await getWebcalEvents(
-    userID,
-    rangeFrom,
-    rangeTo,
-    isDark === 'true'
-  );
-
+  // @ts-ignore
   result = [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
 
   return result;

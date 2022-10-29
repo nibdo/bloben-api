@@ -17,6 +17,7 @@ import {
   fetchVCards,
 } from 'tsdav';
 import { DateTime } from 'luxon';
+import { EVENT_TYPE, Range } from 'bloben-interface';
 import {
   LOG_TAG,
   SOCKET_CHANNEL,
@@ -24,7 +25,6 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from './enums';
 import { RRule } from 'rrule';
-import { Range } from 'bloben-interface';
 import { cloneDeep, find, forEach, keyBy, map } from 'lodash';
 import {
   createCalDavCalendar,
@@ -46,7 +46,11 @@ import CalDavEventExceptionEntity from '../data/entity/CalDavEventExceptionEntit
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../data/repository/CalDavEventRepository';
-import ICalParser, { DateTimeObject, EventJSON } from 'ical-js-parser';
+import ICalParser, {
+  DateTimeObject,
+  EventJSON,
+  TodoJSON,
+} from 'ical-js-parser';
 import LuxonHelper from './luxonHelper';
 
 import { ATTENDEE_PARTSTAT } from '../data/types/enums';
@@ -62,8 +66,8 @@ import logger from './logger';
 export interface CalDavEventObj {
   externalID: string;
   calendarID: string;
-  startAt: string;
-  endAt: string;
+  startAt: string | null;
+  endAt: string | null;
   timezone: string | null;
   isRepeated: boolean;
   summary: string;
@@ -79,6 +83,7 @@ export interface CalDavEventObj {
   valarms?: any[];
   rRule: string | null;
   href: string;
+  type: EVENT_TYPE;
   [key: string]: any;
 }
 
@@ -199,6 +204,8 @@ export const formatEventJsonToCalDavEvent = (
     attendees: event.attendee || [],
     recurrenceID: event.recurrenceId,
     href: calendarObject.url,
+    created: event.created?.value,
+    type: EVENT_TYPE.EVENT,
     props: removeSupportedProps(event),
   };
 };
@@ -210,6 +217,7 @@ export const checkCalendarChange = (
     localCalendar.description !== serverCalendar.description ||
     localCalendar.timezone !== serverCalendar.timezone ||
     localCalendar.ctag !== serverCalendar.ctag ||
+    !localCalendar.ctag ||
     // @ts-ignore
     localCalendar.calendarColor !== serverCalendar.calendarColor ||
     localCalendar.displayName !== serverCalendar.displayName
@@ -323,6 +331,7 @@ export const createEventFromCalendarObject = (
 ) => {
   const icalJS = ICalParser.toJSON(calendarObject.data);
   const event: EventJSON = icalJS.events[0];
+  const todo: TodoJSON = icalJS.todos[0];
 
   if (icalJS.errors?.length) {
     logger.warn(
@@ -336,6 +345,10 @@ export const createEventFromCalendarObject = (
   if (event) {
     return formatEventJsonToCalDavEvent(event, calendarObject, calendar);
   }
+
+  if (todo) {
+    return formatTodoJsonToCalDavTodo(todo, calendarObject, calendar);
+  }
 };
 
 export const createEventsFromDavObject = (
@@ -345,6 +358,7 @@ export const createEventsFromDavObject = (
   const result: CalDavEventObj[] = [];
   const icalJS = ICalParser.toJSON(calendarObject.data);
   const events: EventJSON[] = icalJS.events;
+  const todos: TodoJSON[] = icalJS.todos;
 
   if (icalJS.errors?.length) {
     logger.warn(
@@ -357,6 +371,9 @@ export const createEventsFromDavObject = (
 
   forEach(events, (event) => {
     result.push(formatEventJsonToCalDavEvent(event, calendarObject, calendar));
+  });
+  forEach(todos, (todo) => {
+    result.push(formatTodoJsonToCalDavTodo(todo, calendarObject, calendar));
   });
 
   return result;
@@ -416,13 +433,20 @@ export const queryClient = async (
     prop: {
       getetag: {},
     },
-    filters: {
-      'comp-filter': {
-        _attributes: {
-          name: 'VCALENDAR',
+    filters: [
+      {
+        'comp-filter': {
+          _attributes: {
+            name: 'VCALENDAR',
+            'comp-filter': {
+              _attributes: {
+                name: 'VEVENT',
+              },
+            },
+          },
         },
       },
-    },
+    ],
     depth: '1',
   });
 };
@@ -1136,4 +1160,34 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
 
     await Promise.all(promises);
   }
+};
+
+export const formatTodoJsonToCalDavTodo = (
+  item: TodoJSON,
+  calendarObject: DAVCalendarObject,
+  calendar: CalDavCalendarEntity
+): CalDavEventObj => {
+  const isAllDay = item?.dtstart?.value?.length === '20220318'.length;
+
+  return {
+    ...{ ...calendarObject, data: null }, // clear ical data prop
+    calendarID: calendar.id,
+    externalID: item.uid || '',
+    startAt: item.dtstart?.value,
+    endAt: item.dtend?.value,
+    timezone: item.dtstart?.timezone || null,
+    isRepeated: item.rrule !== undefined || false,
+    rRule: item.rrule || null,
+    allDay: isAllDay,
+    summary: item.summary || '',
+    location: item.location || null,
+    description: item.description || null,
+    etag: calendarObject.etag,
+    created: item.created?.value || item.dtstamp?.value,
+    color: calendar.color || 'indigo',
+    alarms: item.alarms,
+    href: calendarObject.url,
+    type: EVENT_TYPE.TASK,
+    status: item.status || 'NEEDS-ACTION',
+  };
 };

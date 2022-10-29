@@ -10,6 +10,7 @@ import {
   createDummyCalDavEventWithAlarm,
   createDummyCalDavEventWithAttendees,
   createDummyCalDavEventWithRepeatedAlarm,
+  createDummyCalDavTodo,
 } from '../../../integration/seeds/4-calDavEvents';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import { createTestCalendarCalendar } from '../calDavServerTestHelper';
@@ -24,6 +25,7 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
   let requestBodyAttendees;
   let requestBodyWithAlarm;
   let requestBodyWithAlarmRepeated;
+  let requestBodyVTODO;
   let remoteID;
   let userID;
   beforeEach(async () => {
@@ -48,6 +50,7 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
       DateTime.now().set({ hour: 14, minute: 44, second: 0, millisecond: 0 }),
       remoteID
     );
+    requestBodyVTODO = createDummyCalDavTodo(calDavCalendar.id, remoteID);
   });
 
   it('Should get status 404 not found', async function () {
@@ -138,5 +141,15 @@ describe(`[E2E] Create calDav event [POST] ${PATH}`, async function () {
       reminders?.[4].sendAt.toISOString(),
       refDate.plus({ day: 4 }).toUTC().toString()
     );
+  });
+
+  it('Should get status 200 VTODO', async function () {
+    const response: any = await request(createE2ETestServerWithSession(userID))
+      .post(PATH)
+      .send(requestBodyVTODO);
+
+    const { status } = response;
+
+    assert.equal(status, 200);
   });
 });

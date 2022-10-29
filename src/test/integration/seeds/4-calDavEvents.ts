@@ -328,3 +328,25 @@ export const seedCalDavEvents = async (
 
   return { event: events[0], repeatedEvent: events[2] };
 };
+
+export const createDummyCalDavTodo = (
+  calendarID: string,
+  remoteID?: string
+): CreateCalDavEventRequest => {
+  const externalID = remoteID || v4();
+  return {
+    externalID,
+    calendarID,
+    iCalString: `BEGIN:VCALENDAR
+PRODID:Test
+VERSION:2.0
+CALSCALE:GREGORIAN
+BEGIN:VTODO
+UID:${externalID}
+SUMMARY:teaaaaa
+DTSTAMP:20210402T205602Z
+LOCATION:asdsfdf
+END:VTODO
+END:VCALENDAR`,
+  };
+};

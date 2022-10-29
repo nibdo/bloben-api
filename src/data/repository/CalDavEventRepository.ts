@@ -1,10 +1,13 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
+import { EVENT_TYPE } from 'bloben-interface';
 import { getOneResult } from '../../utils/common';
 import CalDavEventEntity from '../entity/CalDavEventEntity';
 
 export interface CalDavEventsRaw {
   id: string;
+  type: EVENT_TYPE;
+  status: string | null;
   externalID: string;
   internalID?: string;
   startAt: string;
@@ -32,10 +35,20 @@ export interface CalDavEventsRaw {
   updatedAt: string;
 }
 
+const getComponentsCondition = (showTasks: boolean) => {
+  if (!showTasks) {
+    return [EVENT_TYPE.EVENT];
+  }
+
+  return [EVENT_TYPE.EVENT, EVENT_TYPE.TASK];
+};
+
 @EntityRepository(CalDavEventEntity)
 export default class CalDavEventRepository extends Repository<CalDavEventEntity> {
   private static calDavEventRawProps = `
         e.id as "id",
+        e.type as type,
+        e.status as status,
         e.start_at as "startAt",
         e.end_at as "endAt",
         e.timezone_start_at as "timezoneStartAt",
@@ -89,7 +102,8 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
   public static getEventsInRange = async (
     userID: string,
     rangeFrom: string,
-    rangeTo: string
+    rangeTo: string,
+    showTasks: boolean
   ) => {
     const resultCalDavEvents: CalDavEventsRaw[] =
       await CalDavEventRepository.getRepository().query(
@@ -104,9 +118,11 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         a.user_id = $1
         AND c.is_hidden IS FALSE
         AND e.is_repeated = FALSE
+        AND e.start_at IS NOT NULL
+        AND e.type = ANY ($4)
         AND (e.start_at, e.end_at) OVERLAPS (CAST($2 AS timestamp), CAST($3 AS timestamp))
   `,
-        [userID, rangeFrom, rangeTo]
+        [userID, rangeFrom, rangeTo, getComponentsCondition(showTasks)]
       );
 
     return resultCalDavEvents;
@@ -162,7 +178,10 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
     return resultCalDavEvents[0];
   };
 
-  public static getRepeatedEvents = async (userID: string) => {
+  public static getRepeatedEvents = async (
+    userID: string,
+    showTasks: boolean
+  ) => {
     const repeatedEvents: CalDavEventsRaw[] =
       await CalDavEventRepository.getRepository().query(
         `
@@ -176,15 +195,17 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         a.user_id = $1
         AND c.is_hidden IS FALSE
         AND e.is_repeated = TRUE
+        AND e.type = ANY ($2)
   `,
-        [userID]
+        [userID, getComponentsCondition(showTasks)]
       );
 
     return repeatedEvents;
   };
 
   public static getPublicRepeatedEvents = async (
-    calDavCalendarIDs: string[]
+    calDavCalendarIDs: string[],
+    showTasks: boolean
   ) => {
     const repeatedEvents: CalDavEventsRaw[] =
       await CalDavEventRepository.getRepository().query(
@@ -197,8 +218,9 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       WHERE 
         c.id = ANY($1)
         AND e.is_repeated = TRUE
+        AND e.type = ANY ($2)
   `,
-        [calDavCalendarIDs]
+        [calDavCalendarIDs, getComponentsCondition(showTasks)]
       );
 
     return repeatedEvents;

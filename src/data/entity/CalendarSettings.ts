@@ -30,6 +30,9 @@ export default class CalendarSettingsEntity {
   @Column({ name: 'show_week_numbers', nullable: false, default: false })
   showWeekNumbers: boolean;
 
+  @Column({ name: 'show_tasks', nullable: false, default: true })
+  showTasks: boolean;
+
   @Column({
     name: 'default_view',
     nullable: false,

@@ -35,7 +35,7 @@ export enum SOCKET_CRUD_ACTION {
   FULL = 'FULL',
 }
 
-export enum EVENT_TYPE {
+export enum SOURCE_TYPE {
   CALDAV = 'CALDAV',
   WEBCAL = 'WEBCAL',
 }

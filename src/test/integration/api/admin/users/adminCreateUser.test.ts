@@ -3,9 +3,9 @@ import { invalidUUID } from '../../../../testHelpers/common';
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
-import { v4 } from 'uuid';
 
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
+import { generateRandomSimpleString } from '../../../../../utils/common';
 import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
 import { seedUserWithEntity } from '../../../seeds/1-user-seed';
 
@@ -24,10 +24,12 @@ describe(`Create user admin [POST] ${PATH}`, async function () {
   it('Should get status 200', async function () {
     const server: any = createTestServerWithSession(adminID);
 
-    const response: any = await request(server).post(PATH).send({
-      username: v4(),
-      password: 'root22',
-    });
+    const response: any = await request(server)
+      .post(PATH)
+      .send({
+        username: generateRandomSimpleString(25),
+        password: 'root22',
+      });
 
     const { status } = response;
 
