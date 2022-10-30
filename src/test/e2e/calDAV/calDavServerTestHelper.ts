@@ -3,7 +3,7 @@ import {
   REPEATED_EVENT_CHANGE_TYPE,
   SOURCE_TYPE,
 } from '../../../data/types/enums';
-import { CALDAV_TEST_ACCOUNT } from '../seeds/1-user-caldav-seed';
+import { CALDAV_TEST_ACCOUNT } from '../seeds/user-caldav-seed';
 import {
   CreateCalDavEventRequest,
   DeleteRepeatedCalDavEventRequest,

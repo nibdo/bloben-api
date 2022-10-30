@@ -1,13 +1,13 @@
 import { SOURCE_TYPE } from '../../../../data/types/enums';
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const getEventSchema = Joi.object({
-  params: Joi.object({
+export const getEventSchema = {
+  [Segments.PARAMS]: Joi.object({
     id: Joi.string().required(),
   }),
-  query: Joi.object({
+  [Segments.QUERY]: Joi.object({
     type: Joi.string().valid(SOURCE_TYPE.CALDAV, SOURCE_TYPE.WEBCAL).required(),
     isDark: Joi.boolean().required(),
   }),
-  body: Joi.object(),
-});
+};

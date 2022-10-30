@@ -9,7 +9,7 @@ import {
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import { createTestCalendarCalendar } from '../../../testHelpers/calDavServerTestHelper';
 import { invalidUUID } from '../../../testHelpers/common';
-import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
+import { seedUsersE2E } from '../../seeds/user-caldav-seed';
 import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import { v4 } from 'uuid';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';

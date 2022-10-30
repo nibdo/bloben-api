@@ -9,8 +9,8 @@ import {
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
-import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedCalDavCalendars } from '../../../seeds/calDavCalendars';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = '/api/app/v1/caldav-calendars';
 
@@ -34,7 +34,7 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
   it('Should get status 401', async function () {
     const response: any = await request(createTestServer())
       .post(PATH)
-      .send(testBody);
+      .send({ ...testBody, accountID: invalidUUID });
 
     const { status } = response;
 
@@ -44,7 +44,7 @@ describe(`Create calDav calendar [POST] ${PATH}`, async function () {
   it('Should get status 403 demo user', async function () {
     const response: any = await request(createTestServerWithSession(demoUserID))
       .post(PATH)
-      .send(testBody);
+      .send({ ...testBody, accountID: invalidUUID });
 
     const { status } = response;
 

@@ -1,12 +1,11 @@
 import Joi from 'joi';
 
+import { Segments } from 'celebrate';
 import { usernameSchema } from '../../../../common/schemas/emptySchema';
 
-export const loginRequestSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: Joi.object({
+export const loginRequestSchema = {
+  [Segments.BODY]: Joi.object().keys({
     username: usernameSchema,
     password: Joi.string().required(),
   }),
-});
+};

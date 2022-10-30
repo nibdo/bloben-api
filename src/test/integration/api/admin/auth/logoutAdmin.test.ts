@@ -5,8 +5,8 @@ const assert = require('assert');
 const request = require('supertest');
 
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
-import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedAdminUser } from '../../../seeds/adminUser-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = '/api/admin/v1/auth/logout';
 

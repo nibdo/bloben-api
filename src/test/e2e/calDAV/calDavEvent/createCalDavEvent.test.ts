@@ -1,4 +1,4 @@
-import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
+import { seedUsersE2E } from '../../seeds/user-caldav-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
@@ -11,7 +11,7 @@ import {
   createDummyCalDavEventWithAttendees,
   createDummyCalDavEventWithRepeatedAlarm,
   createDummyCalDavTodo,
-} from '../../../integration/seeds/4-calDavEvents';
+} from '../../../integration/seeds/calDavEvents';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import { createTestCalendarCalendar } from '../calDavServerTestHelper';
 import { getTestReminders } from '../../../testHelpers/getTestReminders';

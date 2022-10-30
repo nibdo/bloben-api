@@ -1,4 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+import { generateRandomSimpleString } from '../../../../../utils/common';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
@@ -6,8 +9,8 @@ const request = require('supertest');
 import { USER_ROLE } from '../../../../../api/app/auth/UserEnums';
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
-import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedAdminUser } from '../../../seeds/adminUser-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = (id: string) => `/api/admin/v1/users/${id}`;
 
@@ -38,9 +41,11 @@ describe(`Update user admin [PATCH] ${PATH}`, async function () {
   it('Should get status 200', async function () {
     const server: any = createTestServerWithSession(adminID);
 
-    const response: any = await request(server).patch(PATH(userID)).send({
-      username: 'tester2',
-    });
+    const response: any = await request(server)
+      .patch(PATH(userID))
+      .send({
+        username: generateRandomSimpleString(20),
+      });
 
     const { status } = response;
 

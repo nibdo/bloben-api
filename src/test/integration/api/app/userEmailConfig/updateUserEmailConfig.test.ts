@@ -4,8 +4,8 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { mockImapService } from '../../../../__mocks__/ImapService';
 import { mockNodemailer } from '../../../../__mocks__/nodemailer';
-import { seedUsers } from '../../../seeds/1-user-seed';
-import { userEmailConfigData } from '../../../seeds/9-userEmailConfig';
+import { seedUsers } from '../../../seeds/user-seed';
+import { userEmailConfigData } from '../../../seeds/userEmailConfig';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires

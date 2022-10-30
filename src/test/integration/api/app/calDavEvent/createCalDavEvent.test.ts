@@ -1,4 +1,4 @@
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
@@ -11,7 +11,7 @@ import {
   createDummyCalDavEventWithAlarm,
   createDummyCalDavEventWithAttendees,
   createDummyCalDavEventWithRepeatedAlarm,
-} from '../../../seeds/4-calDavEvents';
+} from '../../../seeds/calDavEvents';
 import {
   createTestServer,
   createTestServerWithSession,
@@ -24,7 +24,7 @@ import {
   mockTsDavEvent,
   mockTsDavUnauthorized,
 } from '../../../../__mocks__/tsdav';
-import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
+import { seedCalDavCalendars } from '../../../seeds/calDavCalendars';
 
 const PATH = '/api/app/v1/caldav-events';
 

@@ -1,10 +1,9 @@
+import { Segments } from 'celebrate';
 import { calendarSettingsSchema } from '../../../calendarSettings/schemas/patchCalendarSettingsSchema';
 import Joi from 'joi';
 
-export const createSharedCalendarSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: Joi.object().keys({
+export const createSharedCalendarSchema = {
+  [Segments.BODY]: Joi.object().keys({
     name: Joi.string().required().min(2),
     password: Joi.string().allow(null),
     expireAt: Joi.date().allow(null),
@@ -12,4 +11,4 @@ export const createSharedCalendarSchema = Joi.object({
     webcalCalendars: Joi.array().items(Joi.string().uuid()).min(0).required(),
     settings: calendarSettingsSchema.required(),
   }),
-});
+};

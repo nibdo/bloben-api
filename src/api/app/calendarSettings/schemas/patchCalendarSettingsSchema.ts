@@ -1,4 +1,5 @@
 import { CALENDAR_VIEW } from 'kalend/common/enums';
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
 export const calendarSettingsSchema = Joi.object().keys({
@@ -22,8 +23,6 @@ export const calendarSettingsSchema = Joi.object().keys({
   saveContactsAuto: Joi.boolean().optional(),
 });
 
-export const patchCalendarSettingsSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: calendarSettingsSchema,
-});
+export const patchCalendarSettingsSchema = {
+  [Segments.BODY]: calendarSettingsSchema,
+};

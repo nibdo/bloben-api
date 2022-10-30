@@ -1,4 +1,4 @@
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 import { ImportMock } from 'ts-mock-imports';
 import {
@@ -8,7 +8,7 @@ import {
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
 import { invalidUUID } from '../../../../testHelpers/common';
 import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { seedContacts } from '../../../seeds/12-cardDavContacts';
+import { seedContacts } from '../../../seeds/cardDavContacts';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires

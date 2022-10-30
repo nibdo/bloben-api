@@ -1,4 +1,4 @@
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
@@ -12,7 +12,7 @@ import {
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
 import { invalidUUID } from '../../../../testHelpers/common';
 import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { seedCardDavAddressBooks } from '../../../seeds/11-cardDavAddressBooks';
+import { seedCardDavAddressBooks } from '../../../seeds/cardDavAddressBooks';
 
 const PATH = '/api/app/v1/carddav/contacts';
 

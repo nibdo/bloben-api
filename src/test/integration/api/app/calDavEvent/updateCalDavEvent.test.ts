@@ -4,7 +4,7 @@ import {
   createDummyCalDavEventWithRepeatedAlarm,
   seedCalDavEvents,
   testIcalString,
-} from '../../../seeds/4-calDavEvents';
+} from '../../../seeds/calDavEvents';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
@@ -24,7 +24,7 @@ import {
   mockTsDavEvent,
   mockTsDavUnauthorized,
 } from '../../../../__mocks__/tsdav';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = '/api/app/v1/caldav-events';
 

@@ -1,9 +1,8 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const getCalDavAccount = Joi.object({
-  params: Joi.object({
+export const getCalDavAccount = {
+  [Segments.PARAMS]: Joi.object({
     id: Joi.string().uuid().required(),
   }),
-  query: Joi.object(),
-  body: Joi.object(),
-});
+};

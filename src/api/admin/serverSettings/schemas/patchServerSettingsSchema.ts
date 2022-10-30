@@ -1,10 +1,9 @@
 import { LOCATION_PROVIDER } from '../../../../data/types/enums';
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const patchServerSettingsSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: Joi.object().keys({
+export const patchServerSettingsSchema = {
+  [Segments.BODY]: Joi.object().keys({
     checkNewVersion: Joi.boolean().optional(),
     emailCounter: Joi.number().integer().min(0).max(1000).optional(),
     locationProvider: Joi.string()
@@ -12,4 +11,4 @@ export const patchServerSettingsSchema = Joi.object({
       .optional(),
     locationInModal: Joi.boolean().optional(),
   }),
-});
+};

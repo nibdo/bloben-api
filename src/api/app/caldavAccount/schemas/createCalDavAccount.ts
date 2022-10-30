@@ -1,10 +1,9 @@
 import { DAV_ACCOUNT_TYPE } from '../../../../data/types/enums';
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const createCalDavAccount = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: Joi.object({
+export const createCalDavAccount = {
+  [Segments.BODY]: Joi.object({
     username: Joi.string().min(1).required(),
     password: Joi.string().min(1).required(),
     url: Joi.string().min(1).required(),
@@ -12,4 +11,4 @@ export const createCalDavAccount = Joi.object({
       .valid(DAV_ACCOUNT_TYPE.CALDAV, DAV_ACCOUNT_TYPE.CARDDAV)
       .required(),
   }),
-});
+};
