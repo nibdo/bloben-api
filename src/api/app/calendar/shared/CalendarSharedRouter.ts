@@ -2,6 +2,7 @@ import { RATE_LIMIT } from '../../../../utils/enums';
 import { Router } from 'express';
 import { USER_ROLE } from '../../auth/UserEnums';
 import { authMiddleware } from '../../../../middleware/authMiddleware';
+import { celebrate } from 'celebrate';
 import { createSharedCalendar } from './handlers/createSharedCalendar';
 import { createSharedCalendarSchema } from './schemas/createSharedCalendarSchema';
 import { deleteSharedCalendar } from './handlers/deleteSharedCalendar';
@@ -17,7 +18,6 @@ import { sendSharedCalendarInviteSchema } from './schemas/sendSharedCalendarInvi
 import { updateSharedCalendar } from './handlers/updateSharedCalendar';
 import { updateSharedCalendarSchema } from './schemas/updateSharedCalendarSchema';
 import { userMiddleware } from '../../../../middleware/userMiddleware';
-import { validationMiddleware } from '../../../../middleware/validationMiddleware';
 
 const CalendarSharedRoutes: Router = Router();
 
@@ -25,10 +25,10 @@ CalendarSharedRoutes.post(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(createSharedCalendarSchema),
     authMiddleware,
     userMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(createSharedCalendarSchema),
   ],
   createSharedCalendar
 );
@@ -37,9 +37,9 @@ CalendarSharedRoutes.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(emptySchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(emptySchema),
   ],
   getSharedCalendars
 );
@@ -48,9 +48,9 @@ CalendarSharedRoutes.get(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(getSharedCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(getSharedCalendarSchema),
   ],
   getSharedCalendar
 );
@@ -59,9 +59,9 @@ CalendarSharedRoutes.put(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(updateSharedCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(updateSharedCalendarSchema),
   ],
   updateSharedCalendar
 );
@@ -70,9 +70,9 @@ CalendarSharedRoutes.patch(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(getSharedCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(getSharedCalendarSchema),
   ],
   patchSharedCalendar
 );
@@ -81,9 +81,9 @@ CalendarSharedRoutes.delete(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(getSharedCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(getSharedCalendarSchema),
   ],
   deleteSharedCalendar
 );
@@ -92,9 +92,9 @@ CalendarSharedRoutes.post(
   '/:id/invite',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(sendSharedCalendarInviteSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(sendSharedCalendarInviteSchema),
   ],
   sendSharedCalendarInvite
 );

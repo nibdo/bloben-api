@@ -1,11 +1,11 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const updateCalDavCalendarSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object().keys({
+export const updateCalDavCalendarSchema = {
+  [Segments.PARAMS]: Joi.object().keys({
     id: Joi.string().required(),
   }),
-  body: Joi.object().keys({
+  [Segments.BODY]: Joi.object().keys({
     name: Joi.string().required().min(2),
     color: Joi.string().required(),
     alarms: Joi.array()
@@ -17,4 +17,4 @@ export const updateCalDavCalendarSchema = Joi.object({
       )
       .min(0),
   }),
-});
+};

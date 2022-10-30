@@ -5,8 +5,8 @@ const request = require('supertest');
 
 import { createTestServer } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
-import { seedSharedCalendar } from '../../../seeds/10-sharedCalendar';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedSharedCalendar } from '../../../seeds/sharedCalendar';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = (id: string) =>
   `/api/v1/public/calendars/${id}/events?rangeFrom=2022-06-25T22:00:00.001Z&rangeTo=2022-08-06T21:59:59.059Z`;

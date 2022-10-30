@@ -1,7 +1,7 @@
 import { CreateCalDavAccountRequest } from 'bloben-interface';
 import { DAV_ACCOUNT_TYPE } from '../../../../data/types/enums';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
-import { seedUserOnlyCalDavSeedE2E } from '../../seeds/1-user-caldav-seed';
+import { seedUserOnlyCalDavSeedE2E } from '../../seeds/user-caldav-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');

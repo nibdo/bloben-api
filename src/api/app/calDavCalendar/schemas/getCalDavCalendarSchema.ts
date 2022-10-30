@@ -1,8 +1,9 @@
 import { CALDAV_COMPONENTS } from '../../../../data/types/enums';
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const getCalDavCalendarSchema = Joi.object({
-  query: Joi.object().keys({
+export const getCalDavCalendarSchema = {
+  [Segments.QUERY]: Joi.object().keys({
     component: Joi.string()
       .valid(
         CALDAV_COMPONENTS.VEVENT,
@@ -11,6 +12,4 @@ export const getCalDavCalendarSchema = Joi.object({
       )
       .optional(),
   }),
-  params: Joi.object(),
-  body: Joi.object(),
-});
+};

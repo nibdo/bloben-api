@@ -1,4 +1,4 @@
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
@@ -8,7 +8,7 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { seedTasks } from '../../../seeds/7-calDavTasks';
+import { seedTasks } from '../../../seeds/calDavTasks';
 
 const PATH = '/api/app/v1/caldav-tasks/latest';
 

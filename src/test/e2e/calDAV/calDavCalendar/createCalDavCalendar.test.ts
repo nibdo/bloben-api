@@ -1,6 +1,6 @@
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import { invalidUUID } from '../../../testHelpers/common';
-import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
+import { seedUsersE2E } from '../../seeds/user-caldav-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');

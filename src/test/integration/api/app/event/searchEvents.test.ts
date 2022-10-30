@@ -7,8 +7,8 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedCalDavEvents } from '../../../seeds/calDavEvents';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = (summary: string) =>
   `/api/app/v1/events/search?summary=${summary}`;

@@ -81,10 +81,6 @@ const createApp = (): Promise<void> => {
     // eslint-disable-next-line no-console
     console.log(`[NODE_ENV]:  ${env.nodeEnv}`);
 
-    // if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
-    //   coverageTestUtil();
-    // }
-
     createBlobenApp();
     const server = http.createServer(BlobenApp);
 

@@ -1,11 +1,11 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const updateCalDavAccount = Joi.object({
-  params: Joi.object({
+export const updateCalDavAccount = {
+  [Segments.PARAMS]: Joi.object({
     id: Joi.string().uuid().required(),
   }),
-  query: Joi.object(),
-  body: Joi.object({
+  [Segments.BODY]: Joi.object({
     password: Joi.string().required().min(1),
   }),
-});
+};

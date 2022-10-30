@@ -1,11 +1,10 @@
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
+import { Segments } from 'celebrate';
 import { prevEventSchema } from './updateCalDavEventSchema';
 import Joi from 'joi';
 
-export const updateRepeatedCalDavEventSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: Joi.object({
+export const updateRepeatedCalDavEventSchema = {
+  [Segments.BODY]: Joi.object({
     event: Joi.object().required(),
     id: Joi.string().required(),
     externalID: Joi.string().required(),
@@ -23,4 +22,4 @@ export const updateRepeatedCalDavEventSchema = Joi.object({
     sendInvite: Joi.boolean().optional(),
     inviteMessage: Joi.string().max(300).optional().allow(null),
   }),
-});
+};

@@ -2,7 +2,22 @@ import { NextFunction, Request, Response } from 'express';
 
 import { LOG_TAG, NODE_ENV } from '../utils/enums';
 import { env } from '../index';
+import { isCelebrateError } from 'celebrate';
 import logger from '../utils/logger';
+
+const handleValidationError = (error: any) => {
+  if (isCelebrateError(error)) {
+    let message = '';
+
+    for (const item of error.details.values()) {
+      message += item.message + ' ';
+    }
+
+    return { code: 403, message };
+  }
+
+  return null;
+};
 
 export default (
   error: any,
@@ -12,6 +27,12 @@ export default (
   next: NextFunction
 ): any => {
   try {
+    const validationError = handleValidationError(error);
+
+    if (validationError) {
+      return res.status(403).json(validationError).send();
+    }
+
     if (error.appError) {
       return res
         .status(error.code)

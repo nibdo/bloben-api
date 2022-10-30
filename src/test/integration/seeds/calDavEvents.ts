@@ -5,7 +5,7 @@ import { CreateCalDavEventRequest } from 'bloben-interface';
 import { DAVCalendarObject } from 'tsdav';
 import { DateTime } from 'luxon';
 import { formatEventJsonToCalDavEvent } from '../../../utils/davHelper';
-import { seedCalDavCalendars } from './3-calDavCalendars';
+import { seedCalDavCalendars } from './calDavCalendars';
 import { v4 } from 'uuid';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import ICalParser, { EventJSON } from 'ical-js-parser';

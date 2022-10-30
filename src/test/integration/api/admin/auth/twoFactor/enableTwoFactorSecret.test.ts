@@ -7,7 +7,7 @@ const request = require('supertest');
 
 import { createTestServerWithSession } from '../../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../../testHelpers/common';
-import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
+import { seedAdminUser } from '../../../../seeds/adminUser-seed';
 
 const PATH = '/api/admin/v1/auth/two-factor/enable';
 
@@ -67,7 +67,9 @@ describe(`Admin enable two factor [POST] ${PATH}`, async function () {
   it('Should get status 401 wrong token', async function () {
     const server: any = createTestServerWithSession(invalidUUID);
 
-    const response: any = await request(server).post(PATH).send();
+    const response: any = await request(server).post(PATH).send({
+      otpCode: '123456',
+    });
 
     const { status } = response;
 

@@ -7,7 +7,7 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
 import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');

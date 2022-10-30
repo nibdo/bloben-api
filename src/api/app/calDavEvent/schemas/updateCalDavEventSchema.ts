@@ -1,3 +1,4 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
 export const prevEventSchema = Joi.object().keys({
@@ -19,8 +20,6 @@ export const updateEventBodySchema = Joi.object({
   inviteMessage: Joi.string().max(300).optional().allow(null),
 });
 
-export const updateCalDavEventSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: updateEventBodySchema,
-});
+export const updateCalDavEventSchema = {
+  [Segments.BODY]: updateEventBodySchema,
+};

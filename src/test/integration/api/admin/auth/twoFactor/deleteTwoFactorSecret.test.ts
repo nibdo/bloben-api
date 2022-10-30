@@ -1,4 +1,4 @@
-import { seedUsers } from '../../../../seeds/1-user-seed';
+import { seedUsers } from '../../../../seeds/user-seed';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -6,7 +6,7 @@ const request = require('supertest');
 
 import { createTestServerWithSession } from '../../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../../testHelpers/common';
-import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
+import { seedAdminUser } from '../../../../seeds/adminUser-seed';
 
 const PATH = '/api/admin/v1/auth/two-factor';
 

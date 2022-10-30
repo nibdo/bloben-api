@@ -1,10 +1,10 @@
-import { seedUsers } from '../../../../seeds/1-user-seed';
+import { seedUsers } from '../../../../seeds/user-seed';
 
 import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
-import { seedSharedCalendar } from '../../../../seeds/10-sharedCalendar';
+import { seedSharedCalendar } from '../../../../seeds/sharedCalendar';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires

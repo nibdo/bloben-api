@@ -6,7 +6,7 @@ import { generateRandomString } from '../../../../utils/common';
 // eslint-disable-next-line unused-imports/no-unused-imports-ts,@typescript-eslint/no-unused-vars
 import { io } from '../../../../app';
 import { parseFromVcardString } from '../../../../utils/vcardParser';
-import { seedUserWithEntity } from '../../seeds/1-user-seed';
+import { seedUserWithEntity } from '../../seeds/user-seed';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CardDavAddressBook from '../../../../data/entity/CardDavAddressBook';

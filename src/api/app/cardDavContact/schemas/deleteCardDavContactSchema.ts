@@ -1,9 +1,8 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const deleteCardDavContactSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object().keys({
+export const deleteCardDavContactSchema = {
+  [Segments.PARAMS]: Joi.object().keys({
     id: Joi.string().uuid().required(),
   }),
-  body: Joi.object(),
-});
+};

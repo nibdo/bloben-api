@@ -7,7 +7,7 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = '/api/app/v1/profile/';
 

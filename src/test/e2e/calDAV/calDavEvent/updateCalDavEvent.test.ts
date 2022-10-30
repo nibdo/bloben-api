@@ -3,7 +3,7 @@ import {
   createDummyCalDavEventWithAlarm,
   createDummyCalDavEventWithAttendees,
   createDummyCalDavEventWithRepeatedAlarm,
-} from '../../../integration/seeds/4-calDavEvents';
+} from '../../../integration/seeds/calDavEvents';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
@@ -17,7 +17,7 @@ import {
 } from '../calDavServerTestHelper';
 import { getTestReminders } from '../../../testHelpers/getTestReminders';
 import { invalidUUID } from '../../../testHelpers/common';
-import { seedUsersE2E } from '../../seeds/1-user-caldav-seed';
+import { seedUsersE2E } from '../../seeds/user-caldav-seed';
 
 const PATH = '/api/app/v1/caldav-events';
 

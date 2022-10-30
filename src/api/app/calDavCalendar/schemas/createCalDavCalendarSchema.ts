@@ -1,10 +1,9 @@
 import { CALDAV_COMPONENTS } from '../../../../data/types/enums';
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const createCalDavCalendarSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: Joi.object().keys({
+export const createCalDavCalendarSchema = {
+  [Segments.BODY]: Joi.object().keys({
     accountID: Joi.string().required(),
     name: Joi.string().required().min(3),
     color: Joi.string().required().default('indigo'),
@@ -19,4 +18,4 @@ export const createCalDavCalendarSchema = Joi.object({
       .min(1)
       .required(),
   }),
-});
+};

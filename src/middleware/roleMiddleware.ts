@@ -9,7 +9,7 @@ import { throwError } from '../utils/errorCodes';
 dotenv.config();
 
 /*
- * Authentication middleware
+ * Role middleware
  */
 export const roleMiddleware = (
   roles: USER_ROLE[]

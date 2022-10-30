@@ -4,7 +4,7 @@ import { forEach } from 'lodash';
 import { CreateCalDavEventRequest } from 'bloben-interface';
 import { DAVCalendarObject } from 'tsdav';
 import { formatTodoJsonToCalDavTodo } from '../../../utils/davHelper';
-import { seedCalDavCalendars } from './3-calDavCalendars';
+import { seedCalDavCalendars } from './calDavCalendars';
 import { v4 } from 'uuid';
 import CalDavEventEntity from '../../../data/entity/CalDavEventEntity';
 import ICalParser, { TodoJSON } from 'ical-js-parser';

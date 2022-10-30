@@ -1,5 +1,5 @@
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedUsers } from '../../../seeds/user-seed';
 import assert from 'assert';
 
 import request from 'supertest';

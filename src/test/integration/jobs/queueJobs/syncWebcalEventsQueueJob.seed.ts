@@ -2,7 +2,7 @@ import {
   WEBCAL_MOCK_URL_FAIL,
   WEBCAL_MOCK_URL_SUCCESS,
 } from '../../../__mocks__/AxiosService';
-import { seedUserWithEntity } from '../../seeds/1-user-seed';
+import { seedUserWithEntity } from '../../seeds/user-seed';
 import WebcalCalendarEntity from '../../../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../../../data/repository/WebcalCalendarRepository';
 
