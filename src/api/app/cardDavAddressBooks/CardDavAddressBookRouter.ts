@@ -2,11 +2,11 @@ import { RATE_LIMIT } from '../../../utils/enums';
 import { Router } from 'express';
 import { USER_ROLE } from '../auth/UserEnums';
 import { authMiddleware } from '../../../middleware/authMiddleware';
+import { celebrate } from 'celebrate';
 import { emptySchema } from '../../../common/schemas/emptySchema';
 import { getCardDavAddressBooks } from './handlers/getCardDavAddressBooks';
 import { rateLimiterMiddleware } from '../../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../../middleware/roleMiddleware';
-import { validationMiddleware } from '../../../middleware/validationMiddleware';
 
 const CardDavAddressBookRouter: Router = Router();
 
@@ -14,9 +14,9 @@ CardDavAddressBookRouter.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(emptySchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(emptySchema),
   ],
   getCardDavAddressBooks
 );

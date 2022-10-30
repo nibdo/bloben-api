@@ -3,11 +3,11 @@ import { calculateRepeatedReminders } from '../../../../jobs/cronJobs/calculateR
 import {
   createDummyCalDavEventWithRepeatedAlarm,
   seedCalDavEvents,
-} from '../../seeds/4-calDavEvents';
+} from '../../seeds/calDavEvents';
 import { createTestServerWithSession } from '../../../testHelpers/initTestServer';
 import { getTestReminders } from '../../../testHelpers/getTestReminders';
 import { mockTsDavEvent } from '../../../__mocks__/tsdav';
-import { seedUsers } from '../../seeds/1-user-seed';
+import { seedUsers } from '../../seeds/user-seed';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires

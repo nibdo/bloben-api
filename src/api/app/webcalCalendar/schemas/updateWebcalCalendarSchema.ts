@@ -1,11 +1,11 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const updateWebcalCalendarSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object({
+export const updateWebcalCalendarSchema = {
+  [Segments.PARAMS]: Joi.object({
     id: Joi.string().uuid().required(),
   }),
-  body: Joi.object({
+  [Segments.BODY]: Joi.object({
     url: Joi.string().uri().required(),
     name: Joi.string().required(),
     color: Joi.string().required(),
@@ -20,4 +20,4 @@ export const updateWebcalCalendarSchema = Joi.object({
       .min(0),
     userMailto: Joi.string().email().optional().allow(null),
   }),
-});
+};

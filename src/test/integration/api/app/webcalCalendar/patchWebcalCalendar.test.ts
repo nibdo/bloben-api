@@ -3,8 +3,8 @@ import {
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
-import { seedUsers } from '../../../seeds/1-user-seed';
-import { seedWebcal } from '../../../seeds/6-webcal';
+import { seedUsers } from '../../../seeds/user-seed';
+import { seedWebcal } from '../../../seeds/webcal';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires

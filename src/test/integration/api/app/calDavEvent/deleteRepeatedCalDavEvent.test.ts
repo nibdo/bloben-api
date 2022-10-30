@@ -11,8 +11,8 @@ import {
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
 import { invalidUUID } from '../../../../testHelpers/common';
 import { mockTsDav, mockTsDavUnauthorized } from '../../../../__mocks__/tsdav';
-import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedCalDavEvents } from '../../../seeds/calDavEvents';
+import { seedUsers } from '../../../seeds/user-seed';
 import CalDavEventEntity from '../../../../../data/entity/CalDavEventEntity';
 
 const PATH = '/api/app/v1/caldav-events/repeated';

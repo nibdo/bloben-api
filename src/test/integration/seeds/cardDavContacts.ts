@@ -3,7 +3,7 @@ import { forEach } from 'lodash';
 
 import { CreateCardDavContactRequest } from 'bloben-interface';
 import { ParsedContact } from '../../../utils/davHelper';
-import { seedCardDavAddressBooks } from './11-cardDavAddressBooks';
+import { seedCardDavAddressBooks } from './cardDavAddressBooks';
 import { v4 } from 'uuid';
 import CardDavContact from '../../../data/entity/CardDavContact';
 import UserEntity from '../../../data/entity/UserEntity';

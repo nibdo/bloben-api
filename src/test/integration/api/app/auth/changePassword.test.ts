@@ -7,7 +7,7 @@ import {
   TEST_USER_PASSWORD,
   seedUsers,
   testUserData,
-} from '../../../seeds/1-user-seed';
+} from '../../../seeds/user-seed';
 import {
   createTestServer,
   createTestServerWithSession,

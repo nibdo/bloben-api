@@ -6,8 +6,8 @@ const request = require('supertest');
 
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
 import { generateRandomSimpleString } from '../../../../../utils/common';
-import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
-import { seedUserWithEntity } from '../../../seeds/1-user-seed';
+import { seedAdminUser } from '../../../seeds/adminUser-seed';
+import { seedUserWithEntity } from '../../../seeds/user-seed';
 
 const PATH = '/api/admin/v1/users';
 

@@ -1,9 +1,8 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const getCachedEventsSchema = Joi.object({
-  params: Joi.object(),
-  query: Joi.object({
+export const getCachedEventsSchema = {
+  [Segments.QUERY]: Joi.object({
     isDark: Joi.boolean().optional().default(false),
   }),
-  body: Joi.object(),
-});
+};

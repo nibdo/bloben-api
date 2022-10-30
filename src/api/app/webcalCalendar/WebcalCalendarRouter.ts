@@ -5,12 +5,12 @@ import { USER_ROLE } from '../auth/UserEnums';
 import { authMiddleware } from '../../../middleware/authMiddleware';
 import { rateLimiterMiddleware } from '../../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../../middleware/roleMiddleware';
-import { validationMiddleware } from '../../../middleware/validationMiddleware';
 
 import * as WebcalCalendarController from './WebcalCalendarController';
+import { celebrate } from 'celebrate';
 import { createWebcalCalendarSchema } from './schemas/createWebcalCalendarSchema';
 import { deleteWebcalCalendarSchema } from './schemas/deleteWebcalCalendarSchema';
-import { getWebcalCalendarSchema } from './schemas/getWebcalCalendarSchema';
+import { emptySchema } from '../../../common/schemas/emptySchema';
 import { patchWebcalCalendarSchema } from './schemas/patchWebcalCalendarSchema';
 import { updateWebcalCalendarSchema } from './schemas/updateWebcalCalendarSchema';
 
@@ -20,9 +20,9 @@ WebcalCalendarRouter.post(
   '',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(createWebcalCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(createWebcalCalendarSchema),
   ],
   WebcalCalendarController.createWebcalCalendar
 );
@@ -31,9 +31,9 @@ WebcalCalendarRouter.get(
   '',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(emptySchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER, USER_ROLE.DEMO]),
-    validationMiddleware(getWebcalCalendarSchema),
   ],
   WebcalCalendarController.getWebcalCalendars
 );
@@ -41,9 +41,9 @@ WebcalCalendarRouter.put(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(updateWebcalCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(updateWebcalCalendarSchema),
   ],
   WebcalCalendarController.updateWebcalCalendar
 );
@@ -51,9 +51,9 @@ WebcalCalendarRouter.delete(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(deleteWebcalCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(deleteWebcalCalendarSchema),
   ],
   WebcalCalendarController.deleteWebcalCalendar
 );
@@ -61,9 +61,9 @@ WebcalCalendarRouter.patch(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(patchWebcalCalendarSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(patchWebcalCalendarSchema),
   ],
   WebcalCalendarController.patchWebcalCalendar
 );

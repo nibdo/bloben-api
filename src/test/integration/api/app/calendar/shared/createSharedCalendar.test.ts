@@ -1,4 +1,4 @@
-import { seedUsers } from '../../../../seeds/1-user-seed';
+import { seedUsers } from '../../../../seeds/user-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
@@ -9,8 +9,8 @@ import {
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../../testHelpers/common';
-import { seedCalDavCalendars } from '../../../../seeds/3-calDavCalendars';
-import { seedWebcal } from '../../../../seeds/6-webcal';
+import { seedCalDavCalendars } from '../../../../seeds/calDavCalendars';
+import { seedWebcal } from '../../../../seeds/webcal';
 
 const PATH = '/api/app/v1/calendars/shared';
 

@@ -1,12 +1,12 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const sendSharedCalendarInviteSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object().keys({
+export const sendSharedCalendarInviteSchema = {
+  [Segments.PARAMS]: Joi.object().keys({
     id: Joi.string().uuid().required(),
   }),
-  body: Joi.object().keys({
+  [Segments.BODY]: Joi.object().keys({
     emailBody: Joi.string().required().min(6),
     recipients: Joi.array().items(Joi.string().email()).min(1).required(),
   }),
-});
+};

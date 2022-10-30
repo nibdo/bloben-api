@@ -5,7 +5,7 @@ const request = require('supertest');
 import {
   TEST_USER_PASSWORD,
   seedUserWithEntity,
-} from '../../../seeds/1-user-seed';
+} from '../../../seeds/user-seed';
 import { createTestServer } from '../../../../testHelpers/initTestServer';
 
 const PATH = '/api/app/v1/auth/login';

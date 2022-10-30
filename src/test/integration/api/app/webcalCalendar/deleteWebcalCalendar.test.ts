@@ -2,8 +2,8 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { seedUsers } from '../../../seeds/1-user-seed';
-import { seedWebcal } from '../../../seeds/6-webcal';
+import { seedUsers } from '../../../seeds/user-seed';
+import { seedWebcal } from '../../../seeds/webcal';
 import { v4 } from 'uuid';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

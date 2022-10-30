@@ -1,11 +1,11 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const patchWebcalCalendarSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object({
+export const patchWebcalCalendarSchema = {
+  [Segments.PARAMS]: Joi.object({
     id: Joi.string().uuid().required(),
   }),
-  body: Joi.object({
+  [Segments.BODY]: Joi.object({
     isHidden: Joi.boolean().required(),
   }),
-});
+};

@@ -9,7 +9,7 @@ import { rateLimiterMiddleware } from '../../../middleware/rateLimiterMiddleware
 import { roleMiddleware } from '../../../middleware/roleMiddleware';
 import { updateCalDavTaskSettingsSchema } from './schemas/updateCalDavTaskSettingsSchema';
 
-import { validationMiddleware } from '../../../middleware/validationMiddleware';
+import { celebrate } from 'celebrate';
 
 const CalDavTaskSettingsRoutes: Router = Router();
 
@@ -17,9 +17,9 @@ CalDavTaskSettingsRoutes.put(
   '/:calendarID',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(updateCalDavTaskSettingsSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(updateCalDavTaskSettingsSchema),
   ],
   CalDavTaskSettingsController.updateCalDavTaskSettings
 );
@@ -28,9 +28,9 @@ CalDavTaskSettingsRoutes.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(emptySchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER, USER_ROLE.DEMO]),
-    validationMiddleware(emptySchema),
   ],
   CalDavTaskSettingsController.getCalDavTaskSettings
 );
