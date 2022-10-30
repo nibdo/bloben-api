@@ -1,6 +1,6 @@
 import { DAVAccount, DAVCalendar } from 'tsdav';
 import { ImportMock } from 'ts-mock-imports';
-import { testIcalString } from '../integration/seeds/4-calDavEvents';
+import { testIcalString } from '../integration/seeds/calDavEvents';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const tsdav = require('tsdav');
 

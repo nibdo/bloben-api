@@ -5,7 +5,7 @@ const assert = require('assert');
 const request = require('supertest');
 
 import { createTestServerWithSession } from '../../../../../testHelpers/initTestServer';
-import { seedAdminUser } from '../../../../seeds/0-adminUser-seed';
+import { seedAdminUser } from '../../../../seeds/adminUser-seed';
 
 const PATH = '/api/admin/v1/auth/two-factor';
 

@@ -1,9 +1,8 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const updateUserEmailConfigSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: Joi.object({
+export const updateUserEmailConfigSchema = {
+  [Segments.BODY]: Joi.object({
     smtp: Joi.object()
       .keys({
         smtpHost: Joi.string().min(1).required(),
@@ -23,4 +22,4 @@ export const updateUserEmailConfigSchema = Joi.object({
       .allow(null),
     imapSyncingInterval: Joi.number().integer().min(15).required(),
   }),
-});
+};

@@ -8,9 +8,9 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
-import { seedCalDavCalendars } from '../../../../seeds/3-calDavCalendars';
-import { seedSharedCalendar } from '../../../../seeds/10-sharedCalendar';
-import { seedUsers } from '../../../../seeds/1-user-seed';
+import { seedCalDavCalendars } from '../../../../seeds/calDavCalendars';
+import { seedSharedCalendar } from '../../../../seeds/sharedCalendar';
+import { seedUsers } from '../../../../seeds/user-seed';
 
 const PATH = (id: string) => `/api/app/v1/calendars/shared/${id}`;
 

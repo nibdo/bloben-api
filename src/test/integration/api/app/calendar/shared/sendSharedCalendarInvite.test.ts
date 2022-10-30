@@ -6,8 +6,8 @@ import {
   createTestServerWithSession,
 } from '../../../../../testHelpers/initTestServer';
 import { mockNodemailer } from '../../../../../__mocks__/nodemailer';
-import { seedSharedCalendar } from '../../../../seeds/10-sharedCalendar';
-import { seedUsers } from '../../../../seeds/1-user-seed';
+import { seedSharedCalendar } from '../../../../seeds/sharedCalendar';
+import { seedUsers } from '../../../../seeds/user-seed';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires

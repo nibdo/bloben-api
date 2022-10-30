@@ -1,12 +1,12 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const getPublicEventsInRangeSchema = Joi.object({
-  params: Joi.object({
+export const getPublicEventsInRangeSchema = {
+  [Segments.PARAMS]: Joi.object({
     id: Joi.string().uuid().required(),
   }),
-  query: Joi.object({
+  [Segments.QUERY]: Joi.object({
     rangeFrom: Joi.date().iso().required(),
     rangeTo: Joi.date().iso().required(),
   }),
-  body: Joi.object(),
-});
+};

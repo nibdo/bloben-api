@@ -3,8 +3,8 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
-import { seedCalDavEvents } from '../../../seeds/4-calDavEvents';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedCalDavEvents } from '../../../seeds/calDavEvents';
+import { seedUsers } from '../../../seeds/user-seed';
 import { v4 } from 'uuid';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');

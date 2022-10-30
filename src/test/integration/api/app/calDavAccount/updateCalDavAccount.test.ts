@@ -11,8 +11,8 @@ import {
 } from '../../../../testHelpers/initTestServer';
 import { initCalDavMock } from '../../../../__mocks__/calDavMock';
 import { invalidUUID } from '../../../../testHelpers/common';
-import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedCalDavCalendars } from '../../../seeds/calDavCalendars';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = (id: string) => `/api/app/v1/caldav-accounts/${id}`;
 

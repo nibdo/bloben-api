@@ -1,7 +1,7 @@
 import { LOCATION_PROVIDER } from '../../../../../data/types/enums';
 import { createTestServerWithSession } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
-import { seedAdminUser } from '../../../seeds/0-adminUser-seed';
+import { seedAdminUser } from '../../../seeds/adminUser-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const assert = require('assert');

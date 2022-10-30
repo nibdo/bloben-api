@@ -5,7 +5,7 @@ const assert = require('assert');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const request = require('supertest');
 
-import { TEST_USER_PASSWORD, seedUser } from '../../../../seeds/1-user-seed';
+import { TEST_USER_PASSWORD, seedUser } from '../../../../seeds/user-seed';
 import { createTestServer } from '../../../../../testHelpers/initTestServer';
 
 const PATH = '/api/app/v1/auth/two-factor/login';

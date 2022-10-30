@@ -1,9 +1,8 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
-export const getPublicCalendarSchema = Joi.object({
-  params: Joi.object({
+export const getPublicCalendarSchema = {
+  [Segments.PARAMS]: Joi.object({
     id: Joi.string().uuid().required(),
   }),
-  query: Joi.object(),
-  body: Joi.object(),
-});
+};

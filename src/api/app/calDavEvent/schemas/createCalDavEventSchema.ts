@@ -1,3 +1,4 @@
+import { Segments } from 'celebrate';
 import Joi from 'joi';
 
 export const createEventBodySchema = Joi.object({
@@ -8,8 +9,6 @@ export const createEventBodySchema = Joi.object({
   inviteMessage: Joi.string().optional().allow(null),
 });
 
-export const createCalDavEventSchema = Joi.object({
-  query: Joi.object(),
-  params: Joi.object(),
-  body: createEventBodySchema,
-});
+export const createCalDavEventSchema = {
+  [Segments.BODY]: createEventBodySchema,
+};

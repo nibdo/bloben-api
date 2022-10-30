@@ -1,5 +1,5 @@
 import { closeConnection } from '../testHelpers/closeConnection';
-import { globalSeed } from './seeds/0-global-seed';
+import { globalSeed } from './seeds/global-seed';
 import { initDatabase } from '../testHelpers/initDatabase';
 import { mockRedisService } from '../__mocks__/RedisService';
 import { mockSocketio } from '../__mocks__/socketio';

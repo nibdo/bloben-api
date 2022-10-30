@@ -1,6 +1,6 @@
 import { Connection, getConnection } from 'typeorm';
 
-import { testDemoUserData } from '../integration/seeds/1-user-seed';
+import { testDemoUserData } from '../integration/seeds/user-seed';
 import UserEntity from '../../data/entity/UserEntity';
 
 export const getUserByID = async (id: string): Promise<UserEntity> => {

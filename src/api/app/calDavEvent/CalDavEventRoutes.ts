@@ -4,6 +4,7 @@ import * as CalDavEventController from './CalDavEventController';
 import { RATE_LIMIT } from '../../../utils/enums';
 import { USER_ROLE } from '../auth/UserEnums';
 import { authMiddleware } from '../../../middleware/authMiddleware';
+import { celebrate } from 'celebrate';
 import { createCalDavEventSchema } from './schemas/createCalDavEventSchema';
 import { deleteCalDavEventSchema } from './schemas/deleteCalDavEventSchema';
 import { deleteRepeatedCalDavEventSchema } from './schemas/deleteRepeatedCalDavEventSchema';
@@ -15,7 +16,6 @@ import { roleMiddleware } from '../../../middleware/roleMiddleware';
 import { updateCalDavEventSchema } from './schemas/updateCalDavEventSchema';
 import { updatePartstatStatusSchema } from './schemas/updatePartstatStatusSchema';
 import { updateRepeatedCalDavEventSchema } from './schemas/updateRepeatedCalDavEventSchema';
-import { validationMiddleware } from '../../../middleware/validationMiddleware';
 
 const CalDavEventRoutes: Router = Router();
 
@@ -23,9 +23,9 @@ CalDavEventRoutes.put(
   '/repeated',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(updateRepeatedCalDavEventSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(updateRepeatedCalDavEventSchema),
   ],
   CalDavEventController.updateRepeatedCalDavEvent
 );
@@ -33,9 +33,9 @@ CalDavEventRoutes.put(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(updateCalDavEventSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(updateCalDavEventSchema),
   ],
   CalDavEventController.updateCalDavEvent
 );
@@ -44,9 +44,9 @@ CalDavEventRoutes.post(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(createCalDavEventSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(createCalDavEventSchema),
   ],
   CalDavEventController.createCalDavEvent
 );
@@ -54,9 +54,9 @@ CalDavEventRoutes.delete(
   '/repeated',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(deleteRepeatedCalDavEventSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(deleteRepeatedCalDavEventSchema),
   ],
   CalDavEventController.deleteRepeatedCalDavEvent
 );
@@ -64,9 +64,9 @@ CalDavEventRoutes.delete(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(deleteCalDavEventSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(deleteCalDavEventSchema),
   ],
   CalDavEventController.deleteCalDavEvent
 );
@@ -74,9 +74,9 @@ CalDavEventRoutes.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(getCalDavEventSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(getCalDavEventSchema),
   ],
   CalDavEventController.getCalDavEvent
 );
@@ -84,9 +84,9 @@ CalDavEventRoutes.patch(
   '/:eventID',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(updatePartstatStatusSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(updatePartstatStatusSchema),
   ],
   CalDavEventController.updatePartstatStatus
 );
@@ -95,9 +95,9 @@ CalDavEventRoutes.post(
   '/:eventID/duplicate',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(duplicateMultipleCalDavEventsSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(duplicateMultipleCalDavEventsSchema),
   ],
   duplicateMultipleCalDavEvents
 );

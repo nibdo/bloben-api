@@ -9,8 +9,8 @@ import {
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
 import { invalidUUID } from '../../../../testHelpers/common';
-import { seedCalDavCalendars } from '../../../seeds/3-calDavCalendars';
-import { seedUsers } from '../../../seeds/1-user-seed';
+import { seedCalDavCalendars } from '../../../seeds/calDavCalendars';
+import { seedUsers } from '../../../seeds/user-seed';
 
 const PATH = (id: string) => `/api/app/v1/caldav-calendars/${id}`;
 

@@ -2,6 +2,7 @@ import { RATE_LIMIT } from '../../../utils/enums';
 import { Router } from 'express';
 import { USER_ROLE } from '../auth/UserEnums';
 import { authMiddleware } from '../../../middleware/authMiddleware';
+import { celebrate } from 'celebrate';
 import { createCardDavContact } from './handlers/createCardDavContact';
 import { createCardDavContactSchema } from './schemas/createCardDavContactSchema';
 import { deleteCardDavContact } from './handlers/deleteCardDavContact';
@@ -12,7 +13,6 @@ import { rateLimiterMiddleware } from '../../../middleware/rateLimiterMiddleware
 import { roleMiddleware } from '../../../middleware/roleMiddleware';
 import { searchCardDavContact } from './handlers/searchCardDavContact';
 import { searchCardDavContactSchema } from './schemas/searchCardDavContactSchema';
-import { validationMiddleware } from '../../../middleware/validationMiddleware';
 
 const CardDavContactRoutes: Router = Router();
 
@@ -20,9 +20,9 @@ CardDavContactRoutes.post(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(createCardDavContactSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(createCardDavContactSchema),
   ],
   createCardDavContact
 );
@@ -31,9 +31,9 @@ CardDavContactRoutes.get(
   '/search',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(searchCardDavContactSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(searchCardDavContactSchema),
   ],
   searchCardDavContact
 );
@@ -42,9 +42,9 @@ CardDavContactRoutes.get(
   '/',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(getCardDavContactsSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(getCardDavContactsSchema),
   ],
   getCardDavContacts
 );
@@ -53,9 +53,9 @@ CardDavContactRoutes.delete(
   '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(deleteCardDavContactSchema),
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
-    validationMiddleware(deleteCardDavContactSchema),
   ],
   deleteCardDavContact
 );
