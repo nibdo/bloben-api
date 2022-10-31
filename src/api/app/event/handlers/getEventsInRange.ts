@@ -12,8 +12,8 @@ import LuxonHelper from '../../../../utils/luxonHelper';
 interface Query {
   rangeFrom: string;
   rangeTo: string;
-  isDark: string;
-  showTasks: string;
+  isDark: boolean;
+  showTasks: boolean;
 }
 
 /**
@@ -52,16 +52,16 @@ export const getEventsInRange = async (
       userID,
       rangeFrom,
       rangeTo,
-      showTasks === 'true'
+      showTasks
     ),
     getRepeatedEvents(
       userID,
       rangeFromDateTime,
       rangeToDateTime,
       undefined,
-      showTasks === 'true'
+      showTasks
     ),
-    getWebcalEvents(userID, rangeFrom, rangeTo, isDark === 'true'),
+    getWebcalEvents(userID, rangeFrom, rangeTo, isDark),
   ];
 
   const [normalEvents, repeatedEvents, webCalEvents] = await Promise.all(
@@ -69,10 +69,10 @@ export const getEventsInRange = async (
   );
 
   const calDavEventsNormal = map(normalEvents, (event) =>
-    formatEventRawToResult(event, isDark === 'true')
+    formatEventRawToResult(event, isDark)
   );
   const calDavEventsRepeated = map(repeatedEvents, (event) =>
-    formatEventRawToResult(event, isDark === 'true')
+    formatEventRawToResult(event, isDark)
   );
 
   // @ts-ignore
