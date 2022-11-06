@@ -6,7 +6,7 @@ export const getPublicEventsInRangeSchema = {
     id: Joi.string().uuid().required(),
   }),
   [Segments.QUERY]: Joi.object({
-    rangeFrom: Joi.date().iso().required(),
-    rangeTo: Joi.date().iso().required(),
+    rangeFrom: Joi.string().isoDate().required(),
+    rangeTo: Joi.string().isoDate().required(),
   }),
 };
