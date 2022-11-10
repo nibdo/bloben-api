@@ -77,6 +77,7 @@ export const eventResultToCalDavEventObj = (
     startAt: eventResult.startAt,
     endAt: eventResult.endAt,
     timezone: eventResult.timezoneStartAt,
+    timezoneEnd: eventResult.timezoneEndAt || eventResult.timezoneStartAt,
     isRepeated: eventResult.isRepeated,
     summary: eventResult.summary,
     location: eventResult.location,

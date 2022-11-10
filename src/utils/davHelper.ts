@@ -69,6 +69,7 @@ export interface CalDavEventObj {
   startAt: string | null;
   endAt: string | null;
   timezone: string | null;
+  timezoneEnd: string | null;
   isRepeated: boolean;
   summary: string;
   location: string | null;
@@ -190,6 +191,7 @@ export const formatEventJsonToCalDavEvent = (
     endAt: formatDTEndValue(event, isAllDay),
     allDay: isAllDay,
     timezone: isAllDay ? 'floating' : event.dtstart.timezone || null,
+    timezoneEnd: isAllDay ? 'floating' : event.dtend?.timezone || null,
     isRepeated: event.rrule !== undefined || false,
     rRule: event.rrule || null,
     summary: event.summary || '',
@@ -1176,6 +1178,7 @@ export const formatTodoJsonToCalDavTodo = (
     startAt: item.dtstart?.value,
     endAt: item.dtend?.value,
     timezone: item.dtstart?.timezone || null,
+    timezoneEnd: item.dtend?.timezone || null,
     isRepeated: item.rrule !== undefined || false,
     rRule: item.rrule || null,
     allDay: isAllDay,

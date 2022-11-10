@@ -87,6 +87,7 @@ interface WebCalEventRaw {
   startAt: Date;
   endAt: Date;
   timezoneStartAt: string;
+  timezoneEndAt: string;
   description: string;
   location: string;
   sequence: string;
@@ -135,7 +136,7 @@ export const formatWebCalEventRaw = (
   startAt: webCalEventRaw.startAt,
   endAt: webCalEventRaw.endAt,
   timezoneStartAt: webCalEventRaw.timezoneStartAt,
-  timezoneEndAt: webCalEventRaw.timezoneStartAt,
+  timezoneEndAt: webCalEventRaw.timezoneEndAt || webCalEventRaw.timezoneStartAt,
   summary: webCalEventRaw.summary,
   description: webCalEventRaw.description,
   location: webCalEventRaw.location,
@@ -169,6 +170,7 @@ export const getWebcalEventByID = async (
         we.start_at    as "startAt",
         we.end_at      as "endAt",
         we.timezone_start_at as "timezoneStartAt",
+        we.timezone_end_at as "timezoneEndAt",
         we.summary     as summary,
         we.description as description,
         we.location    as location,
@@ -219,7 +221,7 @@ export const getWebcalEventByID = async (
     startAt: event.startAt.toISOString(),
     endAt: event.endAt.toISOString(),
     timezoneEndAt: event.timezoneStartAt,
-    timezoneStartAt: event.timezoneStartAt,
+    timezoneStartAt: event.timezoneEndAt || event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
     sourceType: SOURCE_TYPE.WEBCAL,
@@ -253,6 +255,7 @@ export const getWebcalEvents = async (
         we.start_at    as "startAt",
         we.end_at      as "endAt",
         we.timezone_start_at as "timezoneStartAt",
+        we.timezone_end_at as "timezoneEndAt",
         we.summary     as summary,
         we.description as description,
         we.location    as location,
@@ -293,6 +296,7 @@ export const getWebcalEvents = async (
                 we.start_at as "startAt",
                 we.end_at as "endAt",
                 we.timezone_start_at as "timezoneStartAt",
+                we.timezone_end_at as "timezoneEndAt",
                 we.description as description,
                 we.location as location,
                 we.sequence as sequence,
@@ -604,7 +608,7 @@ export const getSharedWebcalEvents = async (
     startAt: event.startAt.toISOString(),
     endAt: event.endAt.toISOString(),
     timezoneEndAt: event.timezoneStartAt,
-    timezoneStartAt: event.timezoneStartAt,
+    timezoneStartAt: event.timezoneEndAt || event.timezoneStartAt,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
     sourceType: SOURCE_TYPE.WEBCAL,
