@@ -11,6 +11,7 @@ export interface SearchResult {
   startAt: string;
   endAt: string;
   timezoneStartAt: string | null;
+  timezoneEndAt: string | null;
 }
 
 export const searchEvents = async (
@@ -27,7 +28,8 @@ export const searchEvents = async (
         ce.summary as summary,
         ce.start_at as "startAt",
         ce.end_at as "endAt",
-        ce."timezone_start_at" as "timezoneStartAt"
+        ce."timezone_start_at" as "timezoneStartAt",
+        ce."timezone_end_at" as "timezoneEndAt"
     FROM
         caldav_events ce
     INNER JOIN caldav_calendars cc ON ce.caldav_calendar_id = cc.id
@@ -51,7 +53,8 @@ export const searchEvents = async (
         we.summary as summary,
         we.start_at as "startAt",
         we.end_at as "endAt",
-        we."timezone_start_at" as "timezoneStartAt"
+        we."timezone_start_at" as "timezoneStartAt",
+        we."timezone_end_at" as "timezoneEndAt"
     FROM
         webcal_events we
     INNER JOIN webcal_calendars wc ON we.external_calendar_id = wc.id
@@ -83,6 +86,7 @@ export const searchEvents = async (
     startAt: item.startAt,
     endAt: item.endAt,
     timezoneStartAt: item.timezoneStartAt || null,
+    timezoneEndAt: item.timezoneEndAt || item.timezoneStartAt || null,
     sourceType: SOURCE_TYPE.CALDAV,
     type: EVENT_TYPE.EVENT,
   }));
