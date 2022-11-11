@@ -178,6 +178,9 @@ export default class CalDavEventEntity {
         this.timezoneStartAt = item.timezone;
         this.timezoneEndAt = item.timezone;
       }
+      if (item.timezoneEnd) {
+        this.timezoneEndAt = item.timezoneEnd;
+      }
 
       if (item.status) {
         this.status = item.status;

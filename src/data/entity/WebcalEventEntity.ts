@@ -122,7 +122,11 @@ export default class WebcalEventEntity {
         ? data.dtstart.timezone
         : defaultTimezone;
       this.endAt = formatDTEndValue(data, isAllDay);
-      this.timezoneEndAt = this.timezoneStartAt;
+      this.timezoneEndAt = isAllDay
+        ? 'floating'
+        : data.dtend.timezone
+        ? data.dtend?.timezone || data.dtstart?.timezone
+        : defaultTimezone;
       this.externalID = data.uid;
       this.organizer = data.organizer
         ? ({
