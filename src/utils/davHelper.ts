@@ -94,9 +94,15 @@ export const formatIcalDate = (date: string, timezone?: string | null) => {
   }
 
   if (timezone) {
-    return DateTime.fromISO(date, { zone: timezone }).toFormat(
-      `yyyyMMdd'T'HHmmss`
-    );
+    if (typeof date === 'object') {
+      return DateTime.fromJSDate(date, { zone: timezone }).toFormat(
+        `yyyyMMdd'T'HHmmss`
+      );
+    } else {
+      return DateTime.fromISO(date, { zone: timezone }).toFormat(
+        `yyyyMMdd'T'HHmmss`
+      );
+    }
   }
 
   return date;
@@ -830,6 +836,10 @@ export const removeSupportedProps = (originalItem: EventJSON) => {
 };
 
 export const injectMethod = (icalString: string, method: CALENDAR_METHOD) => {
+  if (icalString.includes(`METHOD:${method}`)) {
+    return icalString;
+  }
+
   const firstPart = icalString.slice(0, icalString.indexOf('CALSCALE:'));
   const secondPart = icalString.slice(icalString.indexOf('CALSCALE:') - 1);
 
@@ -949,7 +959,7 @@ export const formatCancelInviteData = (
         event.timezoneStartAt,
         inviteMessage
       ),
-      ical: injectMethod(iCalString, method),
+      ical: iCalString,
       method: method,
       // @ts-ignore
       recipients: map(attendees, 'mailto'),
