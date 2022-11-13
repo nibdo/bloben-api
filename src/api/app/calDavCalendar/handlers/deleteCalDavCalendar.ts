@@ -1,13 +1,21 @@
 import { Request, Response } from 'express';
 
-import { BULL_QUEUE, LOG_TAG } from '../../../../utils/enums';
+import {
+  BULL_QUEUE,
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../../utils/enums';
 import { CommonResponse } from 'bloben-interface';
 import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
 import { deleteObject } from 'tsdav';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
+import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
+import UserEmailConfigRepository from '../../../../data/repository/UserEmailConfigRepository';
 import logger from '../../../../utils/logger';
 
 export const deleteCalDavCalendar = async (
@@ -17,6 +25,8 @@ export const deleteCalDavCalendar = async (
   const { id } = req.params;
   const { userID } = res.locals;
 
+  const useEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
+
   const calDavCalendar = await CalDavCalendarRepository.getByIDWithAccount(
     id as string,
     userID
@@ -24,6 +34,16 @@ export const deleteCalDavCalendar = async (
 
   if (!calDavCalendar) {
     throw throwError(404, 'CalDav calendar not found');
+  }
+
+  if (
+    useEmailConfig?.calendarForImportID &&
+    id === useEmailConfig.calendarForImportID
+  ) {
+    throw throwError(
+      409,
+      'Cannot delete calendar used for importing email invites'
+    );
   }
 
   const davRequestData = getDavRequestData({
@@ -43,6 +63,13 @@ export const deleteCalDavCalendar = async (
     ]);
     throw throwError(409, response.statusText);
   }
+
+  await CalDavCalendarRepository.getRepository().delete(id);
+
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+  );
 
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
 

@@ -1,24 +1,25 @@
 import * as ImapFlowLib from 'imapflow';
 import { BULL_QUEUE, LOG_TAG } from '../utils/enums';
+import { EmailEventJobData } from '../jobs/queueJobs/processEmailEventJob';
 import { ImapConfig, ImapData } from 'bloben-interface';
 import { emailInviteBullQueue } from './BullQueue';
 import { getTextCalendarAttachment } from '../jobs/cronJobs/getImapEmails';
 import logger from '../utils/logger';
 import mailparser from 'mailparser';
 
-// const getToAddress = (data: any): string => {
-//   if (!data.to || (data.to && !data.to.value)) {
-//     const toHeaderValue: any = data.headerLines.filter((item: any) => {
-//       return item.key === 'delivered-to';
-//     });
-//
-//     const rawValue: string = toHeaderValue[0].line;
-//
-//     return rawValue.slice('Delivered-To: '.length);
-//   } else {
-//     return data.to.value[0].address;
-//   }
-// };
+const getToAddress = (data: any): string => {
+  if (!data.to || (data.to && !data.to.value)) {
+    const toHeaderValue: any = data.headerLines.filter((item: any) => {
+      return item.key === 'delivered-to';
+    });
+
+    const rawValue: string = toHeaderValue[0].line;
+
+    return rawValue.slice('Delivered-To: '.length);
+  } else {
+    return data.to.value[0].address;
+  }
+};
 
 const getFromAddress = (data: any): string => {
   if (!data.from || (data.from && !data.from.value)) {
@@ -110,9 +111,22 @@ class ImapService {
           if (message.seq === lastSeq) {
             return;
           }
-          for await (const msg of client.fetch(`${lastSeq}:*`, {
+
+          // handle changes to sequence to prevent error:
+          // Error in IMAP command FETCH: Invalid messageset
+          // when emails are deleted
+          const sequenceNew = message.seq < lastSeq ? message.seq : lastSeq;
+
+          logger.info(
+            `Sequence for imap sync changed from ${lastSeq} to ${message.seq} for config userID ${userID}`,
+            [LOG_TAG.CRON, LOG_TAG.EMAIL]
+          );
+
+          const fetchedMsg = await client.fetch(`${sequenceNew}:*`, {
             envelope: true,
-          })) {
+          });
+
+          for await (const msg of fetchedMsg) {
             idsToCheck.push(msg.seq);
           }
         }
@@ -127,7 +141,8 @@ class ImapService {
           const email = await client.download(id);
           const data: any = await mailparser.simpleParser(email.content);
 
-          const fromAddress: string = getFromAddress(data);
+          const fromAddress = getFromAddress(data);
+          const toAddress = getToAddress(data);
 
           const isCalendarEvent: boolean = checkIfIsCalendarInvite(data);
 
@@ -138,7 +153,8 @@ class ImapService {
               userID,
               icalString: textCalendarString,
               from: fromAddress,
-            });
+              to: toAddress,
+            } as EmailEventJobData);
           }
         }
       } finally {
