@@ -8,6 +8,7 @@ import {
 } from 'bloben-interface';
 
 import {
+  BLOBEN_EVENT_KEY,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
@@ -36,6 +37,10 @@ export const updatePartstatStatus = async (
     organizer: Organizer;
     href: string;
     etag: string;
+    props: {
+      [BLOBEN_EVENT_KEY.INVITE_FROM]: string | undefined;
+      [BLOBEN_EVENT_KEY.INVITE_TO]: string | undefined;
+    };
   }[] = await CalDavEventRepository.getRepository().query(
     `
       SELECT
@@ -45,7 +50,8 @@ export const updatePartstatStatus = async (
         e.organizer as "organizer",
         e.attendees as "attendees",
         e.href as "href",
-        e.etag as "etag"
+        e.etag as "etag",
+        e.props as "props"
       FROM caldav_events e
       INNER JOIN caldav_calendars c ON c.id = e.caldav_calendar_id
       INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
@@ -77,7 +83,8 @@ export const updatePartstatStatus = async (
     existingEvent.href,
     body.status,
     body.sendInvite,
-    body.inviteMessage
+    body.inviteMessage,
+    existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
   );
 
   if (newAttendees?.length) {

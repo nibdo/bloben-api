@@ -15,10 +15,17 @@ export const userEmailConfigData: UserEmailConfigData = {
   imap: null,
 };
 
-export const seedUserEmailConfig = async (userID: string) => {
+export const seedUserEmailConfig = async (
+  userID: string,
+  calendarForImportID?: string
+) => {
   const data = await CryptoAes.encrypt(userEmailConfigData);
 
   const emailConfig = new UserEmailConfigEntity(userID, data, 15, false);
+
+  if (calendarForImportID) {
+    emailConfig.calendarForImportID = calendarForImportID;
+  }
 
   await UserEmailConfigRepository.getRepository().save(emailConfig);
 };

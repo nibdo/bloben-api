@@ -253,8 +253,8 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
         eventData.url,
         eventData.etag,
         REPEATED_EVENT_CHANGE_TYPE.SINGLE,
-        newDate.set({ hour: 21 }).toString(),
-        newDate.set({ hour: 22 }).toString(),
+        newDate.set({ hour: 18 }).toString(),
+        newDate.set({ hour: 19 }).toString(),
         newDate.toString(),
         undefined,
         'FREQ=YEARLY'
@@ -278,7 +278,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
 
     const exception = exceptions[0];
 
-    assert.equal(events.length, 1);
+    assert.equal(events.length, 2);
     assert.equal(
       DateTime.fromJSDate(exception.exceptionDate).toUTC().toString(),
       newDate.set({ hour: 14 }).toUTC().toString(),

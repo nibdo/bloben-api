@@ -96,6 +96,13 @@ export const removeOrganizerFromAttendees = (
   return attendees.filter((item) => item.mailto !== organizer.mailto);
 };
 
+export const excludeEmailsFromAttendees = (
+  excludedEmails: string[],
+  attendees: { mailto: string }[]
+): any[] => {
+  return attendees.filter((item) => !excludedEmails.includes(item.mailto));
+};
+
 export const createCalDavEvent = async (
   req: Request,
   res: Response

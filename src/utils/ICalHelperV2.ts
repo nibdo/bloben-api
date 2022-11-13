@@ -84,7 +84,7 @@ interface ICalHelperEvent {
 class ICalHelperV2 {
   events: ICalHelperEvent[] = [];
 
-  constructor(data: CalDavEventObj[]) {
+  constructor(data: CalDavEventObj[], keepSequence?: boolean) {
     forEach(data, (event) => {
       const {
         externalId,
@@ -120,13 +120,13 @@ class ICalHelperV2 {
         value: allDay
           ? DateTime.fromISO(startAt).toFormat('yyyyMMdd')
           : formatIcalDate(startAt, timezoneStartAt),
-        timezone: allDay ? undefined : timezoneStartAt || timezone,
+        timezone: allDay ? undefined : timezoneStartAt || timezone || undefined,
       };
       result.dtend = dtend || {
         value: allDay
           ? DateTime.fromISO(endAt).plus({ day: 1 }).toFormat('yyyyMMdd')
           : formatIcalDate(endAt, timezoneStartAt),
-        timezone: allDay ? undefined : timezoneStartAt || timezone,
+        timezone: allDay ? undefined : timezoneStartAt || timezone || undefined,
       };
       result.uid = externalId ? externalId : externalID ? externalID : v4();
       if (attendees?.length) {
@@ -177,7 +177,7 @@ class ICalHelperV2 {
       }
 
       // include all other not supported properties
-      if (props) {
+      if (event.props) {
         forEach(Object.entries(props), (propItem) => {
           if (propItem[0] === 'sequence') {
             if (meta?.hideSequence) {
@@ -186,9 +186,13 @@ class ICalHelperV2 {
               if (sequence) {
                 result.sequence = String(Number(propItem[1]));
               } else {
-                result[propItem[0]] = String(Number(propItem[1]) + 1);
+                if (!keepSequence) {
+                  result[propItem[0]] = String(Number(propItem[1]) + 1);
+                }
               }
             }
+          } else {
+            result[propItem[0]] = propItem[1];
           }
         });
       }
