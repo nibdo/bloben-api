@@ -126,7 +126,7 @@ class ImapService {
             envelope: true,
           });
 
-          for (const msg of fetchedMsg) {
+          for await (const msg of fetchedMsg) {
             idsToCheck.push(msg.seq);
           }
         }
