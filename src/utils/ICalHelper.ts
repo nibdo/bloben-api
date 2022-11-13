@@ -45,6 +45,7 @@ class ICalHelper {
       timezoneStartAt,
       props,
       externalID,
+      organizer,
     } = event;
 
     this.dtstart = timezoneStartAt
@@ -64,7 +65,7 @@ class ICalHelper {
           value: endAt,
         };
     this.uid = externalID;
-    this.organizer = props.organizer;
+    this.organizer = organizer || props.organizer;
     // this.attendee = props.attendee;
     this.created = { value: createdAt };
     this.dtstamp = {
