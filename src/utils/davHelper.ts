@@ -4,6 +4,13 @@ import {
   AddressBook,
   CalendarFromAccount,
 } from '../data/repository/CalDavAccountRepository';
+import {
+  BLOBEN_EVENT_KEY,
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from './enums';
 import { CALENDAR_METHOD } from './ICalHelper';
 import { CalDavCacheService } from '../service/CalDavCacheService';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
@@ -18,12 +25,6 @@ import {
 } from 'tsdav';
 import { DateTime } from 'luxon';
 import { EVENT_TYPE, Range } from 'bloben-interface';
-import {
-  LOG_TAG,
-  SOCKET_CHANNEL,
-  SOCKET_MSG_TYPE,
-  SOCKET_ROOM_NAMESPACE,
-} from './enums';
 import { RRule } from 'rrule';
 import { cloneDeep, find, forEach, keyBy, map } from 'lodash';
 import {
@@ -459,7 +460,7 @@ export const queryClient = async (
   });
 };
 
-export const updateCalDavEvents = async (
+export const syncCalDavEventsWithServer = async (
   calDavCalendar: any,
   davRequestData: DavRequestData,
   queryRunner: QueryRunner,
@@ -747,7 +748,7 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
     ]);
 
     for (const calendar of localCalendars) {
-      await updateCalDavEvents(
+      await syncCalDavEventsWithServer(
         calendar,
         davRequestData,
         queryRunner,
@@ -1203,4 +1204,13 @@ export const formatTodoJsonToCalDavTodo = (
     type: EVENT_TYPE.TASK,
     status: item.status || 'NEEDS-ACTION',
   };
+};
+
+export const removeBlobenMetaData = (event: CalDavEventObj): CalDavEventObj => {
+  const result = { ...event };
+
+  delete result.props[BLOBEN_EVENT_KEY.INVITE_FROM];
+  delete result.props[BLOBEN_EVENT_KEY.INVITE_TO];
+
+  return result;
 };

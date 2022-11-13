@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import CalDavCalendarEntity from './CalDavCalendar';
 import UserEntity from './UserEntity';
 
 @Entity('user_email_config')
@@ -33,6 +34,12 @@ export default class UserEmailConfigEntity {
 
   @Column({ name: 'imap_syncing_interval', default: 15 })
   imapSyncingInterval: number;
+
+  @Column({ name: 'calendar_for_import_id', default: null })
+  calendarForImportID: string;
+  @OneToOne(() => CalDavCalendarEntity)
+  @JoinColumn({ name: 'calendar_for_import_id', referencedColumnName: 'id' })
+  calendarForImport: CalDavCalendarEntity;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

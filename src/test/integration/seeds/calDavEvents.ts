@@ -13,7 +13,8 @@ import UserEntity from '../../../data/entity/UserEntity';
 
 export const createDummyCalDavEvent = (
   calendarID: string,
-  remoteID?: string
+  remoteID?: string,
+  method?: string
 ): CreateCalDavEventRequest => {
   const externalID = remoteID || v4();
   return {
@@ -23,6 +24,7 @@ export const createDummyCalDavEvent = (
 PRODID:Test
 VERSION:2.0
 CALSCALE:GREGORIAN
+${method ? `METHOD:${method}` : ''}
 BEGIN:VEVENT
 DESCRIPTION:adadasd174C5B7301A82E0080000000089FCDD3B6C29D701000000000000000
  samasiioasfioasjfio ja asfmioasiof asjio fjasifj ioasjf ioasji jfsaijfio j
@@ -287,7 +289,8 @@ export const testEventsData: CreateCalDavEventRequest[] = [
 ];
 
 export const seedCalDavEvents = async (
-  userID: string
+  userID: string,
+  data?: any
 ): Promise<{
   event: CalDavEventEntity;
   repeatedEvent: CalDavEventEntity;
@@ -311,7 +314,7 @@ export const seedCalDavEvents = async (
   forEach(testEventsData, (event) => {
     const icalJS = ICalParser.toJSON(event.iCalString);
     const eventJSON: EventJSON = icalJS.events[0];
-    const eventObj = formatEventJsonToCalDavEvent(
+    let eventObj = formatEventJsonToCalDavEvent(
       eventJSON,
       {
         data: '',
@@ -320,6 +323,10 @@ export const seedCalDavEvents = async (
       } as DAVCalendarObject,
       calDavCalendar
     );
+
+    if (data) {
+      eventObj = { ...eventObj, ...data };
+    }
 
     events.push(new CalDavEventEntity(eventObj));
   });

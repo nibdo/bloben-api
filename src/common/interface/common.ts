@@ -1,5 +1,5 @@
+import { BLOBEN_EVENT_KEY, MSG_STATUS } from '../../utils/enums';
 import { EventSyncAction } from 'bloben-interface';
-import { MSG_STATUS } from '../../utils/enums';
 
 export interface UserSocketData {
   clientSessionId: SocketSession;
@@ -51,4 +51,9 @@ export interface EmailData {
   html?: string;
   attachments?: any;
   headers?: any;
+}
+
+export interface EventProps {
+  [BLOBEN_EVENT_KEY.INVITE_FROM]: string | undefined;
+  [BLOBEN_EVENT_KEY.INVITE_TO]: string | undefined;
 }
