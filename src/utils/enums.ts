@@ -173,3 +173,8 @@ export enum GROUP_LOG_KEY {
   IMAP_SYNC_JOB = 'IMAP_SYNC_JOB',
   CARDDAV_JOB = 'CARDDAV_JOB',
 }
+
+export enum BLOBEN_EVENT_KEY {
+  INVITE_FROM = 'xBlobenInviteTo',
+  INVITE_TO = 'xBlobenInviteFrom',
+}

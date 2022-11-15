@@ -53,5 +53,6 @@ export const getUserEmailConfig = async (
           imapPassword: '******',
         }
       : null,
+    calendarForImportID: userEmailConfig?.calendarForImportID,
   };
 };

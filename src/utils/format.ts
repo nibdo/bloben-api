@@ -1,5 +1,6 @@
 import { ATTENDEE_PARTSTAT, SOURCE_TYPE } from '../data/types/enums';
 import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
+import { BLOBEN_EVENT_KEY } from './enums';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime } from 'luxon';
 import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
@@ -17,12 +18,25 @@ const parseCalDavStyle = (
 ) => {
   let style: EventStyle = {};
 
-  if (event.organizer?.mailto) {
+  const isEmailInvite =
+    event.props?.[BLOBEN_EVENT_KEY.INVITE_TO] &&
+    event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM];
+
+  if (event.organizer?.mailto || isEmailInvite) {
+    let userAttendee;
+
     // get user attendee
-    const userAttendee = find(
-      event.attendees,
-      (item) => item.mailto === event.organizer.mailto
-    );
+    if (isEmailInvite) {
+      userAttendee = find(
+        event.attendees,
+        (item) => item.mailto === event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+      );
+    } else if (event.organizer?.mailto) {
+      userAttendee = find(
+        event.attendees,
+        (item) => item.mailto === event.organizer.mailto
+      );
+    }
 
     const partstat = userAttendee?.['PARTSTAT'];
 
