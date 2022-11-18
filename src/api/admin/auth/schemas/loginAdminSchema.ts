@@ -7,5 +7,6 @@ export const loginAdminSchema = {
   [Segments.BODY]: Joi.object({
     username: usernameSchema,
     password: Joi.string().min(2).required(),
+    browserID: Joi.string().uuid().optional().allow(null),
   }),
 };

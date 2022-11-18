@@ -1,13 +1,23 @@
-import { BLOBEN_EVENT_KEY, LOG_TAG, SOCKET_ROOM_NAMESPACE } from './enums';
+import {
+  BLOBEN_EVENT_KEY,
+  LOG_TAG,
+  REDIS_PREFIX,
+  SESSION,
+  SOCKET_ROOM_NAMESPACE,
+} from './enums';
 import { CalDavEvent, CommonResponse, Range } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime, Interval } from 'luxon';
+import { Request } from 'express';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../data/types/enums';
 import { WEEKDAY_START } from 'kalend/common/enums';
 import { forEach } from 'lodash';
 import { getMonthDays } from './calendarDays';
+import { getTrustedBrowserRedisKey } from '../service/RedisService';
 import { parseDurationString } from './caldavAlarmHelper';
+import { redisClient } from '../index';
 import { throwError } from './errorCodes';
+import UserEntity from '../data/entity/UserEntity';
 import logger from './logger';
 
 export const createCommonResponse = (
@@ -431,3 +441,38 @@ export const getUserMailto = (event: CalDavEventsRaw) => {
     ? event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
     : event.organizer.mailto;
 };
+
+export const addUserToSessionOnSuccessAuth = (
+  req: Request,
+  user: UserEntity
+) => {
+  req.session[SESSION.USER_ID] = user.id;
+  req.session[SESSION.ROLE] = user.role;
+
+  req.session.save();
+};
+
+export const checkTrustedBrowser = async (
+  browserID: string,
+  isAdmin: boolean,
+  userID: string
+) => {
+  const prefix = isAdmin
+    ? REDIS_PREFIX.BROWSER_ID_ADMIN
+    : REDIS_PREFIX.BROWSER_ID_APP;
+  // check if browser is trusted and does not need 2FA code
+  const savedBrowserID = await redisClient.get(
+    getTrustedBrowserRedisKey(prefix, userID, browserID)
+  );
+
+  // compare values
+  if (browserID && savedBrowserID) {
+    if (browserID === savedBrowserID) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+export const TRUSTED_BROWSER_EXPIRATION = 60 * 60 * 24 * 7; // 7 days

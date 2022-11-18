@@ -1,9 +1,10 @@
 import { Request } from 'express';
 import { authenticator } from 'otplib';
 
-import { LOG_TAG, SESSION } from '../../../../../utils/enums';
+import { LOG_TAG } from '../../../../../utils/enums';
 import { LoginResponse, LoginWithTwoFactorRequest } from 'bloben-interface';
 import { ROLE } from '../../../../../data/types/enums';
+import { addUserToSessionOnSuccessAuth } from '../../../../../utils/common';
 import { throwError } from '../../../../../utils/errorCodes';
 import UserEntity from '../../../../../data/entity/UserEntity';
 import UserRepository from '../../../../../data/repository/UserRepository';
@@ -59,10 +60,7 @@ export const loginWithTwoFactor = async (
     throw throwError(409, 'Wrong code', req);
   }
 
-  req.session[SESSION.USER_ID] = user.id;
-  req.session[SESSION.ROLE] = user.role;
-
-  req.session.save();
+  addUserToSessionOnSuccessAuth(req, user);
 
   return {
     message: 'Login successful',

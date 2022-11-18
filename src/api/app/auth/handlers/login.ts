@@ -1,7 +1,8 @@
 import { Request } from 'express';
 
-import { LOG_TAG, REDIS_PREFIX, SESSION } from '../../../../utils/enums';
+import { LOG_TAG, REDIS_PREFIX } from '../../../../utils/enums';
 import { LoginRequest, LoginResponse } from 'bloben-interface';
+import { addUserToSessionOnSuccessAuth } from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';
@@ -53,10 +54,7 @@ export const login = async (req: Request): Promise<LoginResponse> => {
     };
   }
 
-  req.session[SESSION.USER_ID] = user.id;
-  req.session[SESSION.ROLE] = user.role;
-
-  req.session.save();
+  addUserToSessionOnSuccessAuth(req, user);
 
   return {
     message: 'Login successful',
