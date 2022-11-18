@@ -1,5 +1,6 @@
 import ICalParser from 'ical-js-parser';
 
+import { BLOBEN_EVENT_KEY } from './enums';
 import { CalDavEventObj, formatIcalDate } from './davHelper';
 import { DateTime } from 'luxon';
 import { forEach, map } from 'lodash';
@@ -204,6 +205,13 @@ class ICalHelperV2 {
 
       if (!result.sequence) {
         result.sequence = '0';
+      }
+
+      // keep original sequence for consistent response to external servers
+      if (result.props?.[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE]) {
+        result.sequence = result.props?.[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
+
+        delete result.props?.[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
       }
 
       this.events.push(result);

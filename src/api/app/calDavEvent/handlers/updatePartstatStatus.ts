@@ -1,11 +1,6 @@
 import { Request, Response } from 'express';
 
-import {
-  Attendee,
-  CommonResponse,
-  Organizer,
-  UpdatePartstatStatusRequest,
-} from 'bloben-interface';
+import { CommonResponse, UpdatePartstatStatusRequest } from 'bloben-interface';
 
 import {
   BLOBEN_EVENT_KEY,
@@ -15,7 +10,6 @@ import {
 } from '../../../../utils/enums';
 import { createCommonResponse } from '../../../../utils/common';
 import { io } from '../../../../app';
-import { throwError } from '../../../../utils/errorCodes';
 import { updatePartstatStatusForAttendee } from '../../../../jobs/queueJobs/processEmailEventJob';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 
@@ -28,51 +22,10 @@ export const updatePartstatStatus = async (
 
   const body: UpdatePartstatStatusRequest = req.body;
 
-  // check if event exists and is only response
-  const existingEventRaw: {
-    id: string;
-    externalID: string;
-    calendarID: string;
-    attendees: Attendee[];
-    organizer: Organizer;
-    href: string;
-    etag: string;
-    props: {
-      [BLOBEN_EVENT_KEY.INVITE_FROM]: string | undefined;
-      [BLOBEN_EVENT_KEY.INVITE_TO]: string | undefined;
-    };
-  }[] = await CalDavEventRepository.getRepository().query(
-    `
-      SELECT
-        e.id as id,
-        e.external_id as "externalID",
-        c.id as "calendarID",
-        e.organizer as "organizer",
-        e.attendees as "attendees",
-        e.href as "href",
-        e.etag as "etag",
-        e.props as "props"
-      FROM caldav_events e
-      INNER JOIN caldav_calendars c ON c.id = e.caldav_calendar_id
-      INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
-      WHERE 
-        c.deleted_at IS NULL
-        AND a.deleted_at IS NULL  
-        AND a.user_id = $1
-        AND e.id = $2
-    `,
-    [userID, eventID]
+  const existingEvent = await CalDavEventRepository.getExistingEventRaw(
+    userID,
+    eventID
   );
-
-  if (!existingEventRaw.length) {
-    throw throwError(404, 'Event not found');
-  }
-
-  const existingEvent = existingEventRaw[0];
-
-  if (!existingEvent.attendees?.length || !existingEvent.organizer) {
-    throw throwError(409, 'Missing required event data');
-  }
 
   const newAttendees = await updatePartstatStatusForAttendee(
     existingEvent.attendees,

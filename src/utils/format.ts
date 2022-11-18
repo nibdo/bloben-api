@@ -1,15 +1,18 @@
 import { ATTENDEE_PARTSTAT, SOURCE_TYPE } from '../data/types/enums';
 import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
 import { BLOBEN_EVENT_KEY } from './enums';
+import { CalDavEventObj } from './davHelper';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
-import { DateTime } from 'luxon';
 import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
 import { find } from 'lodash';
+import { getDateTime } from './common';
 import {
   getEventStyle,
   getTaskStyle,
 } from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
+
+export const ICAL_FORMAT = `yyyyMMdd'T'HHmmss`;
 
 const parseCalDavStyle = (
   event: CalDavEventsRaw,
@@ -140,23 +143,29 @@ export const formatEventRawToResult = (
   };
 };
 
-export const formatInviteStartDate = (startDate: string, timezone?: string) => {
+export const formatInviteStartDate = (
+  startDate: string | Date,
+  timezone?: string
+) => {
   if (timezone) {
-    return DateTime.fromISO(startDate)
+    return getDateTime(startDate)
       .setZone(timezone)
       .toFormat('ccc d LLL yyyy hh:mm');
   } else {
-    return DateTime.fromISO(startDate).toFormat('ccc d LLL yyyy hh:mm');
+    return getDateTime(startDate).toFormat('ccc d LLL yyyy hh:mm');
   }
 };
 
-export const formatCancelStartDate = (startDate: string, timezone?: string) => {
+export const formatCancelStartDate = (
+  startDate: string | Date,
+  timezone?: string
+) => {
   if (timezone) {
-    return DateTime.fromISO(startDate)
+    return getDateTime(startDate)
       .setZone(timezone)
       .toFormat('ccc d LLL yyyy hh:mm');
   } else {
-    return DateTime.fromISO(startDate).toFormat('ccc d LLL yyyy hh:mm');
+    return getDateTime(startDate).toFormat('ccc d LLL yyyy hh:mm');
   }
 };
 
@@ -205,4 +214,43 @@ export const formatEventCancelSubject = (
   return `Canceled: ${summary} - ${formatCancelStartDate(startDate, timezone)}${
     inviteMessage ? `\n\n\nNote: ${inviteMessage}` : ''
   }`;
+};
+
+export const formatEventRawToCalDavObj = (
+  event: CalDavEventsRaw
+): CalDavEventObj => {
+  return {
+    color: event.color,
+    href: event.href,
+    timezone: event.timezoneStartAt,
+    timezoneEnd: event.timezoneEndAt || event.timezoneStartAt,
+    id: event.id,
+    externalID: event.externalID,
+    internalID: event.internalID,
+    summary: event.summary,
+    location: event.location,
+    description: event.description,
+    allDay: event.allDay,
+    calendarID: event.calendarID,
+    startAt: event.startAt,
+    endAt: event.endAt,
+    timezoneStartAt: event.timezoneStartAt,
+    timezoneEndAt: event.timezoneEndAt || event.timezoneStartAt,
+    etag: event.etag,
+    url: event.href,
+    isRepeated: event.isRepeated,
+    rRule: event.rRule,
+    sourceType: SOURCE_TYPE.CALDAV,
+    type: event.type,
+    // @ts-ignore
+    status: event.status,
+    valarms: event.valarms,
+    attendees: event.attendees,
+    exdates: event.exdates,
+    organizer: event.organizer,
+    recurrenceID: event.recurrenceID,
+    props: event.props || null,
+    createdAt: event.createdAt,
+    updatedAt: event.updatedAt,
+  };
 };
