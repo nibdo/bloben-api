@@ -45,6 +45,8 @@ export default class CalDavEventExceptionEntity {
   @Column({ name: 'external_id' })
   externalID: string;
 
+  // @Column({ name: 'caldav_event_id' })
+  // caldavEventID: string;
   @ManyToOne(() => CalDavEventEntity, (caldavEvent) => caldavEvent.exceptions, {
     onDelete: 'CASCADE',
   })
@@ -79,6 +81,7 @@ export default class CalDavEventExceptionEntity {
       this.externalID = event.externalID;
       this.calDavCalendarID = caldavCalendarID;
       this.caldavEvent = eventEntity;
+      // this.caldavEventID = eventEntity.id;
     }
   }
 }

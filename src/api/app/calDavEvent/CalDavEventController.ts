@@ -115,3 +115,20 @@ export const updatePartstatStatus = async (
     next(error);
   }
 };
+
+export const updatePartstatStatusRepeatedEvent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await CalDavEventService.updatePartstatStatusRepeatedEvent(
+      req,
+      res
+    );
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};

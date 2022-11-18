@@ -1,6 +1,7 @@
+import { BLOBEN_EVENT_KEY, LOG_TAG, SOCKET_ROOM_NAMESPACE } from './enums';
 import { CalDavEvent, CommonResponse, Range } from 'bloben-interface';
+import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime, Interval } from 'luxon';
-import { LOG_TAG, SOCKET_ROOM_NAMESPACE } from './enums';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../data/types/enums';
 import { WEEKDAY_START } from 'kalend/common/enums';
 import { forEach } from 'lodash';
@@ -404,4 +405,29 @@ export const handleDavResponse = (response: Response, errorMsg: string) => {
     logger.error(errorMsg, response.statusText, [LOG_TAG.CALDAV]);
     throw throwError(409, response.statusText);
   }
+};
+
+export const isExternalEmailInvite = (event: CalDavEventsRaw) => {
+  if (
+    event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM] &&
+    event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const getDateTime = (date: string | Date) => {
+  if (typeof date === 'string') {
+    return DateTime.fromISO(date);
+  }
+
+  return DateTime.fromJSDate(date);
+};
+
+export const getUserMailto = (event: CalDavEventsRaw) => {
+  return event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+    ? event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+    : event.organizer.mailto;
 };
