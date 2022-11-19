@@ -1,7 +1,11 @@
 import { AdminLoginRequest } from 'bloben-interface';
-import { LOG_TAG, SESSION } from '../../../../utils/enums';
+import { LOG_TAG } from '../../../../utils/enums';
 import { ROLE } from '../../../../data/types/enums';
 import { Request } from 'express';
+import {
+  addUserToSessionOnSuccessAuth,
+  checkTrustedBrowser,
+} from '../../../../utils/common';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';
@@ -10,7 +14,7 @@ import logger from '../../../../utils/logger';
 
 export const loginAdmin = async (req: Request): Promise<any> => {
   const body: AdminLoginRequest = req.body;
-  const { username, password } = body;
+  const { username, password, browserID } = body;
 
   const user: UserEntity | undefined =
     await UserRepository.getRepository().findOne({
@@ -41,16 +45,36 @@ export const loginAdmin = async (req: Request): Promise<any> => {
   }
 
   if (user.isTwoFactorEnabled) {
+    // check if browser is trusted and does not need 2FA code
+    const isTrustedBrowser = await checkTrustedBrowser(
+      browserID,
+      true,
+      user.id
+    );
+
+    if (isTrustedBrowser) {
+      addUserToSessionOnSuccessAuth(req, user);
+
+      logger.info(`Admin with username ${user.username} login success`, [
+        LOG_TAG.SECURITY,
+      ]);
+      return {
+        isLogged: true,
+        isTwoFactorEnabled: false,
+      };
+    }
+
     return {
       isLogged: false,
       isTwoFactorEnabled: true,
     };
   }
 
-  req.session[SESSION.USER_ID] = user.id;
-  req.session[SESSION.ROLE] = user.role;
+  addUserToSessionOnSuccessAuth(req, user);
 
-  req.session.save();
+  logger.info(`Admin with username ${user.username} login success`, [
+    LOG_TAG.SECURITY,
+  ]);
 
   return {
     isLogged: true,

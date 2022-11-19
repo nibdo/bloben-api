@@ -1,12 +1,18 @@
 import { Request } from 'express';
 import { authenticator } from 'otplib';
 
-import { LOG_TAG, SESSION } from '../../../../../utils/enums';
+import { LOG_TAG, REDIS_PREFIX } from '../../../../../utils/enums';
 import {
   LoginWithTwoFactorAdminResponse,
   LoginWithTwoFactorRequest,
 } from 'bloben-interface';
 import { ROLE } from '../../../../../data/types/enums';
+import {
+  TRUSTED_BROWSER_EXPIRATION,
+  addUserToSessionOnSuccessAuth,
+} from '../../../../../utils/common';
+import { getTrustedBrowserRedisKey } from '../../../../../service/RedisService';
+import { redisClient } from '../../../../../index';
 import { throwError } from '../../../../../utils/errorCodes';
 import UserEntity from '../../../../../data/entity/UserEntity';
 import UserRepository from '../../../../../data/repository/UserRepository';
@@ -18,7 +24,7 @@ export const loginWithTwoFactor = async (
 ): Promise<LoginWithTwoFactorAdminResponse> => {
   const body: LoginWithTwoFactorRequest = req.body;
 
-  const { username, password } = body;
+  const { username, password, browserID } = body;
 
   const user: UserEntity | undefined =
     await UserRepository.getRepository().findOne({
@@ -66,10 +72,25 @@ export const loginWithTwoFactor = async (
     throw throwError(409, 'Wrong code', req);
   }
 
-  req.session[SESSION.USER_ID] = user.id;
-  req.session[SESSION.ROLE] = user.role;
+  addUserToSessionOnSuccessAuth(req, user);
 
-  req.session.save();
+  // save browserID as trusted to disable 2FA
+  if (browserID) {
+    await redisClient.set(
+      getTrustedBrowserRedisKey(
+        REDIS_PREFIX.BROWSER_ID_ADMIN,
+        user.id,
+        browserID
+      ),
+      browserID,
+      'EX',
+      TRUSTED_BROWSER_EXPIRATION
+    );
+  }
+
+  logger.info(`Admin with username ${user.username} login success`, [
+    LOG_TAG.SECURITY,
+  ]);
 
   return {
     message: 'Login successful',
