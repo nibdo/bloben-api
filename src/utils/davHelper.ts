@@ -1245,13 +1245,13 @@ export const getLatestEtag = async (
  * Then try to sync event and repeat call one more time
  */
 export const makeDavCall = async (
-  requestFunction: (data: any) => Promise<DAVResponse>,
+  requestFunction: (data: any) => Promise<Response>,
   requestData: any,
   davRequestData: DavRequestData,
   calendar: CalendarFromAccount,
   userID: string,
   eventUrl: string
-): Promise<DAVResponse> => {
+): Promise<Response> => {
   let response = await requestFunction(requestData);
 
   if (response.status >= 300) {
@@ -1261,7 +1261,7 @@ export const makeDavCall = async (
     ]);
 
     let newEtag;
-    if (response.statusText.toLowerCase().includes('precondition failed')) {
+    if (response?.statusText?.toLowerCase().includes('precondition failed')) {
       // if it fails here, let it fail
       newEtag = await getLatestEtag(davRequestData, calendar, userID, eventUrl);
 

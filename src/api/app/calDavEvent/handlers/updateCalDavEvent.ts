@@ -211,7 +211,7 @@ export const updateCalDavEvent = async (
   const fetchedEvents = await fetchCalendarObjects({
     headers: davHeaders,
     calendar: calDavAccount.calendar,
-    objectUrls: [response.href],
+    objectUrls: [response.url],
   });
 
   const eventTemp = createEventFromCalendarObject(
