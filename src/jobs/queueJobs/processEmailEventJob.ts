@@ -8,6 +8,14 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../utils/enums';
+import {
+  CalDavEventObj,
+  createEventFromCalendarObject,
+  formatEventJsonToCalDavEvent,
+  formatPartstatResponseData,
+  removeBlobenMetaData,
+  removeMethod,
+} from '../../utils/davHelper';
 import { Job } from 'bullmq';
 import { calDavSyncBullQueue, emailBullQueue } from '../../service/BullQueue';
 import {
@@ -16,13 +24,6 @@ import {
   fetchCalendarObjects,
   updateCalendarObject,
 } from 'tsdav';
-import {
-  createEventFromCalendarObject,
-  formatEventJsonToCalDavEvent,
-  formatPartstatResponseData,
-  removeBlobenMetaData,
-  removeMethod,
-} from '../../utils/davHelper';
 import { find } from 'lodash';
 import { getDavRequestData } from '../../utils/davAccountHelper';
 import { io } from '../../app';
@@ -37,6 +38,20 @@ import ICalHelperV2 from '../../utils/ICalHelperV2';
 import ICalParser, { EventJSON, ICalJSON } from 'ical-js-parser';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';
 import logger from '../../utils/logger';
+
+/**
+ * Remove bloben meta data and force keeping sequence
+ * @param eventTemp
+ * @param attendees
+ */
+export const formatEventForPartstatEmailResponse = (
+  eventTemp: CalDavEventObj,
+  attendees: Attendee[]
+) => ({
+  ...removeBlobenMetaData(eventTemp),
+  meta: { hideStatus: true, hideSequence: true },
+  attendees,
+});
 
 const handleCreateNewEvent = async (
   userID: string,
@@ -71,8 +86,10 @@ const handleCreateNewEvent = async (
     // add metadata to event
     eventObj.props[BLOBEN_EVENT_KEY.INVITE_TO] = data.to;
     eventObj.props[BLOBEN_EVENT_KEY.INVITE_FROM] = data.from;
+    eventObj.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE] =
+      eventObj.props?.sequence;
 
-    const icalStringNew: string = new ICalHelperV2([eventObj]).parseTo();
+    const icalStringNew: string = new ICalHelperV2([eventObj], true).parseTo();
 
     const response = await createCalendarObject({
       headers: davHeaders,
@@ -129,8 +146,10 @@ const handleUpdateEvent = async (
     // add metadata to event
     eventObj.props[BLOBEN_EVENT_KEY.INVITE_TO] = data.to;
     eventObj.props[BLOBEN_EVENT_KEY.INVITE_FROM] = data.from;
+    eventObj.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE] =
+      eventObj.props?.sequence;
 
-    const icalStringNew: string = new ICalHelperV2([eventObj]).parseTo();
+    const icalStringNew: string = new ICalHelperV2([eventObj], true).parseTo();
 
     const response = await updateCalendarObject({
       headers: davHeaders,
@@ -279,15 +298,14 @@ export const updatePartstatStatusForAttendee = async (
     }
 
     if (sendInvite) {
-      const icalStringResponse: string = new ICalHelperV2([
-        {
-          ...removeBlobenMetaData(eventTemp),
-          attendees: [
+      const icalStringResponse: string = new ICalHelperV2(
+        [
+          formatEventForPartstatEmailResponse(eventTemp, [
             { ...attendeeNew, PARTSTAT: parstat || attendeeNew.PARTSTAT },
-          ],
-          meta: { hideStatus: true, hideSequence: true },
-        },
-      ]).parseTo();
+          ]),
+        ],
+        true
+      ).parseTo();
 
       // send email only to organizer
       if (attendeeNew.mailto !== eventTemp.organizer.mailto) {
@@ -355,7 +373,7 @@ export const processEmailEventJob = async (
     if (!icalEvent || icalJSON.errors?.length) {
       logger.error(
         `Error while parsing event from email`,
-        { event: data.icalString },
+        { event: data.icalString, errors: icalJSON.errors },
         [LOG_TAG.CRON, LOG_TAG.EMAIL]
       );
 
@@ -393,6 +411,9 @@ export const processEmailEventJob = async (
     if (!existingEvent && method !== CALENDAR_METHOD.CANCEL) {
       // event invites
       result = await handleCreateNewEvent(data.userID, icalEvent, data);
+    } else if (!existingEvent && method === CALENDAR_METHOD.CANCEL) {
+      // skip
+      return { msg: 'Event not exists' };
     } else {
       // handle external event changes from invite
       if (

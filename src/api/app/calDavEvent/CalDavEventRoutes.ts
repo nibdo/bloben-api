@@ -14,6 +14,7 @@ import { getCalDavEventSchema } from './schemas/getCalDavEventSchema';
 import { rateLimiterMiddleware } from '../../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../../middleware/roleMiddleware';
 import { updateCalDavEventSchema } from './schemas/updateCalDavEventSchema';
+import { updatePartstatStatusRepeatedEventSchema } from './schemas/updatePartstatStatusRepeatedEventSchema';
 import { updatePartstatStatusSchema } from './schemas/updatePartstatStatusSchema';
 import { updateRepeatedCalDavEventSchema } from './schemas/updateRepeatedCalDavEventSchema';
 
@@ -80,6 +81,18 @@ CalDavEventRoutes.get(
   ],
   CalDavEventController.getCalDavEvent
 );
+
+CalDavEventRoutes.patch(
+  '/:eventID/repeated',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(updatePartstatStatusRepeatedEventSchema),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+  ],
+  CalDavEventController.updatePartstatStatusRepeatedEvent
+);
+
 CalDavEventRoutes.patch(
   '/:eventID',
   [

@@ -1,12 +1,23 @@
+import {
+  BLOBEN_EVENT_KEY,
+  LOG_TAG,
+  REDIS_PREFIX,
+  SESSION,
+  SOCKET_ROOM_NAMESPACE,
+} from './enums';
 import { CalDavEvent, CommonResponse, Range } from 'bloben-interface';
+import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTime, Interval } from 'luxon';
-import { LOG_TAG, SOCKET_ROOM_NAMESPACE } from './enums';
+import { Request } from 'express';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../data/types/enums';
 import { WEEKDAY_START } from 'kalend/common/enums';
 import { forEach } from 'lodash';
 import { getMonthDays } from './calendarDays';
+import { getTrustedBrowserRedisKey } from '../service/RedisService';
 import { parseDurationString } from './caldavAlarmHelper';
+import { redisClient } from '../index';
 import { throwError } from './errorCodes';
+import UserEntity from '../data/entity/UserEntity';
 import logger from './logger';
 
 export const createCommonResponse = (
@@ -399,9 +410,79 @@ export const removeArtifacts = (value: string, counter = 0): string => {
   return removeArtifacts(newValue, counter + 1);
 };
 
-export const handleDavResponse = (response: Response, errorMsg: string) => {
+export const handleDavResponse = (
+  response: Response,
+  errorMsg: string,
+  iCalString?: string
+) => {
   if (response.status >= 300) {
-    logger.error(errorMsg, response.statusText, [LOG_TAG.CALDAV]);
+    logger.error(
+      `${errorMsg}: ${response.statusText}`,
+      {
+        iCalString,
+      },
+      [LOG_TAG.CALDAV]
+    );
     throw throwError(409, response.statusText);
   }
 };
+
+export const isExternalEmailInvite = (event: CalDavEventsRaw) => {
+  if (
+    event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM] &&
+    event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export const getDateTime = (date: string | Date) => {
+  if (typeof date === 'string') {
+    return DateTime.fromISO(date);
+  }
+
+  return DateTime.fromJSDate(date);
+};
+
+export const getUserMailto = (event: CalDavEventsRaw) => {
+  return event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+    ? event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+    : event.organizer.mailto;
+};
+
+export const addUserToSessionOnSuccessAuth = (
+  req: Request,
+  user: UserEntity
+) => {
+  req.session[SESSION.USER_ID] = user.id;
+  req.session[SESSION.ROLE] = user.role;
+
+  req.session.save();
+};
+
+export const checkTrustedBrowser = async (
+  browserID: string,
+  isAdmin: boolean,
+  userID: string
+) => {
+  const prefix = isAdmin
+    ? REDIS_PREFIX.BROWSER_ID_ADMIN
+    : REDIS_PREFIX.BROWSER_ID_APP;
+  // check if browser is trusted and does not need 2FA code
+  const savedBrowserID = await redisClient.get(
+    getTrustedBrowserRedisKey(prefix, userID, browserID)
+  );
+
+  // compare values
+  if (browserID && savedBrowserID) {
+    if (browserID === savedBrowserID) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+export const TRUSTED_BROWSER_EXPIRATION = 60 * 60 * 24 * 7; // 7 days

@@ -268,9 +268,9 @@ export const getRepeatedEvents = (event: any, range: Range) => {
   );
 
   // check if event starts in DST
-  const eventStartsInDST: boolean = DateTime.fromISO(event.startAt).setZone(
-    event.timezone || 'Europe/Berlin'
-  ).isInDST;
+  const eventStartsInDST: boolean = event.timezone
+    ? DateTime.fromISO(event.startAt).setZone(event.timezone).isInDST
+    : false;
 
   const rRuleResults: Date[] = rRule.between(
     new Date(
@@ -295,9 +295,9 @@ export const getRepeatedEvents = (event: any, range: Range) => {
     let startAtDateTime: DateTime = DateTime.fromISO(rRuleResult.toISOString());
 
     // check if start of repeated event is in DST
-    const repeatedEventStartsInDST: boolean = startAtDateTime.setZone(
-      event.timezone || 'Europe/Berlin'
-    ).isInDST;
+    const repeatedEventStartsInDST: boolean = event.timezone
+      ? startAtDateTime.setZone(event.timezone).isInDST
+      : false;
 
     // set proper "wall" time for repeated dates across DST changes
     if (!eventStartsInDST && repeatedEventStartsInDST) {
@@ -833,6 +833,9 @@ export const removeSupportedProps = (originalItem: EventJSON) => {
   delete item.organizer;
   delete item.recurrenceId;
 
+  // artifact from parsing some email invites
+  delete item.e;
+
   return item;
 };
 
@@ -1211,6 +1214,7 @@ export const removeBlobenMetaData = (event: CalDavEventObj): CalDavEventObj => {
 
   delete result.props[BLOBEN_EVENT_KEY.INVITE_FROM];
   delete result.props[BLOBEN_EVENT_KEY.INVITE_TO];
+  delete result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
 
   return result;
 };

@@ -35,6 +35,8 @@ export enum REDIS_PREFIX {
   PUBLIC_CALENDAR_CACHE = 'publicCalendarCache',
   PUBLIC_EVENTS_CACHE = 'publicEventsCache',
   PUBLIC_SHARED_LINK = 'publicSharedLink',
+  BROWSER_ID_ADMIN = 'browserIDAdmin',
+  BROWSER_ID_APP = 'browserIDApp',
 }
 
 export enum WEBSOCKET_PREFIX {
@@ -177,4 +179,5 @@ export enum GROUP_LOG_KEY {
 export enum BLOBEN_EVENT_KEY {
   INVITE_FROM = 'xBlobenInviteTo',
   INVITE_TO = 'xBlobenInviteFrom',
+  ORIGINAL_SEQUENCE = 'xBlobenOriginalSequence',
 }

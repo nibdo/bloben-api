@@ -2,11 +2,14 @@ import { CalDavAccount } from '../data/repository/CalDavAccountRepository';
 import { DAVAccount } from 'tsdav';
 import { createAuthHeader } from '../service/davService';
 
+export interface DavHeaders {
+  authorization: string;
+  [key: string]: string;
+}
+
 export interface DavRequestData {
   davAccount: DAVAccount;
-  davHeaders: {
-    authorization: string;
-  };
+  davHeaders: DavHeaders;
 }
 
 export const getDavRequestData = (account: CalDavAccount): DavRequestData => {
