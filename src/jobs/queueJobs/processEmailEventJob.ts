@@ -373,7 +373,7 @@ export const processEmailEventJob = async (
     if (!icalEvent || icalJSON.errors?.length) {
       logger.error(
         `Error while parsing event from email`,
-        { event: data.icalString },
+        { event: data.icalString, errors: icalJSON.errors },
         [LOG_TAG.CRON, LOG_TAG.EMAIL]
       );
 
@@ -411,6 +411,9 @@ export const processEmailEventJob = async (
     if (!existingEvent && method !== CALENDAR_METHOD.CANCEL) {
       // event invites
       result = await handleCreateNewEvent(data.userID, icalEvent, data);
+    } else if (!existingEvent && method === CALENDAR_METHOD.CANCEL) {
+      // skip
+      return { msg: 'Event not exists' };
     } else {
       // handle external event changes from invite
       if (

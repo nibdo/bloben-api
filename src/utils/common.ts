@@ -410,9 +410,19 @@ export const removeArtifacts = (value: string, counter = 0): string => {
   return removeArtifacts(newValue, counter + 1);
 };
 
-export const handleDavResponse = (response: Response, errorMsg: string) => {
+export const handleDavResponse = (
+  response: Response,
+  errorMsg: string,
+  iCalString?: string
+) => {
   if (response.status >= 300) {
-    logger.error(errorMsg, response.statusText, [LOG_TAG.CALDAV]);
+    logger.error(
+      `${errorMsg}: ${response.statusText}`,
+      {
+        iCalString,
+      },
+      [LOG_TAG.CALDAV]
+    );
     throw throwError(409, response.statusText);
   }
 };
