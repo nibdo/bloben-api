@@ -24,6 +24,7 @@ import { emailBullQueue } from '../../../../service/BullQueue';
 import {
   formatCancelInviteData,
   formatPartstatResponseData,
+  makeDavCall,
   removeBlobenMetaData,
 } from '../../../../utils/davHelper';
 import { formatEventRawToCalDavObj } from '../../../../utils/format';
@@ -149,13 +150,22 @@ export const deleteCalDavEvent = async (
   const davRequestData = getDavRequestData(calDavAccount);
   const { davHeaders } = davRequestData;
 
-  const response = await deleteCalendarObject({
+  const requestData = {
     headers: davHeaders,
     calendarObject: {
       url: body.url,
       etag: body.etag,
     },
-  });
+  };
+
+  const response = await makeDavCall(
+    deleteCalendarObject,
+    requestData,
+    davRequestData,
+    calDavAccount.calendar,
+    userID,
+    event.href
+  );
 
   handleDavResponse(response, 'Delete caldav event error');
 

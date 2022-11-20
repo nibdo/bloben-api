@@ -27,6 +27,7 @@ import { createCommonResponse, formatToRRule } from '../../../../utils/common';
 import {
   createEventFromCalendarObject,
   formatInviteData,
+  makeDavCall,
 } from '../../../../utils/davHelper';
 import { forEach } from 'lodash';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
@@ -153,7 +154,6 @@ export const updateCalDavEvent = async (
     throw throwError(404, 'Event not found');
   }
 
-  let response: any;
   // get account with calendar
   const calDavAccount = await CalDavAccountRepository.getByUserIDAndCalendarID(
     userID,
@@ -167,23 +167,37 @@ export const updateCalDavEvent = async (
   const davRequestData = getDavRequestData(calDavAccount);
   const { davHeaders } = davRequestData;
 
+  let requestData;
+  let requestFunction;
+
   if (body.prevEvent) {
-    response = await createCalendarObject({
+    requestFunction = createCalendarObject;
+    requestData = {
       headers: davHeaders,
       calendar: calDavAccount.calendar,
       filename: `${body.externalID}.ics`,
       iCalString: body.iCalString,
-    });
+    };
   } else {
-    response = await updateCalendarObject({
+    requestFunction = updateCalendarObject;
+    requestData = {
       headers: davHeaders,
       calendarObject: {
         url: body.url,
         data: body.iCalString,
-        etag: body.etag,
+        etag: event.etag,
       },
-    });
+    };
   }
+
+  const response = await makeDavCall(
+    requestFunction,
+    requestData,
+    davRequestData,
+    calDavAccount.calendar,
+    userID,
+    event.href
+  );
 
   if (response.status >= 300) {
     logger.error('Update calDav event error', response.statusText, [
@@ -197,7 +211,7 @@ export const updateCalDavEvent = async (
   const fetchedEvents = await fetchCalendarObjects({
     headers: davHeaders,
     calendar: calDavAccount.calendar,
-    objectUrls: [response.url],
+    objectUrls: [response.href],
   });
 
   const eventTemp = createEventFromCalendarObject(

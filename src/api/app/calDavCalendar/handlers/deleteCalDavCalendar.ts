@@ -25,12 +25,10 @@ export const deleteCalDavCalendar = async (
   const { id } = req.params;
   const { userID } = res.locals;
 
-  const useEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
-
-  const calDavCalendar = await CalDavCalendarRepository.getByIDWithAccount(
-    id as string,
-    userID
-  );
+  const [useEmailConfig, calDavCalendar] = await Promise.all([
+    UserEmailConfigRepository.findByUserID(userID),
+    CalDavCalendarRepository.getByIDWithAccount(id as string, userID),
+  ]);
 
   if (!calDavCalendar) {
     throw throwError(404, 'CalDav calendar not found');

@@ -17,6 +17,7 @@ import { Connection, QueryRunner, getConnection } from 'typeorm';
 import {
   DAVCalendar,
   DAVCalendarObject,
+  DAVResponse,
   calendarQuery,
   fetchAddressBooks,
   fetchCalendarObjects,
@@ -26,7 +27,7 @@ import {
 import { DateTime } from 'luxon';
 import { EVENT_TYPE, Range } from 'bloben-interface';
 import { RRule } from 'rrule';
-import { cloneDeep, find, forEach, keyBy, map } from 'lodash';
+import { cloneDeep, filter, find, forEach, keyBy, map } from 'lodash';
 import {
   createCalDavCalendar,
   updateCalDavCalendar,
@@ -460,16 +461,13 @@ export const queryClient = async (
   });
 };
 
-export const syncCalDavEventsWithServer = async (
-  calDavCalendar: any,
+const syncCalDavEventsWithServer = async (
+  calDavCalendar: CalendarFromAccount,
   davRequestData: DavRequestData,
   queryRunner: QueryRunner,
   userID: string
 ) => {
-  const calDavServerResult: any = await queryClient(
-    davRequestData,
-    calDavCalendar
-  );
+  const calDavServerResult = await queryClient(davRequestData, calDavCalendar);
 
   // get existing events
   const existingEvents: {
@@ -496,7 +494,7 @@ export const syncCalDavEventsWithServer = async (
   const softDeleteExternalID: string[] = [];
 
   // filter events to insert, update or delete
-  forEach(calDavServerResult, (calDavServerItem: any) => {
+  forEach(calDavServerResult, (calDavServerItem) => {
     let foundLocalItem: any = null;
 
     forEach(existingEvents, (existingEvent: any) => {
@@ -1217,4 +1215,63 @@ export const removeBlobenMetaData = (event: CalDavEventObj): CalDavEventObj => {
   delete result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
 
   return result;
+};
+
+export const getLatestEtag = async (
+  davRequestData: DavRequestData,
+  calDavCalendar: CalendarFromAccount,
+  userID: string,
+  eventUrl: string
+) => {
+  let calDavServerResult: DAVResponse[] = await queryClient(
+    davRequestData,
+    calDavCalendar
+  );
+
+  // filter only to selected event
+  // TODO optimize dav request to get only one result, but as this is only
+  //  fallback solution for errors, for now it might be ok
+  calDavServerResult = filter(calDavServerResult, (item) => {
+    return eventUrl.includes(item.href);
+  });
+
+  return calDavServerResult?.[0]?.props?.getetag;
+};
+
+/**
+ * Call DAV server
+ * If failed because of precondition error, it means etag or event is not
+ * synced correctly
+ * Then try to sync event and repeat call one more time
+ */
+export const makeDavCall = async (
+  requestFunction: (data: any) => Promise<DAVResponse>,
+  requestData: any,
+  davRequestData: DavRequestData,
+  calendar: CalendarFromAccount,
+  userID: string,
+  eventUrl: string
+): Promise<DAVResponse> => {
+  let response = await requestFunction(requestData);
+
+  if (response.status >= 300) {
+    logger.error(`DAV request error ${response.status}`, response.statusText, [
+      LOG_TAG.REST,
+      LOG_TAG.CALDAV,
+    ]);
+
+    let newEtag;
+    if (response.statusText.toLowerCase().includes('precondition failed')) {
+      // if it fails here, let it fail
+      newEtag = await getLatestEtag(davRequestData, calendar, userID, eventUrl);
+
+      if (newEtag && requestData.calendarObject?.etag) {
+        requestData.calendarObject.etag = newEtag;
+
+        response = await requestFunction(requestData);
+      }
+    }
+  }
+
+  return response;
 };
