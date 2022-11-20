@@ -1,4 +1,5 @@
 import {
+  ATTENDEE_PARTSTAT,
   CALDAV_COMPONENTS,
   REPEATED_EVENT_CHANGE_TYPE,
   SOURCE_TYPE,
@@ -7,6 +8,7 @@ import { CALDAV_TEST_ACCOUNT } from '../seeds/user-caldav-seed';
 import {
   CreateCalDavEventRequest,
   DeleteRepeatedCalDavEventRequest,
+  UpdatePartstatStatusRepeatedEventRequest,
   UpdateRepeatedCalDavEventRequest,
 } from 'bloben-interface';
 import { DateTime } from 'luxon';
@@ -91,6 +93,45 @@ DTSTART:${formatIcalStringDates(date).startAt}
 DTEND:${formatIcalStringDates(date).endAt}
 CLASS:PUBLIC
 PRIORITY:5
+DTSTAMP:20210402T205602Z
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+SEQUENCE:0
+LOCATION:asdsfdf
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT10M
+END:VALARM
+RRULE:FREQ=DAILY;INTERVAL=1
+END:VEVENT
+END:VCALENDAR`,
+  };
+};
+
+export const createDummyCalDavEventWithAttendee = (
+  calendarID: string,
+  date: DateTime,
+  remoteID?: string
+): CreateCalDavEventRequest => {
+  const externalID = remoteID || v4();
+  return {
+    externalID,
+    calendarID,
+    iCalString: `BEGIN:VCALENDAR
+PRODID:Test
+VERSION:2.0
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+DESCRIPTION:adadasd174C5B730
+UID:${externalID}
+SUMMARY:teaaaaaRep
+DTSTART:${formatIcalStringDates(date).startAt}
+DTEND:${formatIcalStringDates(date).endAt}
+CLASS:PUBLIC
+PRIORITY:5
+ORGANIZER;CN=test:mailto:test@bloben.com
+ATTENDEE;CN=tester@bloben.com;ROLE=REQ-PARTICIPANT;RSVP=TRUE;PARTSTAT=NEEDS-A
+ CTION:mailto:tester@bloben.com
 DTSTAMP:20210402T205602Z
 TRANSP:OPAQUE
 STATUS:CONFIRMED
@@ -229,6 +270,46 @@ export const createRepeatedTestCalDavEvent = async (
   };
 };
 
+export const createRepeatedTestCalDavEventWithAttendee = async (
+  userID: string,
+  account: CalDavAccountEntity,
+  calendarID,
+  date: DateTime,
+  externalID?: string,
+  iCalString?: string
+): Promise<{ id: string; etag: string; url: string; remoteID: string }> => {
+  const remoteID = externalID || v4();
+  const response = await createCalDavEvent(
+    {
+      body: {
+        externalID: remoteID,
+        calendarID: calendarID,
+        iCalString: iCalString
+          ? iCalString
+          : createDummyCalDavEventWithAttendee(calendarID, date, remoteID)
+              .iCalString,
+      },
+    } as any,
+    {
+      locals: { userID },
+    } as any
+  );
+
+  const eventEntity = await CalDavEventRepository.getRepository().findOne({
+    where: {
+      externalID: remoteID,
+    },
+  });
+
+  return {
+    ...response.data,
+    id: eventEntity.id,
+    etag: eventEntity.etag,
+    url: eventEntity.href,
+    remoteID,
+  };
+};
+
 export const createDeleteRepeatedEventBodyJSON = (
   calendarID: string,
   id: string,
@@ -307,5 +388,27 @@ export const createRepeatedEventBodyJSON = (
     etag,
     type,
     prevEvent: prevEvent || null,
+  };
+};
+
+export const createUpdatePartstatRepeatedEventBodyJSON = (
+  type: REPEATED_EVENT_CHANGE_TYPE,
+  status: ATTENDEE_PARTSTAT,
+  startAt: string,
+  endAt: string,
+  recurrenceID?: DateTimeObject
+): UpdatePartstatStatusRepeatedEventRequest => {
+  return {
+    startAt: startAt,
+    endAt: endAt,
+    recurrenceID: recurrenceID
+      ? {
+          value: recurrenceID.value,
+          timezone: 'Europe/Berlin',
+        }
+      : undefined,
+    type,
+    status,
+    sendInvite: false,
   };
 };

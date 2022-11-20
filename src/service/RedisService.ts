@@ -37,3 +37,9 @@ export default {
     await redisClient.del(key);
   },
 };
+
+export const getTrustedBrowserRedisKey = (
+  type: REDIS_PREFIX.BROWSER_ID_ADMIN | REDIS_PREFIX.BROWSER_ID_APP,
+  userID: string,
+  browserID: string
+) => `${type}_${userID}_${browserID}`;
