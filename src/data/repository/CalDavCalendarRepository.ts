@@ -132,6 +132,31 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
     return null;
   }
 
+  public static async getByIDAndAccountID(
+    id: string,
+    accountID: string,
+    userID: string
+  ): Promise<{ id: string } | null> {
+    const result: any = await getRepository(CalDavCalendarEntity).query(
+      `
+      SELECT 
+        cc.id as id
+      FROM 
+        caldav_calendars cc
+      INNER JOIN caldav_accounts ca on ca.id = cc.caldav_account_id
+      WHERE
+        cc.id = $1
+        AND ca.user_id = $2
+        AND ca.id = $3
+        AND cc.deleted_at IS NULL
+        AND ca.deleted_at IS NULL;
+    `,
+      [id, userID, accountID]
+    );
+
+    return getOneResult(result);
+  }
+
   public static async update(data: CalDavCalendarEntity) {
     return getRepository(CalDavCalendarEntity).update({ id: data.id }, data);
   }
