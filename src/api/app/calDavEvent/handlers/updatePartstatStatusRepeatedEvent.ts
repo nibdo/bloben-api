@@ -12,9 +12,10 @@ import {
   createEventsFromDavObject,
   formatIcalDate,
   formatPartstatResponseData,
+  makeDavCall,
 } from '../../../../utils/davHelper';
 import {
-  DavHeaders,
+  DavRequestData,
   getDavRequestData,
 } from '../../../../utils/davAccountHelper';
 import { REPEATED_EVENT_CHANGE_TYPE } from 'bloben-interface/enums';
@@ -87,14 +88,16 @@ const formatAttendeesSingleEvent = (
  * Set partstat in all existing exceptions
  * Returns calendar objects for creating iCal string
  * @param event
- * @param davHeaders
+ * @param davRequestData
+ * @param calDavAccount
  * @param eventsTemp
  * @param body
  * @param userMailto
  */
 const handleChangeAll = async (
   event: CalDavEventsRaw,
-  davHeaders: DavHeaders,
+  davRequestData: DavRequestData,
+  calDavAccount: any,
   eventsTemp: CalDavEventObj[],
   body: UpdatePartstatStatusRepeatedEventRequest,
   userMailto: string
@@ -103,14 +106,22 @@ const handleChangeAll = async (
   const iCalString = new ICalHelperV2(eventObjs).parseTo();
 
   // create on server
-  const response = await updateCalendarObject({
-    headers: davHeaders,
+  const requestData = {
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: event.href,
       data: iCalString,
       etag: event.etag,
     },
-  });
+  };
+  const response = await makeDavCall(
+    updateCalendarObject,
+    requestData,
+    davRequestData,
+    calDavAccount.calendar,
+    calDavAccount.calendar.userID,
+    event.href
+  );
 
   handleDavResponse(response, 'Update partstat for all events failed');
 
@@ -123,7 +134,8 @@ const handleChangeAll = async (
  * If exception exists, update only exception
  * Returns single calendar object for creating iCal string
  * @param event
- * @param davHeaders
+ * @param davRequestData
+ * @param calDavAccount
  * @param eventsTemp
  * @param body
  * @param userMailto
@@ -131,7 +143,8 @@ const handleChangeAll = async (
  */
 const handleChangeSingle = async (
   event: CalDavEventsRaw,
-  davHeaders: DavHeaders,
+  davRequestData: DavRequestData,
+  calDavAccount: any,
   eventsTemp: CalDavEventObj[],
   body: UpdatePartstatStatusRepeatedEventRequest,
   userMailto: string,
@@ -203,14 +216,23 @@ const handleChangeSingle = async (
   }
 
   // create on server
-  const response = await updateCalendarObject({
-    headers: davHeaders,
+  const requestData = {
+    headers: davRequestData.davHeaders,
     calendarObject: {
       url: event.href,
       data: iCalString,
       etag: event.etag,
     },
-  });
+  };
+
+  const response = await makeDavCall(
+    updateCalendarObject,
+    requestData,
+    davRequestData,
+    calDavAccount.calendar,
+    calDavAccount.calendar.userID,
+    event.href
+  );
 
   handleDavResponse(response, 'Update partstat for single event failed');
 
@@ -244,11 +266,11 @@ export const updatePartstatStatusRepeatedEvent = async (
 
   const userMailto = getUserMailto(event);
 
-  const { davHeaders } = getDavRequestData(calDavAccount);
+  const davRequestData = getDavRequestData(calDavAccount);
 
   // get server events
   const fetchedEvents = await fetchCalendarObjects({
-    headers: davHeaders,
+    headers: davRequestData.davHeaders,
     calendar: calDavAccount.calendar,
     objectUrls: [event.href],
   });
@@ -267,7 +289,8 @@ export const updatePartstatStatusRepeatedEvent = async (
     case REPEATED_EVENT_CHANGE_TYPE.ALL:
       icalObjForEmail = await handleChangeAll(
         event,
-        davHeaders,
+        davRequestData,
+        calDavAccount,
         eventsTemp,
         body,
         userMailto
@@ -276,7 +299,8 @@ export const updatePartstatStatusRepeatedEvent = async (
     case REPEATED_EVENT_CHANGE_TYPE.SINGLE:
       icalObjForEmail = await handleChangeSingle(
         event,
-        davHeaders,
+        davRequestData,
+        calDavAccount,
         eventsTemp,
         body,
         userMailto,

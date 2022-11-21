@@ -13,6 +13,7 @@ import {
   createEventFromCalendarObject,
   formatEventJsonToCalDavEvent,
   formatPartstatResponseData,
+  makeDavCall,
   removeBlobenMetaData,
   removeMethod,
 } from '../../utils/davHelper';
@@ -194,13 +195,21 @@ const handleDeleteEvent = async (
     const davRequestData = getDavRequestData(calDavAccount);
     const { davHeaders } = davRequestData;
 
-    const response = await deleteCalendarObject({
+    const requestData = {
       headers: davHeaders,
       calendarObject: {
         url: existingEvent.href,
         etag: existingEvent.etag,
       },
-    });
+    };
+    const response = await makeDavCall(
+      deleteCalendarObject,
+      requestData,
+      davRequestData,
+      calDavAccount.calendar,
+      calDavAccount.calendar.userID,
+      existingEvent.href
+    );
 
     if (response.status >= 300) {
       logger.error(
@@ -280,14 +289,22 @@ export const updatePartstatStatusForAttendee = async (
     });
     const icalStringNew: string = new ICalHelperV2([eventTemp], true).parseTo();
 
-    const response = await updateCalendarObject({
+    const requestData = {
       headers: davHeaders,
       calendarObject: {
         url: href,
         data: icalStringNew,
         etag: fetchedEvents[0].etag,
       },
-    });
+    };
+    const response = await makeDavCall(
+      updateCalendarObject,
+      requestData,
+      davRequestData,
+      calDavAccount.calendar,
+      calDavAccount.calendar.userID,
+      href
+    );
 
     if (response.status >= 300) {
       logger.error(

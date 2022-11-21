@@ -34,6 +34,7 @@ export const mockTsDav = () => {
 
   tsdav.deleteObject = () => ({
     status: 204,
+    statusText: 'ok',
   });
 
   tsdav.makeCalendar = () => [
@@ -44,6 +45,7 @@ export const mockTsDav = () => {
 
   tsdav.updateCalendarObject = () => ({
     url: 'http://localhost:8012/test',
+    statusText: 'ok',
   });
 
   tsdav.fetchCalendarObjects = () => [
@@ -54,7 +56,9 @@ export const mockTsDav = () => {
     },
   ];
 
-  tsdav.deleteCalendarObject = () => ({});
+  tsdav.deleteCalendarObject = () => ({
+    statusText: 'ok',
+  });
 
   const MOCK_URL = 'http://localhost';
 
@@ -100,6 +104,7 @@ export const mockTsDavEvent = (icalString: string) => {
 
   tsdav.deleteObject = () => ({
     status: 204,
+    statusText: 'ok',
   });
 
   tsdav.makeCalendar = () => [

@@ -7,6 +7,7 @@ import {
 } from './enums';
 import { CalDavEvent, CommonResponse, Range } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
+import { DAVResponse } from 'tsdav';
 import { DateTime, Interval } from 'luxon';
 import { Request } from 'express';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../data/types/enums';
@@ -411,7 +412,7 @@ export const removeArtifacts = (value: string, counter = 0): string => {
 };
 
 export const handleDavResponse = (
-  response: Response,
+  response: DAVResponse,
   errorMsg: string,
   iCalString?: string
 ) => {
