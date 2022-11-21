@@ -13,6 +13,7 @@ import {
   createEventsFromDavObject,
   formatInviteData,
   formatRecurringCancelInviteData,
+  makeDavCall,
 } from '../../../../utils/davHelper';
 import {
   CommonResponse,
@@ -86,14 +87,22 @@ const handleDeleteSingle = async (
 
   const iCalString: string = new ICalHelperV2(eventsTemp).parseTo();
 
-  const response = await updateCalendarObject({
+  const requestData = {
     headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       data: iCalString,
       etag: body.etag,
     },
-  });
+  };
+  const response = await makeDavCall(
+    updateCalendarObject,
+    requestData,
+    davRequestData,
+    calDavAccount.calendar,
+    calDavAccount.calendar.userID,
+    body.url
+  );
 
   handleDavResponse(response, 'Delete caldav event error');
 
@@ -175,14 +184,22 @@ const handleDeleteSingleRecurrence = async (
 
   const iCalString: string = new ICalHelperV2(eventsData).parseTo();
 
-  const response = await updateCalendarObject({
+  const requestData = {
     headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       data: iCalString,
       etag: body.etag,
     },
-  });
+  };
+  const response = await makeDavCall(
+    updateCalendarObject,
+    requestData,
+    davRequestData,
+    calDavAccount.calendar,
+    calDavAccount.calendar.userID,
+    body.url
+  );
 
   handleDavResponse(response, 'Delete caldav event error');
 
@@ -232,13 +249,21 @@ const handleDeleteAll = async (
     calDavAccount.calendar
   );
 
-  const response = await deleteCalendarObject({
+  const requestData = {
     headers: davRequestData.davHeaders,
     calendarObject: {
       url: body.url,
       etag: body.etag,
     },
-  });
+  };
+  const response = await makeDavCall(
+    deleteCalendarObject,
+    requestData,
+    davRequestData,
+    calDavAccount.calendar,
+    calDavAccount.calendar.userID,
+    body.url
+  );
 
   handleDavResponse(response, 'Delete caldav event error');
 

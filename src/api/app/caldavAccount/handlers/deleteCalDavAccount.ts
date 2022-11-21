@@ -12,12 +12,13 @@ import { createCommonResponse } from '../../../../utils/common';
 import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
-import CalDavAccountRepository, {
-  CalDavAccount,
-} from '../../../../data/repository/CalDavAccountRepository';
+import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
+
+import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 import CalendarSettingsEntity from '../../../../data/entity/CalendarSettings';
 import CalendarSettingsRepository from '../../../../data/repository/CalendarSettingsRepository';
 import CardDavAddressBookRepository from '../../../../data/repository/CardDavAddressBookRepository';
+import UserEmailConfigRepository from '../../../../data/repository/UserEmailConfigRepository';
 import logger from '../../../../utils/logger';
 
 export const deleteCalDavAccount = async (
@@ -30,11 +31,28 @@ export const deleteCalDavAccount = async (
   const { userID } = res.locals;
   const { id } = req.params;
 
-  const calDavAccount: CalDavAccount | null =
-    await CalDavAccountRepository.getByIDAllTypes(id, userID);
+  const [useEmailConfig, calDavAccount] = await Promise.all([
+    UserEmailConfigRepository.findByUserID(userID),
+    CalDavAccountRepository.getByIDAllTypes(id, userID),
+  ]);
 
   if (!calDavAccount) {
     throw throwError(404, 'Account not found', req);
+  }
+
+  if (useEmailConfig?.calendarForImportID) {
+    const calendar = await CalDavCalendarRepository.getByIDAndAccountID(
+      useEmailConfig?.calendarForImportID,
+      calDavAccount.id,
+      userID
+    );
+
+    if (calendar) {
+      throw throwError(
+        409,
+        'Cannot delete account with calendar used for importing email invites'
+      );
+    }
   }
 
   try {
