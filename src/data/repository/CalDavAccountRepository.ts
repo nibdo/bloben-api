@@ -60,7 +60,7 @@ export interface CalDavAccount {
 export interface CalendarFromAccount extends DAVCalendar {
   ctagTasks?: string | null;
   id: string;
-  lastUpdateAt?: any;
+  lastUpdateAt: string;
   color: string;
   rootUrl: string;
   homeUrl: string;
@@ -86,6 +86,18 @@ interface BaseAccount {
 }
 export interface AccountRaw extends BaseAccount {
   calendar: string;
+}
+
+export interface CalendarFromAccount {
+  id: string;
+  lastUpdateAt: string;
+  color: string | undefined;
+  url: string;
+  [key: string]: any;
+}
+
+export interface CalDavAccountItem extends BaseAccount {
+  calendar: CalendarFromAccount;
 }
 
 export interface AccountWithCalendars extends BaseAccount {
@@ -250,7 +262,7 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
   public static async getByUserIDAndCalendarID(
     userID: string,
     calendarID: string
-  ) {
+  ): Promise<CalDavAccountItem> {
     const calDavAccountsRaw: AccountRaw[] =
       await CalDavAccountRepository.getRepository().query(
         `
@@ -288,7 +300,7 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
       return null;
     }
 
-    const result = {
+    return {
       ...calDavAccountsRaw[0],
       calendar: {
         ...JSON.parse(calDavAccountsRaw[0].calendar),
@@ -297,8 +309,6 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         color: calDavAccountsRaw[0].calendarColor,
       },
     };
-
-    return result;
   }
 
   public static async update(data: CalDavAccountEntity) {

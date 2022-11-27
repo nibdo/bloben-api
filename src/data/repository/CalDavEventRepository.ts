@@ -183,6 +183,32 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
     return resultCalDavEvents[0];
   };
 
+  public static getEventByExternalID = async (userID: string, id: string) => {
+    const resultCalDavEvents: CalDavEventsRaw[] =
+      await CalDavEventRepository.getRepository().query(
+        `
+      SELECT 
+        ${CalDavEventRepository.calDavEventRawProps}
+      FROM 
+        caldav_events e
+        INNER JOIN caldav_calendars c on c.id = e.caldav_calendar_id
+        INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
+      WHERE 
+        a.user_id = $1
+        AND c.is_hidden IS FALSE
+        AND e.is_repeated = FALSE
+        AND e.external_id = $2
+  `,
+        [userID, id]
+      );
+
+    if (!resultCalDavEvents.length) {
+      return null;
+    }
+
+    return resultCalDavEvents[0];
+  };
+
   public static getRepeatedEvents = async (
     userID: string,
     showTasks: boolean
@@ -301,7 +327,10 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
     return resultCalDavEvents;
   };
 
-  static getExistingEventRaw = async (userID: string, eventID: string) => {
+  static getExistingEventRaw = async (
+    userID: string,
+    eventID: string
+  ): Promise<CalDavEventsRaw> => {
     const existingEventsRaw: {
       id: string;
       externalID: string;

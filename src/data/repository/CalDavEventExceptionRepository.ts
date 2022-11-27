@@ -66,4 +66,16 @@ export default class CalDavEventExceptionRepository extends Repository<CalDavEve
 
     return getOneResult(result);
   }
+
+  public static async deleteExceptions(externalID: string, userID: string) {
+    await CalDavEventExceptionRepository.getRepository().query(
+      `
+    DELETE FROM caldav_event_exceptions
+     WHERE 
+        external_id = $1
+        AND user_id = $2
+  `,
+      [externalID, userID]
+    );
+  }
 }

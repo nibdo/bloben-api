@@ -1,30 +1,27 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { DuplicateMultipleCalDavEventsBody } from 'bloben-interface';
 import {
-  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { DuplicateMultipleCalDavEventsBody } from 'bloben-interface';
 import {
   createCommonResponse,
   handleDavResponse,
 } from '../../../../utils/common';
 
-import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
-import { CalDavEventObj, formatInviteData } from '../../../../utils/davHelper';
+import { CalDavEventObj } from '../../../../utils/davHelper';
 import { DateTime } from 'luxon';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
 import { Job } from 'bullmq';
-import { createCalendarObject } from 'tsdav';
-import { emailBullQueue } from '../../../../service/BullQueue';
 import { eventResultToCalDavEventObj } from './updateRepeatedCalDavEvent';
 import { find, forEach } from 'lodash';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
-import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import { throwError } from '../../../../utils/errorCodes';
 import { v4 } from 'uuid';
@@ -116,18 +113,17 @@ export const duplicateMultipleCalDavEvents = async (
     });
 
     const davRequestData = getDavRequestData(calDavAccount);
-    const { davHeaders } = davRequestData;
 
     const promises: any = [];
 
     forEach(iCalStrings, (item) => {
       promises.push(
-        createCalendarObject({
-          headers: davHeaders,
-          calendar: calDavAccount.calendar,
-          filename: `${item.id}.ics`,
-          iCalString: item.data,
-        })
+        DavService.createEventRaw(
+          item.data,
+          item.id,
+          calDavAccount,
+          davRequestData
+        )
       );
     });
 
@@ -178,16 +174,11 @@ export const duplicateMultipleCalDavEvents = async (
 
         if (icalString) {
           emailPromises.push(
-            emailBullQueue.add(
-              BULL_QUEUE.EMAIL,
-              formatInviteData(
-                userID,
-                item,
-                icalString.data,
-                removeOrganizerFromAttendees(item.organizer, item.attendees),
-                CALENDAR_METHOD.REQUEST,
-                body.inviteMessage
-              )
+            InviteService.createEvent(
+              item,
+              userID,
+              icalString.data,
+              body.inviteMessage
             )
           );
         }

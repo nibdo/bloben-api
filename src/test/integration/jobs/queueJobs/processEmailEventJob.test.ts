@@ -9,6 +9,7 @@ import {
 } from '../../../../jobs/queueJobs/processEmailEventJob';
 import {
   createDummyCalDavEvent,
+  createDummyCalDavEventFromInvite,
   seedCalDavEvents,
 } from '../../seeds/calDavEvents';
 import { seedCalDavCalendars } from '../../seeds/calDavCalendars';
@@ -61,7 +62,7 @@ describe(`processEmailEventJob [JOB]`, async function () {
 
     const job: any = {
       data: {
-        icalString: createDummyCalDavEvent(
+        icalString: createDummyCalDavEventFromInvite(
           calendar.id,
           event.event.externalID,
           CALENDAR_METHOD.REPLY
@@ -87,7 +88,7 @@ describe(`processEmailEventJob [JOB]`, async function () {
 
     const job: any = {
       data: {
-        icalString: createDummyCalDavEvent(
+        icalString: createDummyCalDavEventFromInvite(
           calendar.id,
           event.event.externalID,
           CALENDAR_METHOD.CANCEL

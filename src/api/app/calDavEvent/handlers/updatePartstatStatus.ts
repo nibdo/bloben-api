@@ -8,9 +8,10 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
 import { createCommonResponse } from '../../../../utils/common';
 import { io } from '../../../../app';
-import { updatePartstatStatusForAttendee } from '../../../../jobs/queueJobs/processEmailEventJob';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 
 export const updatePartstatStatus = async (
@@ -27,22 +28,30 @@ export const updatePartstatStatus = async (
     eventID
   );
 
-  const newAttendees = await updatePartstatStatusForAttendee(
-    existingEvent.attendees,
+  const { eventTemp, attendeeNew } = await DavService.updatePartstat(
     userID,
-    existingEvent.organizer.mailto,
     existingEvent.calendarID,
-    existingEvent.etag,
-    existingEvent.href,
+    existingEvent,
+    existingEvent.attendees,
+    existingEvent.organizer.mailto,
     body.status,
-    body.sendInvite,
-    body.inviteMessage,
-    existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+    existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_TO] ||
+      existingEvent.organizer.mailto
   );
 
-  if (newAttendees?.length) {
+  if (body.sendInvite) {
+    await InviteService.changePartstatStatus(
+      eventTemp,
+      userID,
+      attendeeNew,
+      body.status,
+      body.inviteMessage
+    );
+  }
+
+  if (eventTemp.attendees?.length) {
     await CalDavEventRepository.getRepository().update(eventID, {
-      attendees: newAttendees,
+      attendees: eventTemp.attendees,
     });
   }
 
