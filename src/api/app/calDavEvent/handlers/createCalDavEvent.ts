@@ -1,26 +1,25 @@
 import { Request, Response } from 'express';
 
 import {
+  Attendee,
+  CommonResponse,
+  CreateCalDavEventRequest,
+} from 'bloben-interface';
+import {
   BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
-import { CommonResponse, CreateCalDavEventRequest } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
-import {
-  cardDavBullQueue,
-  emailBullQueue,
-} from '../../../../service/BullQueue';
-import { createCalendarObject, createVCard, fetchCalendarObjects } from 'tsdav';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
+import { cardDavBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
-import {
-  createEventFromCalendarObject,
-  formatInviteData,
-} from '../../../../utils/davHelper';
-import { forEach } from 'lodash';
+import { createEventFromCalendarObject } from '../../../../utils/davHelper';
+import { createVCard, fetchCalendarObjects } from 'tsdav';
+import { forEach, map } from 'lodash';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import { io } from '../../../../app';
 import { parseVcardToString } from '../../../../utils/vcardParser';
@@ -92,14 +91,24 @@ export const handleCreateContact = async (
 export const removeOrganizerFromAttendees = (
   organizer: { mailto: string },
   attendees: { mailto: string }[]
-): any[] => {
+): string[] => {
+  return map(
+    attendees.filter((item) => item.mailto !== organizer.mailto),
+    'mailto'
+  );
+};
+
+export const removeOrganizerFromAttendeesOriginalData = (
+  organizer: Attendee,
+  attendees: Attendee[]
+): Attendee[] => {
   return attendees.filter((item) => item.mailto !== organizer.mailto);
 };
 
 export const excludeEmailsFromAttendees = (
   excludedEmails: string[],
-  attendees: { mailto: string }[]
-): any[] => {
+  attendees: Attendee[]
+): Attendee[] => {
   return attendees.filter((item) => !excludedEmails.includes(item.mailto));
 };
 
@@ -113,38 +122,18 @@ export const createCalDavEvent = async (
   const { userID } = res.locals;
   const body: CreateCalDavEventRequest = req.body;
 
-  // get account with calendar
-  const calDavAccount = await CalDavAccountRepository.getByUserIDAndCalendarID(
-    userID,
-    body.calendarID
-  );
-
-  if (!calDavAccount || (calDavAccount && !calDavAccount.calendar?.id)) {
-    throw throwError(404, 'Account with calendar not found');
-  }
-
-  const { davHeaders } = getDavRequestData(calDavAccount);
-
-  const response: any = await createCalendarObject({
-    calendar: calDavAccount.calendar,
-    filename: `${body.externalID}.ics`,
-    iCalString: body.iCalString,
-    headers: davHeaders,
-  });
-
-  if (response.status >= 300) {
-    logger.error(
-      `Status: ${response.status} Message: ${response.statusText}`,
-      null,
-      [LOG_TAG.CALDAV, LOG_TAG.REST]
+  const { response, calDavAccount, davRequestData } =
+    await DavService.createEvent(
+      userID,
+      body.calendarID,
+      body.externalID,
+      body.iCalString
     );
-    throw throwError(409, `Cannot create event: ${response.statusText}`);
-  }
 
   const fetchedEvents = await fetchCalendarObjects({
     calendar: calDavAccount.calendar,
     objectUrls: [response.url],
-    headers: davHeaders,
+    headers: davRequestData.davHeaders,
   });
 
   const eventTemp = createEventFromCalendarObject(
@@ -183,19 +172,11 @@ export const createCalDavEvent = async (
     await queryRunner.release();
 
     if (newEvent.attendees && body.sendInvite) {
-      await emailBullQueue.add(
-        BULL_QUEUE.EMAIL,
-        formatInviteData(
-          userID,
-          eventTemp,
-          body.iCalString,
-          removeOrganizerFromAttendees(
-            eventTemp.organizer,
-            eventTemp.attendees
-          ),
-          CALENDAR_METHOD.REQUEST,
-          body.inviteMessage
-        )
+      await InviteService.createEvent(
+        eventTemp,
+        userID,
+        body.iCalString,
+        body.inviteMessage
       );
     }
 
@@ -205,7 +186,7 @@ export const createCalDavEvent = async (
       if (settings?.saveContactsAuto && settings?.defaultAddressBookID) {
         const carddavPromises: any = [];
         forEach(
-          removeOrganizerFromAttendees(
+          removeOrganizerFromAttendeesOriginalData(
             eventTemp.organizer,
             eventTemp.attendees
           ),

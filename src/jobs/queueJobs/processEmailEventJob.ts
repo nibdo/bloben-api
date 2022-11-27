@@ -10,32 +10,23 @@ import {
 } from '../../utils/enums';
 import {
   CalDavEventObj,
-  createEventFromCalendarObject,
-  formatEventJsonToCalDavEvent,
-  formatPartstatResponseData,
   makeDavCall,
   removeBlobenMetaData,
-  removeMethod,
 } from '../../utils/davHelper';
 import { Job } from 'bullmq';
-import { calDavSyncBullQueue, emailBullQueue } from '../../service/BullQueue';
-import {
-  createCalendarObject,
-  deleteCalendarObject,
-  fetchCalendarObjects,
-  updateCalendarObject,
-} from 'tsdav';
-import { find } from 'lodash';
+import { calDavSyncBullQueue } from '../../service/BullQueue';
+import { deleteCalendarObject } from 'tsdav';
 import { getDavRequestData } from '../../utils/davAccountHelper';
 import { io } from '../../app';
 
 import { CALENDAR_METHOD } from '../../utils/ICalHelper';
+import { DavService } from '../../service/davService';
 import { EventProps } from '../../common/interface/common';
-import { getOneResult } from '../../utils/common';
-import { throwError } from '../../utils/errorCodes';
+import { InviteService } from '../../service/InviteService';
 import CalDavAccountRepository from '../../data/repository/CalDavAccountRepository';
-import CalDavEventRepository from '../../data/repository/CalDavEventRepository';
-import ICalHelperV2 from '../../utils/ICalHelperV2';
+import CalDavEventRepository, {
+  CalDavEventsRaw,
+} from '../../data/repository/CalDavEventRepository';
 import ICalParser, { EventJSON, ICalJSON } from 'ical-js-parser';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';
 import logger from '../../utils/logger';
@@ -56,7 +47,7 @@ export const formatEventForPartstatEmailResponse = (
 
 const handleCreateNewEvent = async (
   userID: string,
-  icalEvent: EventJSON,
+  icalEvents: EventJSON[],
   data: EmailEventJobData
 ) => {
   // get email config for user
@@ -67,45 +58,11 @@ const handleCreateNewEvent = async (
   }
 
   if (userEmailConfig.calendarForImportID) {
-    const calDavAccount =
-      await CalDavAccountRepository.getByUserIDAndCalendarID(
-        userID,
-        userEmailConfig.calendarForImportID
-      );
-    const davRequestData = getDavRequestData(calDavAccount);
-    const { davHeaders } = davRequestData;
-
-    const eventObj = formatEventJsonToCalDavEvent(
-      icalEvent,
-      {
-        etag: undefined,
-        url: undefined,
-      },
-      calDavAccount.calendar
+    await DavService.createEventFromEmail(
+      icalEvents,
+      data,
+      userEmailConfig.calendarForImportID
     );
-
-    // add metadata to event
-    eventObj.props[BLOBEN_EVENT_KEY.INVITE_TO] = data.to;
-    eventObj.props[BLOBEN_EVENT_KEY.INVITE_FROM] = data.from;
-    eventObj.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE] =
-      eventObj.props?.sequence;
-
-    const icalStringNew: string = new ICalHelperV2([eventObj], true).parseTo();
-
-    const response = await createCalendarObject({
-      headers: davHeaders,
-      calendar: calDavAccount.calendar,
-      filename: `${icalEvent?.uid}.ics`,
-      iCalString: removeMethod(icalStringNew),
-    });
-
-    if (response.status >= 300) {
-      logger.error(
-        `Create event from email error with status: ${response.status} ${response.statusText}`,
-        { icalEvent }
-      );
-      return null;
-    }
 
     await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
 
@@ -115,7 +72,7 @@ const handleCreateNewEvent = async (
 
 const handleUpdateEvent = async (
   userID: string,
-  existingEvent: ExistingEvent,
+  existingEvent: CalDavEventsRaw,
   icalEvent: EventJSON,
   data: EmailEventJobData
 ) => {
@@ -127,47 +84,12 @@ const handleUpdateEvent = async (
   }
 
   if (userEmailConfig.calendarForImportID) {
-    const calDavAccount =
-      await CalDavAccountRepository.getByUserIDAndCalendarID(
-        userID,
-        userEmailConfig.calendarForImportID
-      );
-    const davRequestData = getDavRequestData(calDavAccount);
-    const { davHeaders } = davRequestData;
-
-    const eventObj = formatEventJsonToCalDavEvent(
+    await DavService.updateEventFromInvite(
+      userID,
+      existingEvent,
       icalEvent,
-      {
-        etag: existingEvent.etag,
-        url: existingEvent.href,
-      },
-      calDavAccount.calendar
+      data
     );
-
-    // add metadata to event
-    eventObj.props[BLOBEN_EVENT_KEY.INVITE_TO] = data.to;
-    eventObj.props[BLOBEN_EVENT_KEY.INVITE_FROM] = data.from;
-    eventObj.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE] =
-      eventObj.props?.sequence;
-
-    const icalStringNew: string = new ICalHelperV2([eventObj], true).parseTo();
-
-    const response = await updateCalendarObject({
-      headers: davHeaders,
-      calendarObject: {
-        url: existingEvent.href,
-        data: removeMethod(icalStringNew),
-        etag: existingEvent.etag,
-      },
-    });
-
-    if (response.status >= 300) {
-      logger.error(
-        `Update event from email error with status: ${response.status} ${response.statusText}`,
-        { icalEvent }
-      );
-      return null;
-    }
 
     await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
   }
@@ -232,123 +154,38 @@ export const updatePartstatStatusForAttendee = async (
   calendarID: string,
   etag: string,
   href: string,
-  parstat?: ATTENDEE_PARTSTAT,
+  existingEvent: CalDavEventsRaw,
+  partstat?: ATTENDEE_PARTSTAT,
   sendInvite?: boolean,
   inviteMessage?: string,
   to?: string
-): Promise<Attendee[] | null> => {
-  if (!attendees?.length) {
-    return null;
-  }
-  // find attendee
-  const attendeeNew = find(attendees, (attendee) => {
-    if (to) {
-      return attendee.mailto === to;
-    } else {
-      return attendee.mailto === from;
-    }
-  });
-
-  if (!attendeeNew) {
-    return;
-  }
-
-  const calDavAccount = await CalDavAccountRepository.getByUserIDAndCalendarID(
+) => {
+  const { eventTemp, attendeeNew } = await DavService.updatePartstat(
     userID,
-    calendarID
+    existingEvent.calendarID,
+    existingEvent,
+    existingEvent.attendees,
+    existingEvent.organizer.mailto,
+    partstat,
+    existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_TO] || to
   );
 
-  if (!calDavAccount) {
-    throw throwError(404, 'Account not found');
+  if (sendInvite) {
+    await InviteService.changePartstatStatus(
+      eventTemp,
+      userID,
+      attendeeNew,
+      partstat,
+      inviteMessage
+    );
   }
 
-  const davRequestData = getDavRequestData(calDavAccount);
-  const { davHeaders } = davRequestData;
-
-  const fetchedEvents = await fetchCalendarObjects({
-    headers: davHeaders,
-    calendar: calDavAccount.calendar,
-    objectUrls: [href],
-  });
-
-  const eventTemp = createEventFromCalendarObject(
-    fetchedEvents[0],
-    calDavAccount.calendar
+  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    SOCKET_CHANNEL.SYNC,
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
   );
 
-  if (eventTemp?.attendees?.length) {
-    eventTemp.attendees = eventTemp.attendees.map((item) => {
-      if (item.mailto === attendeeNew.mailto) {
-        return {
-          ...item,
-          PARTSTAT: parstat || attendeeNew.PARTSTAT,
-        };
-      } else {
-        return item;
-      }
-    });
-    const icalStringNew: string = new ICalHelperV2([eventTemp], true).parseTo();
-
-    const requestData = {
-      headers: davHeaders,
-      calendarObject: {
-        url: href,
-        data: icalStringNew,
-        etag: fetchedEvents[0].etag,
-      },
-    };
-    const response = await makeDavCall(
-      updateCalendarObject,
-      requestData,
-      davRequestData,
-      calDavAccount.calendar,
-      calDavAccount.calendar.userID,
-      href
-    );
-
-    if (response.status >= 300) {
-      logger.error(
-        `Update event PARTSTAT error with status: ${response.status} ${response.statusText}`,
-        { href, etag }
-      );
-      return null;
-    }
-
-    if (sendInvite) {
-      const icalStringResponse: string = new ICalHelperV2(
-        [
-          formatEventForPartstatEmailResponse(eventTemp, [
-            { ...attendeeNew, PARTSTAT: parstat || attendeeNew.PARTSTAT },
-          ]),
-        ],
-        true
-      ).parseTo();
-
-      // send email only to organizer
-      if (attendeeNew.mailto !== eventTemp.organizer.mailto) {
-        await emailBullQueue.add(
-          BULL_QUEUE.EMAIL,
-          formatPartstatResponseData(
-            userID,
-            eventTemp,
-            parstat,
-            icalStringResponse,
-            [eventTemp.organizer],
-            inviteMessage
-          )
-        );
-      }
-    }
-
-    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
-      SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
-    );
-
-    return eventTemp.attendees;
-  }
-
-  return null;
+  return { attendeeNew, msg: 'Partstat updated' };
 };
 
 export interface EmailEventJobData {
@@ -375,7 +212,7 @@ export const processEmailEventJob = async (
   job: EmailEventJob
 ): Promise<any> => {
   try {
-    let result;
+    let result = { msg: 'Unknown' };
 
     const { data } = job;
 
@@ -385,9 +222,9 @@ export const processEmailEventJob = async (
 
     // parse to JSON
     const icalJSON: ICalJSON = ICalParser.toJSON(data.icalString);
-    const icalEvent: EventJSON = icalJSON.events?.[0];
+    const icalEvents = icalJSON.events;
 
-    if (!icalEvent || icalJSON.errors?.length) {
+    if (!icalEvents?.length || icalJSON.errors?.length) {
       logger.error(
         `Error while parsing event from email`,
         { event: data.icalString, errors: icalJSON.errors },
@@ -398,36 +235,16 @@ export const processEmailEventJob = async (
     }
 
     // check if event exists and is only response
-    const existingEvents: ExistingEvent[] =
-      await CalDavEventRepository.getRepository().query(
-        `
-      SELECT
-        e.id as id,
-        e.external_id as "externalID",
-        c.id as "calendarID",
-        e.attendees as "attendees",
-        e.href as "href",
-        e.etag as "etag",
-        e.props as "props"
-      FROM caldav_events e
-      INNER JOIN caldav_calendars c ON c.id = e.caldav_calendar_id
-      INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
-      WHERE 
-        c.deleted_at IS NULL
-        AND a.deleted_at IS NULL  
-        AND a.user_id = $1
-        AND e.external_id = $2
-    `,
-        [data.userID, icalEvent?.uid]
-      );
-
-    const existingEvent: ExistingEvent = getOneResult(existingEvents);
+    const existingEvent = await CalDavEventRepository.getEventByExternalID(
+      data.userID,
+      icalEvents?.[0]?.uid
+    );
 
     const { method } = icalJSON.calendar;
 
     if (!existingEvent && method !== CALENDAR_METHOD.CANCEL) {
       // event invites
-      result = await handleCreateNewEvent(data.userID, icalEvent, data);
+      result = await handleCreateNewEvent(data.userID, icalEvents, data);
     } else if (!existingEvent && method === CALENDAR_METHOD.CANCEL) {
       // skip
       return { msg: 'Event not exists' };
@@ -444,7 +261,7 @@ export const processEmailEventJob = async (
           result = await handleUpdateEvent(
             data.userID,
             existingEvent,
-            icalEvent,
+            icalEvents[0],
             data
           );
         } else if (method === CALENDAR_METHOD.CANCEL) {
@@ -452,14 +269,17 @@ export const processEmailEventJob = async (
         }
       } else {
         // update status for your event invites
-        result = await updatePartstatStatusForAttendee(
-          icalEvent.attendee as unknown as Attendee[],
-          data.userID,
-          data.from,
-          existingEvent?.calendarID,
-          existingEvent?.etag,
-          existingEvent?.href
-        );
+        for (const icalEvent of icalEvents) {
+          result = await updatePartstatStatusForAttendee(
+            icalEvent.attendee as unknown as Attendee[],
+            data.userID,
+            data.from,
+            existingEvent?.calendarID,
+            existingEvent?.etag,
+            existingEvent?.href,
+            existingEvent
+          );
+        }
       }
     }
 
@@ -469,5 +289,7 @@ export const processEmailEventJob = async (
       LOG_TAG.CRON,
       LOG_TAG.EMAIL,
     ]);
+
+    return { msg: e };
   }
 };

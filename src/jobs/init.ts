@@ -54,7 +54,7 @@ export const initCronJobs = () => {
   );
   calculateWebcalReminders.start();
 
-  const getImapEmailsJob = new CronJob('*/30 * * * *', getImapEmails);
+  const getImapEmailsJob = new CronJob('*/30 * * * *', getImapEmails());
   getImapEmailsJob.start();
 
   const syncCardDavJob = new CronJob(

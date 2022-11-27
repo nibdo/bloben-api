@@ -177,7 +177,7 @@ export enum GROUP_LOG_KEY {
 }
 
 export enum BLOBEN_EVENT_KEY {
-  INVITE_FROM = 'xBlobenInviteTo',
-  INVITE_TO = 'xBlobenInviteFrom',
+  INVITE_FROM = 'xBlobenInviteFrom',
+  INVITE_TO = 'xBlobenInviteTo',
   ORIGINAL_SEQUENCE = 'xBlobenOriginalSequence',
 }

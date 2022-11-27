@@ -7,53 +7,31 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
-import {
-  CalDavEventObj,
-  createEventsFromDavObject,
-  formatInviteData,
-} from '../../../../utils/davHelper';
+import { CalDavEventObj } from '../../../../utils/davHelper';
 import {
   CommonResponse,
   EventResult,
   UpdateRepeatedCalDavEventRequest,
 } from 'bloben-interface';
-import { DateTime } from 'luxon';
-import {
-  DavRequestData,
-  getDavRequestData,
-} from '../../../../utils/davAccountHelper';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
-import {
-  calDavSyncBullQueue,
-  emailBullQueue,
-} from '../../../../service/BullQueue';
-import {
-  createCalendarObject,
-  deleteCalendarObject,
-  fetchCalendarObjects,
-  updateCalendarObject,
-} from 'tsdav';
+import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
-import { forEach } from 'lodash';
-import { formatToIcalDateString } from '../../../../utils/luxonHelper';
+
 import { io } from '../../../../app';
-import { removeOrganizerFromAttendees } from './createCalDavEvent';
 import { throwError } from '../../../../utils/errorCodes';
-import { v4 } from 'uuid';
-import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CalDavEventExceptionRepository from '../../../../data/repository/CalDavEventExceptionRepository';
-import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
+import CalDavEventRepository, {
+  CalDavEventsRaw,
+} from '../../../../data/repository/CalDavEventRepository';
 import ICalHelperV2 from '../../../../utils/ICalHelperV2';
 import logger from '../../../../utils/logger';
 
 export interface RepeatEventUpdateResult {
-  response: any;
-  attendeesData?: {
-    icalString: string;
-    event: CalDavEventObj;
-  }[];
+  response: Response;
 }
+
 export const createICalStringMultiEventForAttendees = (
   data: CalDavEventObj[]
 ) => {
@@ -85,6 +63,7 @@ export const eventResultToCalDavEventObj = (
     etag: eventResult.etag,
     color: eventResult.color,
     recurrenceID: eventResult.recurrenceID,
+    // @ts-ignore
     organizer: eventResult?.organizer,
     alarms: eventResult?.valarms || [],
     attendees: eventResult?.attendees || [],
@@ -96,311 +75,142 @@ export const eventResultToCalDavEventObj = (
 };
 
 const handleSingleEventChange = async (
-  eventsTemp: CalDavEventObj[],
+  prevEvent: CalDavEventsRaw,
   body: UpdateRepeatedCalDavEventRequest,
-  davRequestData: DavRequestData
-): Promise<RepeatEventUpdateResult> => {
-  // filter by recurrence id of updated event
-  let eventsData = eventsTemp.filter((event) => {
-    if (event?.recurrenceID) {
-      // eslint-disable-next-line no-empty
-      if (event?.recurrenceID?.value === body.event.recurrenceID?.value) {
-      } else {
-        return event;
-      }
-    } else {
-      return event;
-    }
-  });
-
-  const eventItem = eventResultToCalDavEventObj(
-    { ...body.event, rRule: undefined },
-    eventsData[0].href
+  userID: string
+) => {
+  const { response, eventItem } = await DavService.updateSingleRepeatedEvent(
+    userID,
+    prevEvent.calendarID,
+    prevEvent,
+    body
   );
-  eventsData = [...eventsData, eventItem];
 
-  const iCalString: string = new ICalHelperV2(eventsData).parseTo();
-
-  const response = await updateCalendarObject({
-    headers: davRequestData.davHeaders,
-    calendarObject: {
-      url: body.url,
-      data: iCalString,
-      etag: body.etag,
-    },
-  });
+  if (body.sendInvite) {
+    const iCalStringInvite = new ICalHelperV2([eventItem]).parseTo();
+    await InviteService.updateNormalEvent(
+      prevEvent,
+      eventItem,
+      userID,
+      iCalStringInvite,
+      body.inviteMessage
+    );
+  }
 
   return {
     response,
-    attendeesData: [
-      {
-        icalString: createICalStringForAttendees(eventItem),
-        event: eventItem,
-      },
-    ],
   };
 };
 
 const handleChangeAllWithCalendar = async (
-  eventsTemp: CalDavEventObj[],
   body: UpdateRepeatedCalDavEventRequest,
-  davRequestData: DavRequestData,
-  calDavAccount: any,
-  userID
-): Promise<RepeatEventUpdateResult> => {
-  // get only event with rrule prop
-  let eventsData = eventsTemp.filter((event) => {
-    if (event.rrule || event.rRule) {
-      return event;
-    }
-  });
-
-  // get account with calendar
-  const calDavAccountNew =
-    await CalDavAccountRepository.getByUserIDAndCalendarID(
+  userID: string,
+  prevEvent: CalDavEventsRaw
+) => {
+  const { response, eventsData, iCalString } =
+    await DavService.updateRepeatedAllWithCalendarChange(
       userID,
-      body.calendarID
+      body.calendarID,
+      prevEvent,
+      body
     );
 
-  if (!calDavAccount) {
-    throw throwError(404, 'Account not found');
-  }
+  await CalDavEventExceptionRepository.deleteExceptions(
+    body.event.externalID,
+    userID
+  );
 
-  // combine original event with new version
-  let startAtNew = DateTime.fromISO(body.event.startAt);
-  let endAtNew = DateTime.fromISO(body.event.endAt);
-
-  if (body.event.rRule === eventsData[0].rRule) {
-    startAtNew = DateTime.fromISO(eventsData[0].startAt).set({
-      hour: startAtNew.hour,
-      minute: startAtNew.minute,
-      second: 0,
-      millisecond: 0,
-    });
-
-    endAtNew = DateTime.fromISO(eventsData[0].endAt).set({
-      hour: endAtNew.hour,
-      minute: endAtNew.minute,
-      second: 0,
-      millisecond: 0,
-    });
-  }
-
-  eventsData = [
-    eventResultToCalDavEventObj(
-      {
-        ...body.event,
-        startAt: startAtNew.toString(),
-        endAt: endAtNew.toString(),
-        props: {
-          exdate: undefined,
-          recurrenceId: undefined,
-        },
-      },
-      eventsData[0].href
-    ),
-  ];
-
-  const iCalString: string = new ICalHelperV2(eventsData).parseTo();
-
-  const response = await createCalendarObject({
-    headers: davRequestData.davHeaders,
-    calendar: calDavAccountNew.calendar,
-    filename: `${body.externalID}.ics`,
-    iCalString: iCalString,
-  });
-
-  // delete prev event
-  const responseDelete = await deleteCalendarObject({
-    headers: davRequestData.davHeaders,
-    calendarObject: {
-      url: body.prevEvent.url,
-      etag: body.prevEvent.etag,
-    },
-  });
-
-  if (responseDelete.status >= 300) {
-    logger.error(
-      `Status: ${responseDelete.status} Message: ${responseDelete.statusText}`,
-      null,
-      [LOG_TAG.CALDAV, LOG_TAG.REST]
+  if (body.sendInvite) {
+    await InviteService.updateNormalEvent(
+      prevEvent,
+      eventsData[0],
+      userID,
+      iCalString,
+      body.inviteMessage
     );
-    throw throwError(409, `Cannot delete event: ${responseDelete.statusText}`);
   }
 
   return {
     response,
-    attendeesData: [
-      {
-        icalString: createICalStringForAttendees(eventsData[0]),
-        event: eventsData[0],
-      },
-    ],
   };
 };
 
 const handleChangeAll = async (
-  eventsTemp: CalDavEventObj[],
   body: UpdateRepeatedCalDavEventRequest,
-  davRequestData: DavRequestData,
-  userID: string
-): Promise<RepeatEventUpdateResult> => {
-  // get only event with rrule prop
-  let eventsData = eventsTemp.filter((event) => {
-    if (event.rrule || event.rRule) {
-      return event;
-    }
-  });
+  userID: string,
+  prevEvent: CalDavEventsRaw
+) => {
+  const { response, eventsData, iCalString } = await DavService.handleChangeAll(
+    userID,
+    body.calendarID,
+    prevEvent,
+    body
+  );
 
-  // combine original event with new version
-  let startAtNew = DateTime.fromISO(body.event.startAt);
-  let endAtNew = DateTime.fromISO(body.event.endAt);
-
-  if (body.event.rRule === eventsData[0].rRule) {
-    startAtNew = DateTime.fromISO(eventsData[0].startAt).set({
-      hour: startAtNew.hour,
-      minute: startAtNew.minute,
-      second: 0,
-      millisecond: 0,
-    });
-    endAtNew = DateTime.fromISO(eventsData[0].endAt).set({
-      hour: endAtNew.hour,
-      minute: endAtNew.minute,
-      second: 0,
-      millisecond: 0,
-    });
+  if (body.sendInvite) {
+    await InviteService.updateNormalEvent(
+      prevEvent,
+      eventsData[0],
+      userID,
+      iCalString,
+      body.inviteMessage
+    );
   }
 
-  eventsData = [
-    eventResultToCalDavEventObj(
-      {
-        ...body.event,
-        startAt: startAtNew.toString(),
-        endAt: endAtNew.toString(),
-        rRule:
-          body.event.rRule === eventsData[0].rRule
-            ? eventsData[0].rRule
-            : body.event.rRule,
-        exdates: [],
-        recurrenceID: undefined,
-      },
-      eventsData[0].href
-    ),
-  ];
-
-  const iCalString: string = new ICalHelperV2(eventsData).parseTo();
-
-  const response = await updateCalendarObject({
-    headers: davRequestData.davHeaders,
-    calendarObject: {
-      url: body.url,
-      data: iCalString,
-      etag: body.etag,
-    },
-  });
-
-  await CalDavEventExceptionRepository.getRepository().query(
-    `
-    DELETE FROM caldav_event_exceptions
-     WHERE 
-        external_id = $1
-        AND user_id = $2
-  `,
-    [body.event.externalID, userID]
+  await CalDavEventExceptionRepository.deleteExceptions(
+    body.event.externalID,
+    userID
   );
 
   return {
     response,
-    attendeesData: [
-      {
-        icalString: createICalStringForAttendees(eventsData[0]),
-        event: eventsData[0],
-      },
-    ],
   };
 };
 
 const handleChangeThisAndFuture = async (
-  eventsTemp: CalDavEventObj[],
+  prevEvent: CalDavEventsRaw,
   body: UpdateRepeatedCalDavEventRequest,
-  davRequestData: DavRequestData,
-  calDavAccount: any
-): Promise<RepeatEventUpdateResult> => {
-  let originRRule = '';
-  let originalEventWithRRule;
-  // get only event with rrule prop
-  const eventsData = eventsTemp.map((event) => {
-    if (event.rrule || event.rRule) {
-      originRRule = event.rrule || event.rRule;
-      const rRule = event.rRule.includes(';UNTIL')
-        ? event.rRule.slice(0, event.rRule.indexOf(';UNTIL'))
-        : event.rRule;
+  userID: string
+) => {
+  const { calDavAccount, davRequestData, originRRule, eventsData, iCalString } =
+    await DavService.changeThisAndFutureUntilEvent(
+      userID,
+      body.calendarID,
+      prevEvent,
+      body
+    );
 
-      originalEventWithRRule = {
-        ...event,
-        rRule: `${rRule};UNTIL=${formatToIcalDateString(
-          DateTime.fromISO(body.event.startAt)
-            .minus({
-              day: 1,
-            })
-            .set({ hour: 23, minute: 59, second: 59 })
-            .toString()
-        )}`,
-      };
+  if (body.sendInvite) {
+    await InviteService.updateNormalEvent(
+      prevEvent,
+      eventsData[0],
+      userID,
+      iCalString,
+      ''
+    );
+  }
 
-      return originalEventWithRRule;
-    } else {
-      return event;
-    }
-  });
+  const { response, iCalStringNew, dataNew } =
+    await DavService.createNewEventForThisAndFuture(
+      userID,
+      calDavAccount,
+      davRequestData,
+      body,
+      originRRule,
+      eventsData
+    );
 
-  const iCalString: string = new ICalHelperV2(eventsData).parseTo();
-
-  const idNew = v4();
-  const eventResultNew = {
-    ...body.event,
-    externalID: idNew,
-    rRule: originRRule,
-    recurrenceID: undefined,
-  };
-  const iCalStringNew: string = new ICalHelperV2([
-    eventResultToCalDavEventObj(eventResultNew, eventsData[0].href),
-  ]).parseTo();
-
-  await updateCalendarObject({
-    headers: davRequestData.davHeaders,
-    calendarObject: {
-      url: body.url,
-      data: iCalString,
-      etag: body.etag,
-    },
-  });
-
-  // create new event
-  const response = await createCalendarObject({
-    headers: davRequestData.davHeaders,
-    calendar: calDavAccount.calendar,
-    filename: `${idNew}.ics`,
-    iCalString: iCalStringNew,
-  });
+  if (body.sendInvite) {
+    await InviteService.createEvent(
+      dataNew,
+      userID,
+      iCalStringNew,
+      body.inviteMessage
+    );
+  }
 
   return {
     response,
-    attendeesData: [
-      {
-        icalString: createICalStringMultiEventForAttendees(eventsData),
-        event: eventResultToCalDavEventObj(
-          originalEventWithRRule,
-          eventsData[0].href
-        ),
-      },
-      {
-        icalString: createICalStringForAttendees(
-          eventResultToCalDavEventObj(eventResultNew, eventsData[0].href)
-        ),
-        event: eventResultToCalDavEventObj(eventResultNew, eventsData[0].href),
-      },
-    ],
   };
 };
 
@@ -425,44 +235,9 @@ export const updateRepeatedCalDavEvent = async (
     throw throwError(404, 'Event not found');
   }
 
-  // get account with calendar
-  const calDavAccount = await CalDavAccountRepository.getByUserIDAndCalendarID(
-    userID,
-    body.calendarID
-  );
-
-  if (!calDavAccount) {
-    throw throwError(404, 'Account not found');
-  }
-
   body.event.valarms = body.event.alarms;
 
-  const davRequestData = getDavRequestData(calDavAccount);
-  const { davHeaders } = davRequestData;
-
-  // get server events
-  const fetchedEvents = await fetchCalendarObjects({
-    headers: davHeaders,
-    calendar: calDavAccount.calendar,
-    objectUrls: [body.url],
-  });
-
-  // format to event obj
-  const eventsTemp = createEventsFromDavObject(
-    fetchedEvents[0],
-    calDavAccount.calendar
-  );
-
-  if (
-    body.type !== REPEATED_EVENT_CHANGE_TYPE.ALL &&
-    body.event.attendees &&
-    eventsTemp?.[0]?.attendees &&
-    body.event.attendees.length !== eventsTemp?.[0].attendees.length
-  ) {
-    throw throwError(409, 'Attendees can be changed only for all instances');
-  }
-
-  let result: RepeatEventUpdateResult;
+  let result;
 
   if (body.type !== REPEATED_EVENT_CHANGE_TYPE.ALL && body.prevEvent) {
     throw throwError(
@@ -472,24 +247,13 @@ export const updateRepeatedCalDavEvent = async (
   }
 
   if (body.type === REPEATED_EVENT_CHANGE_TYPE.ALL && body.prevEvent) {
-    result = await handleChangeAllWithCalendar(
-      eventsTemp,
-      body,
-      davRequestData,
-      calDavAccount,
-      userID
-    );
+    result = await handleChangeAllWithCalendar(body, userID, event);
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.SINGLE) {
-    result = await handleSingleEventChange(eventsTemp, body, davRequestData);
+    result = await handleSingleEventChange(event, body, userID);
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.ALL) {
-    result = await handleChangeAll(eventsTemp, body, davRequestData, userID);
+    result = await handleChangeAll(body, userID, event);
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.THIS_AND_FUTURE) {
-    result = await handleChangeThisAndFuture(
-      eventsTemp,
-      body,
-      davRequestData,
-      calDavAccount
-    );
+    result = await handleChangeThisAndFuture(event, body, userID);
   }
 
   if (result.response.status >= 300) {
@@ -507,33 +271,6 @@ export const updateRepeatedCalDavEvent = async (
   );
 
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
-
-  if (body.sendInvite && result.attendeesData.length) {
-    const promises: any = [];
-
-    forEach(result.attendeesData, (attendeesItem) => {
-      if (attendeesItem.icalString && attendeesItem.event?.attendees) {
-        promises.push(
-          emailBullQueue.add(
-            BULL_QUEUE.EMAIL,
-            formatInviteData(
-              userID,
-              attendeesItem.event,
-              attendeesItem.icalString,
-              removeOrganizerFromAttendees(
-                attendeesItem.event.organizer,
-                attendeesItem.event.attendees
-              ),
-              CALENDAR_METHOD.REQUEST,
-              body.inviteMessage
-            )
-          )
-        );
-      }
-    });
-
-    await Promise.all(promises);
-  }
 
   return createCommonResponse('Event updated', {});
 };

@@ -8,13 +8,7 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
-import {
-  CalDavEventObj,
-  createEventsFromDavObject,
-  formatInviteData,
-  formatRecurringCancelInviteData,
-  makeDavCall,
-} from '../../../../utils/davHelper';
+import { CalDavEventObj } from '../../../../utils/davHelper';
 import {
   CommonResponse,
   DeleteRepeatedCalDavEventRequest,
@@ -23,29 +17,23 @@ import {
   DavRequestData,
   getDavRequestData,
 } from '../../../../utils/davAccountHelper';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
-import {
-  calDavSyncBullQueue,
-  emailBullQueue,
-} from '../../../../service/BullQueue';
+import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import {
   createCommonResponse,
-  handleDavResponse,
+  isExternalEmailInvite,
 } from '../../../../utils/common';
-import { createICalStringForAttendees } from './updateRepeatedCalDavEvent';
-import {
-  deleteCalendarObject,
-  fetchCalendarObjects,
-  updateCalendarObject,
-} from 'tsdav';
-import { forEach, map } from 'lodash';
+import { excludeEmailsFromAttendees } from './createCalDavEvent';
 import { io } from '../../../../app';
-import { removeOrganizerFromAttendees } from './createCalDavEvent';
+import { map } from 'lodash';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CalDavEventExceptionRepository from '../../../../data/repository/CalDavEventExceptionRepository';
-import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
-import ICalHelperV2 from '../../../../utils/ICalHelperV2';
+import CalDavEventRepository, {
+  CalDavEventsRaw,
+} from '../../../../data/repository/CalDavEventRepository';
 import logger from '../../../../utils/logger';
 
 export interface RepeatEventDeleteResult {
@@ -59,80 +47,38 @@ export interface RepeatEventDeleteResult {
 const handleDeleteSingle = async (
   body: DeleteRepeatedCalDavEventRequest,
   davRequestData: DavRequestData,
-  calDavAccount: any
+  calDavAccount: any,
+  event: CalDavEventsRaw,
+  isExternalInvite: boolean,
+  userID: string
 ): Promise<RepeatEventDeleteResult> => {
-  // get server events
-  const fetchedEvents = await fetchCalendarObjects({
-    headers: davRequestData.davHeaders,
-    calendar: calDavAccount.calendar,
-    objectUrls: [body.url],
-  });
-
-  // format to event obj
-  let eventsTemp = createEventsFromDavObject(
-    fetchedEvents[0],
-    calDavAccount.calendar
+  const { eventsTemp, response } = await DavService.deleteSingleRepeatedEvent(
+    userID,
+    body.calendarID,
+    event,
+    body.exDates
   );
 
-  // filter by recurrence id of deleted event
-  eventsTemp = map(eventsTemp, (item) => {
-    if (item.rRule) {
-      const exDates = item.exdates || [];
-      const exdates = [...exDates, ...body.exDates];
-      return { ...item, exdates };
+  if (body.sendInvite) {
+    if (isExternalInvite) {
+      await InviteService.cancelSingleRepeatedEventAsGuest(
+        eventsTemp[0],
+        body.recurrenceID,
+        userID,
+        body.inviteMessage
+      );
     } else {
-      return item;
+      await InviteService.cancelSingleRepeatedEventAsOrganizer(
+        eventsTemp[0],
+        body.recurrenceID,
+        userID,
+        body.inviteMessage
+      );
     }
-  });
-
-  const iCalString: string = new ICalHelperV2(eventsTemp).parseTo();
-
-  const requestData = {
-    headers: davRequestData.davHeaders,
-    calendarObject: {
-      url: body.url,
-      data: iCalString,
-      etag: body.etag,
-    },
-  };
-  const response = await makeDavCall(
-    updateCalendarObject,
-    requestData,
-    davRequestData,
-    calDavAccount.calendar,
-    calDavAccount.calendar.userID,
-    body.url
-  );
-
-  handleDavResponse(response, 'Delete caldav event error');
-
-  const eventToCancel: CalDavEventObj = {
-    ...eventsTemp[0],
-    rRule: null,
-    status: 'CANCELLED',
-    props: eventsTemp[0].props
-      ? {
-          ...eventsTemp[0].props,
-          status: 'CANCELED',
-        }
-      : {
-          status: 'CANCELED',
-        },
-    exdates: [],
-    dtstart: body.recurrenceID,
-    dtend: body.recurrenceID,
-    recurrenceID: body.recurrenceID,
-  };
+  }
 
   return {
     response,
-    attendeesData: [
-      {
-        method: CALENDAR_METHOD.CANCEL,
-        icalString: createICalStringForAttendees(eventToCancel),
-        event: eventToCancel,
-      },
-    ],
   };
 };
 
@@ -140,68 +86,35 @@ const handleDeleteSingleRecurrence = async (
   body: DeleteRepeatedCalDavEventRequest,
   davRequestData: DavRequestData,
   calDavAccount: any,
-  userID: string
+  userID: string,
+  event: CalDavEventsRaw,
+  isExternalInvite: boolean
 ): Promise<RepeatEventDeleteResult> => {
-  // get server events
-  const fetchedEvents = await fetchCalendarObjects({
-    headers: davRequestData.davHeaders,
-    calendar: calDavAccount.calendar,
-    objectUrls: [body.url],
-  });
+  const { eventsTemp, response, eventsData } =
+    await DavService.deleteExistingException(
+      userID,
+      body.calendarID,
+      event,
+      body.recurrenceID
+    );
 
-  // format to event obj
-  const eventsTemp = createEventsFromDavObject(
-    fetchedEvents[0],
-    calDavAccount.calendar
-  );
-
-  let eventToDelete;
-
-  // filter by recurrence id of deleted event
-  const eventsData = map(
-    eventsTemp.filter((event) => {
-      if (event?.recurrenceID) {
-        // eslint-disable-next-line no-empty
-        if (event?.recurrenceID?.value === body.recurrenceID?.value) {
-          eventToDelete = event;
-        } else {
-          return event;
-        }
-      } else {
-        return event;
-      }
-    }),
-    (item) => {
-      if (item.rRule) {
-        const exDates = item.exdates || [];
-        const exdates = [...exDates, body.recurrenceID];
-        return { ...item, exdates };
-      } else {
-        return item;
-      }
+  if (body.sendInvite) {
+    if (isExternalInvite) {
+      await InviteService.cancelSingleRepeatedEventAsGuest(
+        eventsTemp[0],
+        body.recurrenceID,
+        userID,
+        body.inviteMessage
+      );
+    } else {
+      await InviteService.cancelSingleRepeatedEventAsOrganizer(
+        eventsTemp[0],
+        body.recurrenceID,
+        userID,
+        body.inviteMessage
+      );
     }
-  );
-
-  const iCalString: string = new ICalHelperV2(eventsData).parseTo();
-
-  const requestData = {
-    headers: davRequestData.davHeaders,
-    calendarObject: {
-      url: body.url,
-      data: iCalString,
-      etag: body.etag,
-    },
-  };
-  const response = await makeDavCall(
-    updateCalendarObject,
-    requestData,
-    davRequestData,
-    calDavAccount.calendar,
-    calDavAccount.calendar.userID,
-    body.url
-  );
-
-  handleDavResponse(response, 'Delete caldav event error');
+  }
 
   await CalDavEventExceptionRepository.getRepository().query(
     `
@@ -216,66 +129,46 @@ const handleDeleteSingleRecurrence = async (
 
   return {
     response,
-    attendeesData: [
-      // {
-      //   method: CALENDAR_METHOD.REQUEST,
-      //   icalString: createICalStringForAttendees(eventsData[0]),
-      //   event: eventsData[0],
-      // },
-      {
-        method: CALENDAR_METHOD.CANCEL,
-        icalString: createICalStringForAttendees(eventToDelete),
-        event: eventToDelete,
-      },
-    ],
+    attendeesData: [],
   };
 };
 
 const handleDeleteAll = async (
   body: DeleteRepeatedCalDavEventRequest,
   davRequestData: DavRequestData,
-  calDavAccount: any
+  calDavAccount: any,
+  event: CalDavEventsRaw,
+  isExternalInvite: boolean,
+  userID: string
 ): Promise<RepeatEventDeleteResult> => {
-  // get server events
-  const fetchedEvents = await fetchCalendarObjects({
-    headers: davRequestData.davHeaders,
-    calendar: calDavAccount.calendar,
-    objectUrls: [body.url],
-  });
-
-  // format to event obj
-  const eventsTemp = createEventsFromDavObject(
-    fetchedEvents[0],
-    calDavAccount.calendar
+  const { response } = await DavService.deleteEvent(
+    userID,
+    body.calendarID,
+    event
   );
 
-  const requestData = {
-    headers: davRequestData.davHeaders,
-    calendarObject: {
-      url: body.url,
-      etag: body.etag,
-    },
-  };
-  const response = await makeDavCall(
-    deleteCalendarObject,
-    requestData,
-    davRequestData,
-    calDavAccount.calendar,
-    calDavAccount.calendar.userID,
-    body.url
-  );
-
-  handleDavResponse(response, 'Delete caldav event error');
+  if (body.sendInvite) {
+    if (isExternalInvite) {
+      await InviteService.cancelNormalEventAsGuest(
+        event,
+        userID,
+        body.inviteMessage
+      );
+    } else {
+      await InviteService.cancelNormalEventAsOrganizer(
+        event,
+        userID,
+        map(
+          excludeEmailsFromAttendees([event.organizer.mailto], event.attendees),
+          'mailto'
+        ),
+        body.inviteMessage
+      );
+    }
+  }
 
   return {
     response,
-    attendeesData: [
-      {
-        method: CALENDAR_METHOD.CANCEL,
-        icalString: createICalStringForAttendees(eventsTemp[0]),
-        event: eventsTemp[0],
-      },
-    ],
   };
 };
 
@@ -288,29 +181,51 @@ export const deleteRepeatedCalDavEvent = async (
   const body: DeleteRepeatedCalDavEventRequest = req.body;
 
   // get account with calendar
-  const calDavAccount = await CalDavAccountRepository.getByUserIDAndCalendarID(
-    userID,
-    body.calendarID
-  );
+  const [calDavAccount, event] = await Promise.all([
+    CalDavAccountRepository.getByUserIDAndCalendarID(userID, body.calendarID),
+    CalDavEventRepository.getCalDavEventByID(userID, body.id),
+  ]);
 
   if (!calDavAccount) {
     throw throwError(404, 'Account not found');
   }
 
+  if (!event) {
+    throw throwError(404, 'Event not found');
+  }
+
+  const isExternalInvite = isExternalEmailInvite(event);
+
   const davRequestData = getDavRequestData(calDavAccount);
 
   let result;
   if (body.type === REPEATED_EVENT_CHANGE_TYPE.ALL) {
-    result = await handleDeleteAll(body, davRequestData, calDavAccount);
+    result = await handleDeleteAll(
+      body,
+      davRequestData,
+      calDavAccount,
+      event,
+      isExternalInvite,
+      userID
+    );
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.SINGLE_RECURRENCE_ID) {
     result = await handleDeleteSingleRecurrence(
       body,
       davRequestData,
       calDavAccount,
-      userID
+      userID,
+      event,
+      isExternalInvite
     );
   } else if (body.type === REPEATED_EVENT_CHANGE_TYPE.SINGLE) {
-    result = await handleDeleteSingle(body, davRequestData, calDavAccount);
+    result = await handleDeleteSingle(
+      body,
+      davRequestData,
+      calDavAccount,
+      event,
+      isExternalInvite,
+      userID
+    );
   }
 
   if (result.response.status >= 300) {
@@ -324,12 +239,6 @@ export const deleteRepeatedCalDavEvent = async (
 
   await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
 
-  const event = await CalDavEventRepository.getCalDavEventByID(userID, body.id);
-
-  if (!event) {
-    throw throwError(404, 'Event not found');
-  }
-
   await CalDavEventRepository.getRepository().delete({
     href: body.url,
     id: body.id,
@@ -339,51 +248,6 @@ export const deleteRepeatedCalDavEvent = async (
     SOCKET_CHANNEL.SYNC,
     JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
   );
-
-  if (body.sendInvite && result.attendeesData.length) {
-    const promises: any = [];
-
-    forEach(result.attendeesData, (attendeesItem) => {
-      if (attendeesItem.icalString && attendeesItem.event?.attendees) {
-        if (attendeesItem.method === CALENDAR_METHOD.REQUEST) {
-          promises.push(
-            emailBullQueue.add(
-              BULL_QUEUE.EMAIL,
-              formatInviteData(
-                userID,
-                attendeesItem.event,
-                attendeesItem.icalString,
-                removeOrganizerFromAttendees(
-                  attendeesItem.event.organizer,
-                  attendeesItem.event.attendees
-                ),
-                CALENDAR_METHOD.REQUEST
-              )
-            )
-          );
-        } else {
-          promises.push(
-            emailBullQueue.add(
-              BULL_QUEUE.EMAIL,
-              formatRecurringCancelInviteData(
-                userID,
-                attendeesItem.event,
-                attendeesItem.icalString,
-                removeOrganizerFromAttendees(
-                  attendeesItem.event.organizer,
-                  attendeesItem.event.attendees
-                ),
-                CALENDAR_METHOD.CANCEL,
-                body.inviteMessage
-              )
-            )
-          );
-        }
-      }
-    });
-
-    await Promise.all(promises);
-  }
 
   return createCommonResponse('Event deleted');
 };

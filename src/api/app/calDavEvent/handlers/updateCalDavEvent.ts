@@ -8,32 +8,20 @@ import {
   SOCKET_ROOM_NAMESPACE,
   TIMEZONE,
 } from '../../../../utils/enums';
-import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
 import { CommonResponse, UpdateCalDavEventRequest } from 'bloben-interface';
 import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { DateTime } from 'luxon';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
 import { RRule } from 'rrule';
-import {
-  cardDavBullQueue,
-  emailBullQueue,
-} from '../../../../service/BullQueue';
-import {
-  createCalendarObject,
-  deleteCalendarObject,
-  fetchCalendarObjects,
-  updateCalendarObject,
-} from 'tsdav';
+import { cardDavBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse, formatToRRule } from '../../../../utils/common';
-import {
-  createEventFromCalendarObject,
-  formatInviteData,
-  makeDavCall,
-} from '../../../../utils/davHelper';
+import { deleteCalendarObject } from 'tsdav';
 import { forEach } from 'lodash';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import {
   handleCreateContact,
-  removeOrganizerFromAttendees,
+  removeOrganizerFromAttendeesOriginalData,
 } from './createCalDavEvent';
 import { io } from '../../../../app';
 import { parseAlarmDuration } from '../../../../utils/caldavAlarmHelper';
@@ -154,6 +142,8 @@ export const updateCalDavEvent = async (
     throw throwError(404, 'Event not found');
   }
 
+  const prevEvent = { ...event };
+
   // get account with calendar
   const calDavAccount = await CalDavAccountRepository.getByUserIDAndCalendarID(
     userID,
@@ -167,57 +157,37 @@ export const updateCalDavEvent = async (
   const davRequestData = getDavRequestData(calDavAccount);
   const { davHeaders } = davRequestData;
 
-  let requestData;
-  let requestFunction;
+  let response;
 
   if (body.prevEvent) {
-    requestFunction = createCalendarObject;
-    requestData = {
-      headers: davHeaders,
-      calendar: calDavAccount.calendar,
-      filename: `${body.externalID}.ics`,
-      iCalString: body.iCalString,
-    };
+    const { response: responseData } = await DavService.createEvent(
+      userID,
+      body.calendarID,
+      body.externalID,
+      body.iCalString,
+      calDavAccount,
+      davRequestData
+    );
+    response = responseData;
   } else {
-    requestFunction = updateCalendarObject;
-    requestData = {
-      headers: davHeaders,
-      calendarObject: {
-        url: body.url,
-        data: body.iCalString,
-        etag: event.etag,
-      },
-    };
+    const { response: responseData } = await DavService.updateEvent(
+      userID,
+      body.calendarID,
+      event,
+      body.iCalString,
+      calDavAccount,
+      davRequestData
+    );
+    response = responseData;
   }
 
-  const response = await makeDavCall(
-    requestFunction,
-    requestData,
-    davRequestData,
-    calDavAccount.calendar,
-    userID,
-    event.href
-  );
-
-  if (response.status >= 300) {
-    logger.error('Update calDav event error', response.statusText, [
-      LOG_TAG.REST,
-      LOG_TAG.CALDAV,
-    ]);
-
-    throw throwError(409, `Cannot update event: ${response.statusText}`);
-  }
-
-  const fetchedEvents = await fetchCalendarObjects({
-    headers: davHeaders,
-    calendar: calDavAccount.calendar,
-    objectUrls: [response.url],
-  });
-
-  const eventTemp = createEventFromCalendarObject(
-    fetchedEvents[0],
-    calDavAccount.calendar
-  );
+  const eventTemp = (
+    await DavService.getAndFormatServerEvents(
+      davHeaders,
+      response.url,
+      calDavAccount.calendar
+    )
+  )?.[0];
 
   try {
     connection = await getConnection();
@@ -250,20 +220,13 @@ export const updateCalDavEvent = async (
       }
     }
 
-    if (event.attendees && body.sendInvite) {
-      await emailBullQueue.add(
-        BULL_QUEUE.EMAIL,
-        formatInviteData(
-          userID,
-          eventTemp,
-          body.iCalString,
-          removeOrganizerFromAttendees(
-            eventTemp.organizer,
-            eventTemp.attendees
-          ),
-          CALENDAR_METHOD.REQUEST,
-          body.inviteMessage
-        )
+    if (body.sendInvite) {
+      await InviteService.updateNormalEvent(
+        prevEvent,
+        eventTemp,
+        userID,
+        body.iCalString,
+        body.inviteMessage
       );
     }
 
@@ -273,7 +236,7 @@ export const updateCalDavEvent = async (
       if (settings?.saveContactsAuto && settings?.defaultAddressBookID) {
         const carddavPromises: any = [];
         forEach(
-          removeOrganizerFromAttendees(
+          removeOrganizerFromAttendeesOriginalData(
             eventTemp.organizer,
             eventTemp.attendees
           ),
