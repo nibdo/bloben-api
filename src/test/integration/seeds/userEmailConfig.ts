@@ -12,7 +12,12 @@ export const userEmailConfigData: UserEmailConfigData = {
     smtpPort: 100,
     smtpUsername: 'asfasf',
   },
-  imap: null,
+  imap: {
+    imapHost: 'abd',
+    imapPort: 100,
+    imapPassword: 'abd',
+    imapUsername: 'abd',
+  },
 };
 
 export const seedUserEmailConfig = async (

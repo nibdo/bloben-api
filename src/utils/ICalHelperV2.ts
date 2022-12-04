@@ -214,6 +214,10 @@ class ICalHelperV2 {
         delete result.props?.[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
       }
 
+      if (result.duration) {
+        delete result.dtend;
+      }
+
       this.events.push(result);
     });
   }

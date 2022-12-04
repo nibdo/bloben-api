@@ -225,7 +225,7 @@ describe(`[E2E] Update calDav event repeated [PUT] ${PATH}`, async function () {
         'summary',
         undefined,
         undefined,
-        [{ mailto: 'test@bloben.com' }]
+        [{ mailto: 'test1@bloben.com' }]
       )
     );
 

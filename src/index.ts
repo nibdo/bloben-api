@@ -28,6 +28,11 @@ export const startServer = async (): Promise<void> => {
     // connect to database
     const connection: Connection = await createConnection(createORMConfig());
     await connection.synchronize();
+    // // check if database is set
+    // const dbResult = await ServerSettingsRepository.getRepository().find();
+    // if (!dbResult?.length) {
+    //   await connection.synchronize();
+    // }
 
     if (env.nodeEnv !== NODE_ENV.TEST) {
       await connection.runMigrations();

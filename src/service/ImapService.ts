@@ -1,9 +1,20 @@
 import * as ImapFlowLib from 'imapflow';
 import { BULL_QUEUE, LOG_TAG } from '../utils/enums';
+import { CryptoAes } from '../utils/CryptoAes';
 import { EmailEventJobData } from '../jobs/queueJobs/processEmailEventJob';
-import { ImapConfig, ImapData } from 'bloben-interface';
+import {
+  ImapConfig,
+  ImapData,
+  UserEmailConfigDecryptedData,
+} from 'bloben-interface';
+import {
+  UserEmailConfigRaw,
+  getTextCalendarAttachment,
+} from '../jobs/cronJobs/getImapEmails';
 import { emailInviteBullQueue } from './BullQueue';
-import { getTextCalendarAttachment } from '../jobs/cronJobs/getImapEmails';
+import { filter } from 'lodash';
+import UserEmailConfigEntity from '../data/entity/UserEmailConfig';
+import UserEmailConfigRepository from '../data/repository/UserEmailConfigRepository';
 import logger from '../utils/logger';
 import mailparser from 'mailparser';
 
@@ -51,6 +62,12 @@ interface GetImapEmailResult {
   lastSeq: number;
 }
 
+interface DecryptedConfigResult {
+  userID: string;
+  lastSeq: number;
+  imap: any;
+}
+
 class ImapService {
   public static async validateImapAccountData(
     body: ImapConfig
@@ -73,6 +90,51 @@ class ImapService {
     } catch (error) {
       return false;
     }
+  }
+
+  public static async getDecryptedConfig(
+    userEmailConfig: UserEmailConfigEntity | UserEmailConfigRaw
+  ): Promise<DecryptedConfigResult | null> {
+    if (!userEmailConfig?.data) {
+      throw Error('Missing email config data');
+    }
+
+    const userEmailConfigData: UserEmailConfigDecryptedData =
+      await CryptoAes.decrypt(userEmailConfig.data);
+
+    if (!userEmailConfigData) {
+      throw Error('Missing decrypted email config data');
+    }
+
+    if (userEmailConfigData.imap) {
+      return {
+        userID: userEmailConfig.userID,
+        lastSeq: userEmailConfig.lastSeq,
+        imap: userEmailConfigData.imap,
+      };
+    }
+
+    return null;
+  }
+
+  public static async syncEmails(decryptedConfig: DecryptedConfigResult) {
+    if (!decryptedConfig) {
+      throw Error('Missing imap config');
+    }
+
+    const getEmailsResult = await this.getEmails(
+      decryptedConfig.imap,
+      decryptedConfig.userID,
+      decryptedConfig.lastSeq
+    );
+
+    await UserEmailConfigRepository.getRepository().update(
+      decryptedConfig.userID,
+      {
+        lastSeq: getEmailsResult?.lastSeq || decryptedConfig.lastSeq,
+        lastSyncAt: new Date(),
+      }
+    );
   }
 
   public static async getEmails(
@@ -98,7 +160,7 @@ class ImapService {
       lock = await client.getMailboxLock('INBOX');
 
       try {
-        const idsToCheck = [];
+        let idsToCheck = [];
 
         // Get only last message on init
         if (!lastSeq) {
@@ -130,6 +192,9 @@ class ImapService {
             idsToCheck.push(msg.seq);
           }
         }
+
+        // filter prev id to prevent duplicate call
+        idsToCheck = filter(idsToCheck, (id) => id !== lastSeq);
 
         // Download content
         for (let i = 0; i < idsToCheck.length; i++) {

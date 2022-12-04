@@ -1,9 +1,9 @@
-import { ATTENDEE_PARTSTAT, SOURCE_TYPE } from '../data/types/enums';
+import { ATTENDEE_PARTSTAT } from '../data/types/enums';
 import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
 import { BLOBEN_EVENT_KEY } from './enums';
 import { CalDavEventObj } from './davHelper';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
-import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface/enums';
+import { EVENT_TYPE, SOURCE_TYPE, TASK_STATUS } from 'bloben-interface/enums';
 import { find } from 'lodash';
 import { getDateTime } from './common';
 import {
@@ -95,7 +95,10 @@ export const formatEventEntityToResult = (
   etag: event.etag,
   url: event.href,
   props: event.props || null,
-  sourceType: SOURCE_TYPE.CALDAV,
+  sourceType: event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM]
+    ? SOURCE_TYPE.EMAIL_INVITE
+    : SOURCE_TYPE.CALDAV,
+  updateDisabled: !!event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM],
   type: event.type,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
@@ -126,7 +129,10 @@ export const formatEventRawToResult = (
     url: event.href,
     isRepeated: event.isRepeated,
     rRule: event.rRule,
-    sourceType: SOURCE_TYPE.CALDAV,
+    sourceType: event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM]
+      ? SOURCE_TYPE.EMAIL_INVITE
+      : SOURCE_TYPE.CALDAV,
+    updateDisabled: !!event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM],
     type: event.type,
     // @ts-ignore
     status: event.status,
