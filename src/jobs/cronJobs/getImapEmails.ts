@@ -1,12 +1,11 @@
-import { CryptoAes } from '../../utils/CryptoAes';
 import { GROUP_LOG_KEY, LOG_TAG, REDIS_PREFIX } from '../../utils/enums';
-import { ImapData, UserEmailConfigDecryptedData } from 'bloben-interface';
+import { ImapData } from 'bloben-interface';
 import { redisClient } from '../../index';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';
 import imapService from '../../service/ImapService';
 import logger, { groupLogs } from '../../utils/logger';
 
-interface UserEmailConfigRaw {
+export interface UserEmailConfigRaw {
   data: string;
   lastSeq: number | null;
   userID: string;
@@ -58,16 +57,10 @@ export const getImapEmails = async (): Promise<void> => {
             `getImapEmails #userID ${userEmailConfig.userID} with sequence: ${userEmailConfig.lastSeq}`
           );
 
-          const userEmailConfigData: UserEmailConfigDecryptedData =
-            await CryptoAes.decrypt(userEmailConfig.data);
-
-          if (userEmailConfigData.imap) {
-            decryptedConfigs.push({
-              userID: userEmailConfig.userID,
-              lastSeq: userEmailConfig.lastSeq,
-              imap: userEmailConfigData.imap,
-            });
-          }
+          const userEmailConfigData = await imapService.getDecryptedConfig(
+            userEmailConfig
+          );
+          decryptedConfigs.push(userEmailConfigData);
         } catch (e) {
           logger.error(
             `Error decrypting email config data for userID ${userEmailConfig.userID}`,
@@ -79,19 +72,7 @@ export const getImapEmails = async (): Promise<void> => {
     }
 
     for (const decryptedConfig of decryptedConfigs) {
-      const getEmailsResult = await imapService.getEmails(
-        decryptedConfig.imap,
-        decryptedConfig.userID,
-        decryptedConfig.lastSeq
-      );
-
-      await UserEmailConfigRepository.getRepository().update(
-        decryptedConfig.userID,
-        {
-          lastSeq: getEmailsResult?.lastSeq || decryptedConfig.lastSeq,
-          lastSyncAt: new Date(),
-        }
-      );
+      await imapService.syncEmails(decryptedConfig);
     }
   } catch (e) {
     logger.error(`Error getImapEmails job`, e, [LOG_TAG.CRON, LOG_TAG.EMAIL]);

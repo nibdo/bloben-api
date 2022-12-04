@@ -132,7 +132,7 @@ interface DavAccountData {
   calDavAccount: CalDavAccountItem;
   davRequestData: DavRequestData;
 }
-const getAccountWithCalendar = async (
+export const getAccountWithCalendar = async (
   userID: string,
   calendarID: string
 ): Promise<DavAccountData> => {
@@ -257,12 +257,23 @@ const createEventFromEmail = async (
 const deleteEvent = async (
   userID: string,
   calendarID: string,
-  event: CalDavEventsRaw | { etag: string; href: string }
+  event: CalDavEventsRaw | { etag: string; href: string },
+  calDavAccountValue?: CalDavAccountItem,
+  davRequestDataValue?: DavRequestData
 ) => {
-  const { calDavAccount, davRequestData } = await getAccountWithCalendar(
-    userID,
-    calendarID
-  );
+  let calDavAccount;
+  let davRequestData;
+
+  if (!calDavAccountValue && !davRequestDataValue) {
+    const { calDavAccount: account, davRequestData: davData } =
+      await getAccountWithCalendar(userID, calendarID);
+
+    calDavAccount = account;
+    davRequestData = davData;
+  } else {
+    calDavAccount = calDavAccountValue;
+    davRequestData = davRequestDataValue;
+  }
 
   const requestData = {
     headers: davRequestData.davHeaders,
@@ -302,7 +313,13 @@ const formatServerEventsToCalDavEventObj = (
   events: DAVCalendarObject[],
   calendar: CalendarFromAccount
 ) => {
-  return createEventsFromDavObject(events[0], calendar);
+  let result: CalDavEventObj[] = [];
+
+  forEach(events, (event) => {
+    result = [...result, ...createEventsFromDavObject(event, calendar)];
+  });
+
+  return result;
 };
 
 const getAndFormatServerEvents = async (
@@ -1018,7 +1035,7 @@ const updatePartstatRepeatedChangeAll = async (
     iCalString
   );
 
-  return { eventObjs };
+  return eventObjs;
 };
 
 /**
@@ -1050,9 +1067,9 @@ const updatePartstatSingleRepeated = async (
 
   // check if recurrence exists
   const exception =
-    await CalDavEventExceptionRepository.getExceptionByEventIDAndDate(
+    await CalDavEventExceptionRepository.getExceptionByExternalEventIDAndDate(
       userID,
-      event.id,
+      event.externalID,
       body.recurrenceID
     );
 
@@ -1067,7 +1084,7 @@ const updatePartstatSingleRepeated = async (
 
   // create new exception with all attendees from base event
   // and updated partstat for user
-  if (!exception) {
+  if (!exception && body.startAt) {
     iCalObj = formatEventRawToCalDavObj({
       ...event,
       recurrenceID: body.recurrenceID,
@@ -1078,7 +1095,6 @@ const updatePartstatSingleRepeated = async (
     });
 
     iCalString = new ICalHelperV2([...eventsTemp, iCalObj], true).parseTo();
-
     // send email only if organizer is not current user
   } else {
     const exceptionEvent = await CalDavEventRepository.getCalDavEventByID(
@@ -1089,8 +1105,6 @@ const updatePartstatSingleRepeated = async (
     iCalObj = formatEventRawToCalDavObj({
       ...exceptionEvent,
       recurrenceID: body.recurrenceID,
-      startAt: body.startAt,
-      endAt: body.endAt,
       attendees: newAttendees,
       rRule: undefined,
     });
@@ -1166,7 +1180,8 @@ const updateEventFromInvite = async (
   // add metadata to event
   eventObj.props[BLOBEN_EVENT_KEY.INVITE_TO] = data.to;
   eventObj.props[BLOBEN_EVENT_KEY.INVITE_FROM] = data.from;
-  eventObj.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE] = eventObj.props?.sequence;
+  eventObj.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE] =
+    eventObj.props?.sequence || eventObj.sequence;
 
   let icalStringNew;
   if (eventObj.recurrenceID) {

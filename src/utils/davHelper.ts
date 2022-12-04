@@ -1210,7 +1210,10 @@ export const removeBlobenMetaData = (event: CalDavEventObj): CalDavEventObj => {
 
   delete result.props[BLOBEN_EVENT_KEY.INVITE_FROM];
   delete result.props[BLOBEN_EVENT_KEY.INVITE_TO];
-  delete result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
+
+  if (result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE]) {
+    delete result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
+  }
 
   return result;
 };

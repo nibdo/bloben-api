@@ -1,29 +1,16 @@
 import { ATTENDEE_PARTSTAT } from '../../data/types/enums';
 import { Attendee } from 'bloben-interface';
-import {
-  BLOBEN_EVENT_KEY,
-  BULL_QUEUE,
-  LOG_TAG,
-  SOCKET_CHANNEL,
-  SOCKET_MSG_TYPE,
-  SOCKET_ROOM_NAMESPACE,
-} from '../../utils/enums';
-import {
-  CalDavEventObj,
-  makeDavCall,
-  removeBlobenMetaData,
-} from '../../utils/davHelper';
+import { BLOBEN_EVENT_KEY, BULL_QUEUE, LOG_TAG } from '../../utils/enums';
+import { CalDavEventObj, removeBlobenMetaData } from '../../utils/davHelper';
 import { Job } from 'bullmq';
 import { calDavSyncBullQueue } from '../../service/BullQueue';
-import { deleteCalendarObject } from 'tsdav';
-import { getDavRequestData } from '../../utils/davAccountHelper';
-import { io } from '../../app';
 
 import { CALENDAR_METHOD } from '../../utils/ICalHelper';
 import { DavService } from '../../service/davService';
-import { EventProps } from '../../common/interface/common';
-import { InviteService } from '../../service/InviteService';
-import CalDavAccountRepository from '../../data/repository/CalDavAccountRepository';
+import { REPEATED_EVENT_CHANGE_TYPE } from 'bloben-interface/enums';
+import { find, uniqBy } from 'lodash';
+import { throwError } from '../../utils/errorCodes';
+import CalDavEventExceptionRepository from '../../data/repository/CalDavEventExceptionRepository';
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../../data/repository/CalDavEventRepository';
@@ -64,8 +51,6 @@ const handleCreateNewEvent = async (
       userEmailConfig.calendarForImportID
     );
 
-    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
-
     return { msg: 'Event created' };
   }
 };
@@ -90,8 +75,6 @@ const handleUpdateEvent = async (
       icalEvent,
       data
     );
-
-    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
   }
 
   return { msg: 'Event updated' };
@@ -99,7 +82,8 @@ const handleUpdateEvent = async (
 
 const handleDeleteEvent = async (
   userID: string,
-  existingEvent: ExistingEvent
+  existingEvent: CalDavEventsRaw,
+  icalEvents: EventJSON[]
 ) => {
   // get email config for user
   const userEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
@@ -109,81 +93,97 @@ const handleDeleteEvent = async (
   }
 
   if (userEmailConfig.calendarForImportID) {
-    const calDavAccount =
-      await CalDavAccountRepository.getByUserIDAndCalendarID(
-        userID,
-        userEmailConfig.calendarForImportID
-      );
-    const davRequestData = getDavRequestData(calDavAccount);
-    const { davHeaders } = davRequestData;
+    for (const event of icalEvents) {
+      // normal event
+      // repeated event
+      if (!event.recurrenceId) {
+        await DavService.deleteEvent(
+          userID,
+          userEmailConfig.calendarForImportID,
+          {
+            etag: existingEvent.etag,
+            href: existingEvent.href,
+          }
+        );
+      } else if (event.recurrenceId) {
+        // check exception
+        const eventException = icalEvents?.[0]?.recurrenceId;
 
-    const requestData = {
-      headers: davHeaders,
-      calendarObject: {
-        url: existingEvent.href,
-        etag: existingEvent.etag,
-      },
-    };
-    const response = await makeDavCall(
-      deleteCalendarObject,
-      requestData,
-      davRequestData,
-      calDavAccount.calendar,
-      calDavAccount.calendar.userID,
-      existingEvent.href
-    );
+        const exception =
+          await CalDavEventExceptionRepository.getExceptionByExternalEventIDAndDate(
+            userID,
+            existingEvent.externalID,
+            eventException
+          );
 
-    if (response.status >= 300) {
-      logger.error(
-        `Delete event from email error with status: ${response.status} ${response.statusText}`,
-        { existingEvent }
-      );
-      return null;
+        if (exception) {
+          await DavService.deleteExistingException(
+            userID,
+            existingEvent.calendarID,
+            existingEvent,
+            eventException
+          );
+        } else {
+          await DavService.deleteSingleRepeatedEvent(
+            userID,
+            existingEvent.calendarID,
+            existingEvent,
+            [eventException]
+          );
+        }
+      }
     }
-
-    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
   }
 
   return { msg: 'Event deleted' };
 };
 
 export const updatePartstatStatusForAttendee = async (
+  icalEvents: EventJSON[],
   attendees: Attendee[],
   userID: string,
   from: string,
   calendarID: string,
   etag: string,
   href: string,
-  existingEvent: CalDavEventsRaw,
-  partstat?: ATTENDEE_PARTSTAT,
-  sendInvite?: boolean,
-  inviteMessage?: string,
-  to?: string
+  existingEvent: CalDavEventsRaw
 ) => {
-  const { eventTemp, attendeeNew } = await DavService.updatePartstat(
-    userID,
-    existingEvent.calendarID,
-    existingEvent,
-    existingEvent.attendees,
-    existingEvent.organizer.mailto,
-    partstat,
-    existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_TO] || to
+  const attendeeNew = find(
+    icalEvents[0].attendee,
+    (item) => item.mailto === from
   );
+  const status: ATTENDEE_PARTSTAT | undefined =
+    attendeeNew?.PARTSTAT as ATTENDEE_PARTSTAT;
 
-  if (sendInvite) {
-    await InviteService.changePartstatStatus(
-      eventTemp,
-      userID,
-      attendeeNew,
-      partstat,
-      inviteMessage
-    );
+  if (!status) {
+    throw throwError(409, 'Status for imported event not found');
   }
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
-    SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
-  );
+  const body = {
+    endAt: icalEvents[0].dtend.value,
+    startAt: icalEvents[0].dtstart.value,
+    status,
+    type: REPEATED_EVENT_CHANGE_TYPE.ALL,
+  };
+  if (icalEvents.length > 1 || !icalEvents[0].recurrenceId) {
+    await DavService.updatePartstatRepeatedChangeAll(
+      userID,
+      body,
+      existingEvent,
+      from
+    );
+  } else {
+    await DavService.updatePartstatSingleRepeated(
+      userID,
+      existingEvent,
+      {
+        ...body,
+        type: REPEATED_EVENT_CHANGE_TYPE.SINGLE,
+        recurrenceID: icalEvents[0].recurrenceId,
+      },
+      from
+    );
+  }
 
   return { attendeeNew, msg: 'Partstat updated' };
 };
@@ -199,15 +199,30 @@ export interface EmailEventJob extends Job {
   data: EmailEventJobData;
 }
 
-interface ExistingEvent {
-  id: string;
-  externalID: string;
-  calendarID: string;
-  attendees: any[];
-  href: string;
-  etag: string;
-  props: EventProps;
-}
+const checkIfIAMOrganizer = (events: EventJSON[], to: string) => {
+  const firstEventOrganizer = events?.[0]?.organizer?.mailto;
+
+  if (!events?.length) {
+    throw Error('Missing events for email import');
+  }
+
+  if (events.length === 1) {
+    return firstEventOrganizer === to;
+  }
+
+  // check organizer for all events
+  const eventsByUniqueOrganizer = uniqBy(
+    events,
+    (event) => event?.organizer?.mailto
+  );
+
+  if (eventsByUniqueOrganizer.length !== events.length) {
+    throw Error('Inconsistency in event organizers');
+  }
+
+  return firstEventOrganizer === to;
+};
+
 export const processEmailEventJob = async (
   job: EmailEventJob
 ): Promise<any> => {
@@ -242,10 +257,20 @@ export const processEmailEventJob = async (
 
     const { method } = icalJSON.calendar;
 
-    if (!existingEvent && method !== CALENDAR_METHOD.CANCEL) {
+    const isAlreadyCanceled =
+      !existingEvent && method === CALENDAR_METHOD.CANCEL;
+    const iAmOrganizer = checkIfIAMOrganizer(icalEvents, data.to);
+
+    if (!existingEvent && method !== CALENDAR_METHOD.CANCEL && !iAmOrganizer) {
       // event invites
+      logger.debug('Creating event from email invite');
       result = await handleCreateNewEvent(data.userID, icalEvents, data);
-    } else if (!existingEvent && method === CALENDAR_METHOD.CANCEL) {
+    } else if (isAlreadyCanceled) {
+      logger.debug('Skipping cancelling not imported event');
+      // skip
+      return { msg: 'Event already canceled' };
+    } else if (!existingEvent && iAmOrganizer) {
+      logger.debug('Skipping event already removed where I am organizer');
       // skip
       return { msg: 'Event not exists' };
     } else {
@@ -255,9 +280,11 @@ export const processEmailEventJob = async (
         existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_FROM]
       ) {
         if (
-          method === CALENDAR_METHOD.REQUEST ||
-          method === CALENDAR_METHOD.REPLY
+          (method === CALENDAR_METHOD.REQUEST ||
+            method === CALENDAR_METHOD.REPLY) &&
+          !iAmOrganizer
         ) {
+          logger.debug('Updating existing event from email');
           result = await handleUpdateEvent(
             data.userID,
             existingEvent,
@@ -265,23 +292,34 @@ export const processEmailEventJob = async (
             data
           );
         } else if (method === CALENDAR_METHOD.CANCEL) {
-          result = await handleDeleteEvent(data.userID, existingEvent);
+          logger.debug('Deleting canceled event from email');
+
+          result = await handleDeleteEvent(
+            data.userID,
+            existingEvent,
+            icalEvents
+          );
         }
       } else {
         // update status for your event invites
-        for (const icalEvent of icalEvents) {
-          result = await updatePartstatStatusForAttendee(
-            icalEvent.attendee as unknown as Attendee[],
-            data.userID,
-            data.from,
-            existingEvent?.calendarID,
-            existingEvent?.etag,
-            existingEvent?.href,
-            existingEvent
-          );
-        }
+        logger.debug('Updating partstat for event from email');
+
+        result = await updatePartstatStatusForAttendee(
+          icalEvents,
+          icalEvents?.[0].attendee as unknown as Attendee[],
+          data.userID,
+          data.from,
+          existingEvent?.calendarID,
+          existingEvent?.etag,
+          existingEvent?.href,
+          existingEvent
+        );
       }
     }
+
+    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, {
+      userID: data.userID,
+    });
 
     return result;
   } catch (e) {

@@ -142,6 +142,10 @@ export const updateCalDavEvent = async (
     throw throwError(404, 'Event not found');
   }
 
+  if (event.rRule || event.recurrenceID) {
+    throw throwError(409, 'Cannot change repeated event to regular event');
+  }
+
   const prevEvent = { ...event };
 
   // get account with calendar

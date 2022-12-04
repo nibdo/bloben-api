@@ -83,6 +83,7 @@ export enum RATE_LIMIT {
   SYNC = 60 * 1000,
   TIMEZONE = 20 * 1000,
   CONFIRM_EMAIL = 5 * 1000,
+  SYNC_EMAILS = 60 * 1000,
 }
 
 export enum BODY_SIZE {

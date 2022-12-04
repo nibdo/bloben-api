@@ -6,6 +6,10 @@ import {
 } from 'bloben-interface';
 
 import { BULL_QUEUE } from '../../../../utils/enums';
+import {
+  CalDavEventObj,
+  formatPartstatResponseData,
+} from '../../../../utils/davHelper';
 import { DavService } from '../../../../service/davService';
 import { REPEATED_EVENT_CHANGE_TYPE } from 'bloben-interface/enums';
 import {
@@ -19,7 +23,6 @@ import {
 } from '../../../../utils/common';
 import { filter, map } from 'lodash';
 import { formatEventForPartstatEmailResponse } from '../../../../jobs/queueJobs/processEmailEventJob';
-import { formatPartstatResponseData } from '../../../../utils/davHelper';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 import ICalHelperV2 from '../../../../utils/ICalHelperV2';
@@ -43,7 +46,7 @@ export const updatePartstatStatusRepeatedEvent = async (
 
   const isEmailInvite = isExternalEmailInvite(event);
 
-  let icalObjForEmail;
+  let icalObjForEmail: CalDavEventObj[] = [];
 
   switch (body.type) {
     case REPEATED_EVENT_CHANGE_TYPE.ALL:
@@ -66,16 +69,14 @@ export const updatePartstatStatusRepeatedEvent = async (
   }
 
   if (body.sendInvite && isEmailInvite) {
-    const icalStringResponse: string = new ICalHelperV2(
-      map(icalObjForEmail, (item) => {
-        const attendees = filter(item.attendees, (attendee) => {
-          return attendee.mailto === userMailto;
-        });
+    const events = map(icalObjForEmail, (item) => {
+      const attendees = filter(item.attendees, (attendee) => {
+        return attendee.mailto === userMailto;
+      });
 
-        return formatEventForPartstatEmailResponse(item, attendees);
-      }),
-      true
-    ).parseTo();
+      return formatEventForPartstatEmailResponse(item, attendees);
+    });
+    const icalStringResponse: string = new ICalHelperV2(events, true).parseTo();
 
     await emailBullQueue.add(
       BULL_QUEUE.EMAIL,
@@ -84,7 +85,7 @@ export const updatePartstatStatusRepeatedEvent = async (
         event,
         body.status,
         icalStringResponse,
-        [event.organizer],
+        [event.organizer.mailto],
         body.inviteMessage
       )
     );

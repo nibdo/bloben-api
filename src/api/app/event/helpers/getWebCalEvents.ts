@@ -423,6 +423,7 @@ export const getWebcalEvents = async (
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
     style: parseWebcalStyle(event, isDark),
+    updateDisabled: true,
   }));
 };
 
