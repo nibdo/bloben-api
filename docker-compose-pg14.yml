@@ -16,7 +16,7 @@ services:
   #      - '9229:9229'
 
   databaseBlobenApiPg14:
-    image: 'postgres:14.5-bullseye'
+    image: 'postgres:14.6-bullseye'
     container_name: databaseBlobenApiPg14
     env_file:
       - .env
