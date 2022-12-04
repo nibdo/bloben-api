@@ -48,7 +48,9 @@ END:VCALENDAR`,
 export const createDummyCalDavEventFromInvite = (
   calendarID: string,
   remoteID?: string,
-  method?: string
+  method?: string,
+  organizer?: string,
+  attendees?: string
 ): CreateCalDavEventRequest => {
   const externalID = remoteID || v4();
   return {
@@ -72,6 +74,8 @@ PRIORITY:5
 DTSTAMP:20210402T205602Z
 TRANSP:OPAQUE
 STATUS:CONFIRMED
+${organizer ? `ORGANIZER;CN=test:mailto:${organizer}` : ''}
+${attendees ? attendees : ''}
 X-BLOBEN-INVITE-FROM:from@bloben.com
 X-BLOBEN-INVITE-TO:to@bloben.com
 SEQUENCE:0

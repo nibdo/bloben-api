@@ -65,7 +65,8 @@ describe(`processEmailEventJob [JOB]`, async function () {
         icalString: createDummyCalDavEventFromInvite(
           calendar.id,
           event.event.externalID,
-          CALENDAR_METHOD.REPLY
+          CALENDAR_METHOD.REPLY,
+          'from@bloben.com'
         ).iCalString,
         userID,
         from: 'from@bloben.com',
@@ -102,5 +103,70 @@ describe(`processEmailEventJob [JOB]`, async function () {
     const result = await processEmailEventJob(job);
 
     assert.equal(result.msg, 'Event deleted');
+  });
+
+  it('Skip deleted event where I am organizer', async function () {
+    const job: any = {
+      data: {
+        icalString: createDummyCalDavEventFromInvite(
+          calendar.id,
+          'abcde123567',
+          CALENDAR_METHOD.REPLY,
+          'to@bloben.com'
+        ).iCalString,
+        userID,
+        from: 'from@bloben.com',
+        to: 'to@bloben.com',
+      } as EmailEventJobData,
+    };
+
+    const result = await processEmailEventJob(job);
+
+    assert.equal(result.msg, 'Event not exists');
+  });
+
+  it('Skip canceled event, which is already deleted', async function () {
+    const job: any = {
+      data: {
+        icalString: createDummyCalDavEventFromInvite(
+          calendar.id,
+          'abcde123567',
+          CALENDAR_METHOD.CANCEL,
+          'to@bloben.com'
+        ).iCalString,
+        userID,
+        from: 'from@bloben.com',
+        to: 'to@bloben.com',
+      } as EmailEventJobData,
+    };
+
+    const result = await processEmailEventJob(job);
+
+    assert.equal(result.msg, 'Event already canceled');
+  });
+
+  it('Update only partstat for my event', async function () {
+    const event = await seedCalDavEvents(userID);
+
+    const job: any = {
+      data: {
+        icalString: createDummyCalDavEventFromInvite(
+          calendar.id,
+          event.event.externalID,
+          CALENDAR_METHOD.REPLY,
+          'to@bloben.com',
+          `ATTENDEE;CN=a;PARTSTAT=NEEDS-ACTION:mailto:to@bloben.com
+          ATTENDEE;CN=a;PARTSTAT=NEEDS-ACTION:mailto:from@bloben.com
+          `
+        ).iCalString,
+        userID,
+        from: 'from@bloben.com',
+        to: 'to@bloben.com',
+      } as EmailEventJobData,
+    };
+
+    const result = await processEmailEventJob(job);
+
+    assert.equal(result.msg, 'Partstat updated');
   });
 });

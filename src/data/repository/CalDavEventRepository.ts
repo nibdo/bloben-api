@@ -169,8 +169,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
       WHERE 
         a.user_id = $1
-        AND c.is_hidden IS FALSE
-        AND e.is_repeated = FALSE
         AND e.id = $2
   `,
         [userID, id]
@@ -195,8 +193,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         INNER JOIN caldav_accounts a on a.id = c.caldav_account_id
       WHERE 
         a.user_id = $1
-        AND c.is_hidden IS FALSE
-        AND e.is_repeated = FALSE
         AND e.external_id = $2
   `,
         [userID, id]

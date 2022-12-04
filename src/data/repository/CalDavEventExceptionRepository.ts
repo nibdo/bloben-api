@@ -1,5 +1,6 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
+import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
 import { getOneResult } from '../../utils/common';
 import CalDavEventExceptionEntity from '../entity/CalDavEventExceptionEntity';
@@ -62,6 +63,37 @@ export default class CalDavEventExceptionRepository extends Repository<CalDavEve
             AND cee.exception_timezone = $4
         `,
       [userID, caldavEventID, date.value, date.timezone || null]
+    );
+
+    return getOneResult(result);
+  }
+
+  public static async getExceptionByExternalEventIDAndDate(
+    userID: string,
+    externalEventID: string,
+    date: DateTimeObject
+  ): Promise<CalDavEventExceptionsRaw> {
+    const exceptionDate: string | DateTime = date.timezone
+      ? DateTime.fromISO(date.value, { zone: date.timezone }).toUTC().toString()
+      : DateTime.fromISO(date.value).toString();
+
+    const result = await getRepository(CalDavEventExceptionEntity).query(
+      `
+          SELECT
+            cee.id as id,
+            cee.caldav_event_id as "caldavEventID",
+            cee.external_id as "externalID",
+            cee.exception_date as "exceptionDate",
+            cee.exception_timezone as "exceptionTimezone"
+          FROM
+            caldav_event_exceptions cee
+          WHERE 
+            cee.user_id = $1
+            AND cee.external_id = $2
+            AND cee.exception_date = $3
+            AND cee.exception_timezone = $4
+        `,
+      [userID, externalEventID, exceptionDate, date.timezone || null]
     );
 
     return getOneResult(result);
