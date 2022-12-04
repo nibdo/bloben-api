@@ -2,6 +2,8 @@ import {
   createTestServer,
   createTestServerWithSession,
 } from '../../../../testHelpers/initTestServer';
+import { mockImapService } from '../../../../__mocks__/ImapService';
+import { seedUserEmailConfig } from '../../../seeds/userEmailConfig';
 import { seedUsers } from '../../../seeds/user-seed';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -16,6 +18,8 @@ describe(`Sync emails [GET] ${PATH}`, async function () {
   let demoUserID;
   beforeEach(async () => {
     [userID, demoUserID] = await seedUsers();
+    await seedUserEmailConfig(userID);
+    await mockImapService();
   });
 
   it('Should get status 401', async function () {

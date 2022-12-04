@@ -5,4 +5,7 @@ export const mockImapService = () => {
   ImapService.validateImapAccountData = async (body: any) => {
     return Promise.resolve(true);
   };
+  ImapService.getEmails = async () => {
+    return Promise.resolve({} as any);
+  };
 };
