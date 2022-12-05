@@ -20,7 +20,7 @@ export const updatePartstatStatusRepeatedEventSchema = {
       .valid(REPEATED_EVENT_CHANGE_TYPE.SINGLE, REPEATED_EVENT_CHANGE_TYPE.ALL)
       .required(),
     recurrenceID: Joi.object({
-      value: Joi.string().isoDate().required(),
+      value: Joi.string().required(),
       timezone: Joi.string().optional(),
     }),
     startAt: Joi.string().isoDate().required(),

@@ -45,6 +45,46 @@ END:VCALENDAR`,
   };
 };
 
+export const createDummyCalDavEventFromInvite = (
+  calendarID: string,
+  remoteID?: string,
+  method?: string,
+  organizer?: string,
+  attendees?: string
+): CreateCalDavEventRequest => {
+  const externalID = remoteID || v4();
+  return {
+    externalID,
+    calendarID,
+    iCalString: `BEGIN:VCALENDAR
+PRODID:Test
+VERSION:2.0
+CALSCALE:GREGORIAN
+${method ? `METHOD:${method}` : ''}
+BEGIN:VEVENT
+DESCRIPTION:adadasd174C5B7301A82E0080000000089FCDD3B6C29D701000000000000000
+ samasiioasfioasjfio ja asfmioasiof asjio fjasifj ioasjf ioasji jfsaijfio j
+ mcXXXXXXx
+UID:${externalID}
+SUMMARY:teaaaaa
+DTSTART:20210401T110000Z
+DTEND:20210401T113000Z
+CLASS:PUBLIC
+PRIORITY:5
+DTSTAMP:20210402T205602Z
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+${organizer ? `ORGANIZER;CN=test:mailto:${organizer}` : ''}
+${attendees ? attendees : ''}
+X-BLOBEN-INVITE-FROM:from@bloben.com
+X-BLOBEN-INVITE-TO:to@bloben.com
+SEQUENCE:0
+LOCATION:asdsfdf
+END:VEVENT
+END:VCALENDAR`,
+  };
+};
+
 export const createDummyCalDavEventWithAttendees = (
   calendarID: string,
   remoteID?: string
@@ -172,6 +212,8 @@ STATUS:CONFIRMED
 ORGANIZER;CN=test:mailto:test@bloben.com
 ATTENDEE;CN=tester@bloben.com;ROLE=REQ-PARTICIPANT;RSVP=TRUE;PARTSTAT=NEEDS-A
  CTION:mailto:tester@bloben.com
+ ATTENDEE;CN=test@bloben.com;ROLE=REQ-PARTICIPANT;RSVP=TRUE;PARTSTAT=NEEDS-A
+ CTION:mailto:test@bloben.com
 SEQUENCE:0
 LOCATION:asdsfdf
 END:VEVENT

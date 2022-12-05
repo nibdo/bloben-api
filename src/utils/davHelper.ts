@@ -4,6 +4,7 @@ import {
   AddressBook,
   CalendarFromAccount,
 } from '../data/repository/CalDavAccountRepository';
+import { Attendee, EVENT_TYPE, Range } from 'bloben-interface';
 import {
   BLOBEN_EVENT_KEY,
   LOG_TAG,
@@ -25,7 +26,6 @@ import {
   fetchVCards,
 } from 'tsdav';
 import { DateTime } from 'luxon';
-import { EVENT_TYPE, Range } from 'bloben-interface';
 import { RRule } from 'rrule';
 import { cloneDeep, filter, find, forEach, keyBy, map } from 'lodash';
 import {
@@ -80,8 +80,8 @@ export interface CalDavEventObj {
   color: string;
   recurrenceID?: DateTimeObject;
   alarms?: any[];
-  organizer?: any;
-  attendees?: any[];
+  organizer?: Attendee;
+  attendees?: Attendee[];
   exdates?: DateTimeObject[];
   valarms?: any[];
   rRule: string | null;
@@ -187,7 +187,7 @@ export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
 export const formatEventJsonToCalDavEvent = (
   event: EventJSON,
   calendarObject: DAVCalendarObject,
-  calendar: CalDavCalendarEntity
+  calendar: CalendarFromAccount
 ): CalDavEventObj => {
   const isAllDay = event?.dtstart?.value?.length === '20220318'.length;
 
@@ -203,6 +203,7 @@ export const formatEventJsonToCalDavEvent = (
     isRepeated: event.rrule !== undefined || false,
     rRule: event.rrule || null,
     summary: event.summary || '',
+    // @ts-ignore
     organizer: event.organizer || null,
     location: event.location || null,
     description: event.description || null,
@@ -211,6 +212,7 @@ export const formatEventJsonToCalDavEvent = (
     alarms: event.alarms || [],
     valarms: event.alarms || [],
     exdates: event.exdate || [],
+    // @ts-ignore
     attendees: event.attendee || [],
     recurrenceID: event.recurrenceId,
     href: calendarObject.url,
@@ -867,7 +869,7 @@ export const formatPartstatResponseData = (
   event: CalDavEventObj | CalDavEventsRaw,
   partstat: ATTENDEE_PARTSTAT,
   iCalString: string,
-  attendees: any[],
+  attendees: string[],
   inviteMessage?: string
 ) => {
   return {
@@ -887,8 +889,7 @@ export const formatPartstatResponseData = (
       ),
       ical: injectMethod(iCalString, CALENDAR_METHOD.REPLY),
       method: CALENDAR_METHOD.REPLY,
-      // @ts-ignore
-      recipients: map(attendees, 'mailto'),
+      recipients: attendees,
     },
   };
 };
@@ -897,7 +898,7 @@ export const formatInviteData = (
   userID: string,
   event: CalDavEventObj | CalDavEventsRaw,
   iCalString: string,
-  attendees: any[],
+  attendees: string[],
   method: CALENDAR_METHOD,
   inviteMessage?: string
 ) => {
@@ -917,15 +918,14 @@ export const formatInviteData = (
       ),
       ical: injectMethod(iCalString, method),
       method: method,
-      // @ts-ignore
-      recipients: map(attendees, 'mailto'),
+      recipients: attendees,
     },
   };
 };
 
 export const formatGeneralEmailData = (
   userID: string,
-  recipients: any[],
+  recipients: string[],
   subject: string,
   body: string
 ) => {
@@ -943,7 +943,7 @@ export const formatCancelInviteData = (
   userID: string,
   event: CalDavEventsRaw,
   iCalString: string,
-  attendees: any[],
+  attendees: string[],
   method: CALENDAR_METHOD,
   inviteMessage?: string
 ) => {
@@ -963,8 +963,7 @@ export const formatCancelInviteData = (
       ),
       ical: iCalString,
       method: method,
-      // @ts-ignore
-      recipients: map(attendees, 'mailto'),
+      recipients: attendees,
     },
   };
 };
@@ -973,7 +972,7 @@ export const formatRecurringCancelInviteData = (
   userID: string,
   event: CalDavEventObj,
   iCalString: string,
-  attendees: any[],
+  attendees: string[],
   method: CALENDAR_METHOD,
   inviteMessage?: string
 ) => {
@@ -993,8 +992,7 @@ export const formatRecurringCancelInviteData = (
       ),
       ical: injectMethod(iCalString, method),
       method: method,
-      // @ts-ignore
-      recipients: map(attendees, 'mailto'),
+      recipients: attendees,
     },
   };
 };
@@ -1212,7 +1210,10 @@ export const removeBlobenMetaData = (event: CalDavEventObj): CalDavEventObj => {
 
   delete result.props[BLOBEN_EVENT_KEY.INVITE_FROM];
   delete result.props[BLOBEN_EVENT_KEY.INVITE_TO];
-  delete result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
+
+  if (result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE]) {
+    delete result.props[BLOBEN_EVENT_KEY.ORIGINAL_SEQUENCE];
+  }
 
   return result;
 };
@@ -1274,4 +1275,21 @@ export const makeDavCall = async (
   }
 
   return response;
+};
+
+export const filterOutEventWithRecurrenceID = (
+  events: CalDavEventObj[],
+  recurrenceID: DateTimeObject
+) => {
+  return events.filter((event) => {
+    if (event?.recurrenceID) {
+      // eslint-disable-next-line no-empty
+      if (event?.recurrenceID?.value === recurrenceID?.value) {
+      } else {
+        return event;
+      }
+    } else {
+      return event;
+    }
+  });
 };

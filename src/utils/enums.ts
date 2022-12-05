@@ -83,6 +83,7 @@ export enum RATE_LIMIT {
   SYNC = 60 * 1000,
   TIMEZONE = 20 * 1000,
   CONFIRM_EMAIL = 5 * 1000,
+  SYNC_EMAILS = 60 * 1000,
 }
 
 export enum BODY_SIZE {
@@ -177,7 +178,7 @@ export enum GROUP_LOG_KEY {
 }
 
 export enum BLOBEN_EVENT_KEY {
-  INVITE_FROM = 'xBlobenInviteTo',
-  INVITE_TO = 'xBlobenInviteFrom',
+  INVITE_FROM = 'xBlobenInviteFrom',
+  INVITE_TO = 'xBlobenInviteTo',
   ORIGINAL_SEQUENCE = 'xBlobenOriginalSequence',
 }
