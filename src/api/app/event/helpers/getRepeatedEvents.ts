@@ -8,6 +8,7 @@ import CalDavEventExceptionRepository from '../../../../data/repository/CalDavEv
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../../../../data/repository/CalDavEventRepository';
+import Datez from 'datez';
 import LuxonHelper from '../../../../utils/luxonHelper';
 import WebcalEventEntity from '../../../../data/entity/WebcalEventEntity';
 
@@ -67,7 +68,8 @@ export const getOccurrences = (
   );
 
   // check if event starts in DST
-  const eventStartsInDST: boolean = DateTime.fromISO(startAtDate).setZone(
+  const eventStartsInDST: boolean = Datez.setZone(
+    DateTime.fromISO(startAtDate),
     event.timezoneStartAt
   ).isInDST;
 
@@ -94,7 +96,8 @@ export const getOccurrences = (
     let startAtDateTime: DateTime = DateTime.fromISO(rRuleResult.toISOString());
 
     // check if start of repeated event is in DST
-    const repeatedEventStartsInDST: boolean = startAtDateTime.setZone(
+    const repeatedEventStartsInDST: boolean = Datez.setZone(
+      startAtDateTime,
       event.timezoneStartAt
     ).isInDST;
 

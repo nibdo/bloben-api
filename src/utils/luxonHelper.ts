@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import Datez from 'datez';
 //
 // Support for local datetime, timezones and floating times
 //
@@ -44,12 +45,12 @@ export const DatetimeParser = (
 
   // Adjust datetime to device timezone
   if (deviceTimezone) {
-    const dateConvert: DateTime = thisDate.setZone(zone);
+    const dateConvert: DateTime = Datez.setZone(thisDate, zone);
 
     return dateConvert.setZone(deviceTimezone).toString();
   }
 
-  return thisDate.setZone(zone).toString();
+  return Datez.setZone(thisDate, zone).toString();
 };
 
 const LuxonHelper = {
@@ -78,7 +79,7 @@ const LuxonHelper = {
     if (isFloatingDate) {
       dateConverted = DateTime.fromJSDate(baseDate);
     } else {
-      dateConverted = DateTime.fromJSDate(baseDate).setZone(timezone);
+      dateConverted = Datez.setZone(DateTime.fromJSDate(baseDate), timezone);
     }
 
     const durationObj = {};
@@ -154,7 +155,7 @@ const LuxonHelper = {
   toUtcString: (date: string): string => DateTime.fromISO(date).toUTC().toISO(),
   toUtc: (date: DateTime): string => date.toUTC().toISO(),
   setTimezone: (dateString: string, timezone: string): string =>
-    DateTime.fromISO(dateString).setZone(timezone).toString(),
+    Datez.setZone(DateTime.fromISO(dateString), timezone).toString(),
   toHumanDate: (dateString: string): string =>
     DateTime.fromISO(dateString).toFormat('d LLL yyyy hh:mm'),
   toHumanDate2: (dateString: string): string =>
