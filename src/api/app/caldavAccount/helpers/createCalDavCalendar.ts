@@ -6,10 +6,11 @@ import { QueryRunner } from 'typeorm';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
 import CalDavCalendarEntity from '../../../../data/entity/CalDavCalendar';
 import CalDavTaskSettingsEntity from '../../../../data/entity/CalDavTaskSettings';
+import Datez from 'datez';
 import logger from '../../../../utils/logger';
 
 const parseCalDavCalendarTimezone = (timezone: string) => {
-  const dateWithZone = DateTime.now().setZone(timezone);
+  const dateWithZone = Datez.setZone(DateTime.now(), timezone);
 
   if (dateWithZone.isValid) {
     return timezone;

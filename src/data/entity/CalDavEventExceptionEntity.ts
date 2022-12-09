@@ -10,6 +10,7 @@ import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventEntity from './CalDavEventEntity';
+import Datez from 'datez';
 
 export const formatDate = (date: DateTimeObject) => {
   let result;
@@ -19,7 +20,7 @@ export const formatDate = (date: DateTimeObject) => {
   }
 
   if (date.timezone) {
-    result = DateTime.fromISO(date.value, {
+    result = Datez.fromISO(date.value, {
       zone: date.timezone,
     })
       .toUTC()

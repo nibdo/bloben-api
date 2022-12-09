@@ -1,0 +1,23 @@
+{
+  "name": "bloben-interface",
+  "version": "0.0.21",
+  "author": "nibdo",
+  "license": "AGPL",
+  "private": false,
+  "declaration": true,
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {
+    "build": "npm run compile && npm run copy",
+    "compile": "tsc",
+    "copy": "cp ./package.json ./dist/ && cp ./README.md ./dist/"
+  },
+  "keywords": [
+    "javascript"
+  ],
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ]
+}
