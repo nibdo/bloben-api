@@ -1,5 +1,5 @@
 import { ATTENDEE_PARTSTAT } from '../../data/types/enums';
-import { Attendee } from 'bloben-interface';
+import { Attendee, REPEATED_EVENT_CHANGE_TYPE } from 'bloben-interface';
 import { BLOBEN_EVENT_KEY, BULL_QUEUE, LOG_TAG } from '../../utils/enums';
 import { CalDavEventObj, removeBlobenMetaData } from '../../utils/davHelper';
 import { Job } from 'bullmq';
@@ -7,7 +7,6 @@ import { calDavSyncBullQueue } from '../../service/BullQueue';
 
 import { CALENDAR_METHOD } from '../../utils/ICalHelper';
 import { DavService } from '../../service/davService';
-import { REPEATED_EVENT_CHANGE_TYPE } from 'bloben-interface/enums';
 import { find, uniqBy } from 'lodash';
 import { throwError } from '../../utils/errorCodes';
 import CalDavEventExceptionRepository from '../../data/repository/CalDavEventExceptionRepository';

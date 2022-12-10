@@ -63,6 +63,7 @@ import CardDavAddressBook from '../data/entity/CardDavAddressBook';
 import CardDavAddressBookRepository from '../data/repository/CardDavAddressBookRepository';
 import CardDavContact from '../data/entity/CardDavContact';
 import CardDavContactRepository from '../data/repository/CardDavContactRepository';
+import Datez from 'datez';
 import logger from './logger';
 
 export interface CalDavEventObj {
@@ -97,11 +98,11 @@ export const formatIcalDate = (date: string, timezone?: string | null) => {
 
   if (timezone) {
     if (typeof date === 'object') {
-      return DateTime.fromJSDate(date, { zone: timezone }).toFormat(
+      return Datez.fromDate(date, { zone: timezone }).toFormat(
         `yyyyMMdd'T'HHmmss`
       );
     } else {
-      return DateTime.fromISO(date, { zone: timezone }).toFormat(
+      return Datez.fromISO(date, { zone: timezone }).toFormat(
         `yyyyMMdd'T'HHmmss`
       );
     }
@@ -127,7 +128,7 @@ export const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
     result = dateTime.toISO().toString();
   } else {
     if (event.dtstart.timezone) {
-      result = DateTime.fromISO(event.dtstart.value, {
+      result = Datez.fromISO(event.dtstart.value, {
         zone: event.dtstart.timezone,
       })
         .toUTC()
@@ -170,7 +171,7 @@ export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
         .toString();
     } else {
       if (event.dtend.timezone) {
-        result = DateTime.fromISO(event.dtend.value, {
+        result = Datez.fromISO(event.dtend.value, {
           zone: event.dtend.timezone,
         })
           .toUTC()
@@ -272,7 +273,7 @@ export const getRepeatedEvents = (event: any, range: Range) => {
 
   // check if event starts in DST
   const eventStartsInDST: boolean = event.timezone
-    ? DateTime.fromISO(event.startAt).setZone(event.timezone).isInDST
+    ? Datez.setZone(DateTime.fromISO(event.startAt), event.timezone).isInDST
     : false;
 
   const rRuleResults: Date[] = rRule.between(
@@ -299,7 +300,7 @@ export const getRepeatedEvents = (event: any, range: Range) => {
 
     // check if start of repeated event is in DST
     const repeatedEventStartsInDST: boolean = event.timezone
-      ? startAtDateTime.setZone(event.timezone).isInDST
+      ? Datez.setZone(startAtDateTime, event.timezone).isInDST
       : false;
 
     // set proper "wall" time for repeated dates across DST changes

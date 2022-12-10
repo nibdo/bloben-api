@@ -10,9 +10,6 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "baseUrl": "src",
-    "paths": {
-      "bloben-interface": ["./utils/bloben-interface"]
-    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "src/test", "logs"],

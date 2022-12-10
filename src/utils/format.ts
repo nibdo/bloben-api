@@ -1,9 +1,16 @@
 import { ATTENDEE_PARTSTAT } from '../data/types/enums';
-import { Attendee, EventResult, EventStyle, Organizer } from 'bloben-interface';
+import {
+  Attendee,
+  EVENT_TYPE,
+  EventResult,
+  EventStyle,
+  Organizer,
+  SOURCE_TYPE,
+  TASK_STATUS,
+} from 'bloben-interface';
 import { BLOBEN_EVENT_KEY } from './enums';
 import { CalDavEventObj } from './davHelper';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
-import { EVENT_TYPE, SOURCE_TYPE, TASK_STATUS } from 'bloben-interface/enums';
 import { find } from 'lodash';
 import { getDateTime } from './common';
 import {
@@ -11,6 +18,7 @@ import {
   getTaskStyle,
 } from '../api/app/event/helpers/getWebCalEvents';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
+import Datez from 'datez';
 
 export const ICAL_FORMAT = `yyyyMMdd'T'HHmmss`;
 
@@ -154,9 +162,9 @@ export const formatInviteStartDate = (
   timezone?: string
 ) => {
   if (timezone) {
-    return getDateTime(startDate)
-      .setZone(timezone)
-      .toFormat('ccc d LLL yyyy hh:mm');
+    return Datez.setZone(getDateTime(startDate), timezone).toFormat(
+      'ccc d LLL yyyy hh:mm'
+    );
   } else {
     return getDateTime(startDate).toFormat('ccc d LLL yyyy hh:mm');
   }
@@ -167,9 +175,9 @@ export const formatCancelStartDate = (
   timezone?: string
 ) => {
   if (timezone) {
-    return getDateTime(startDate)
-      .setZone(timezone)
-      .toFormat('ccc d LLL yyyy hh:mm');
+    return Datez.setZone(getDateTime(startDate), timezone).toFormat(
+      'ccc d LLL yyyy hh:mm'
+    );
   } else {
     return getDateTime(startDate).toFormat('ccc d LLL yyyy hh:mm');
   }

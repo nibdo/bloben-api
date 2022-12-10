@@ -10,3 +10,5 @@
 .idea/
 /src/bloben-interface/dist/
 /.husky/
+
+/modules/bloben-interface/dist/

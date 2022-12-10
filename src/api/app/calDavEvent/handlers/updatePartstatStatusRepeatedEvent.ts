@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 
 import {
   CommonResponse,
+  REPEATED_EVENT_CHANGE_TYPE,
   UpdatePartstatStatusRepeatedEventRequest,
 } from 'bloben-interface';
 
@@ -11,7 +12,6 @@ import {
   formatPartstatResponseData,
 } from '../../../../utils/davHelper';
 import { DavService } from '../../../../service/davService';
-import { REPEATED_EVENT_CHANGE_TYPE } from 'bloben-interface/enums';
 import {
   calDavSyncBullQueue,
   emailBullQueue,

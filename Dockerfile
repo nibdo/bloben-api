@@ -6,8 +6,8 @@ WORKDIR /usr/app/api
 
 COPY . ./
 
-RUN mkdir .husky
-RUN npm i
+RUN npm run setup
 
 ENV NODE_ENV production
+
 RUN npm run build

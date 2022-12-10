@@ -18,6 +18,7 @@ import { getTrustedBrowserRedisKey } from '../service/RedisService';
 import { parseDurationString } from './caldavAlarmHelper';
 import { redisClient } from '../index';
 import { throwError } from './errorCodes';
+import Datez from 'datez';
 import UserEntity from '../data/entity/UserEntity';
 import logger from './logger';
 
@@ -185,10 +186,10 @@ export const parseToDateTime = (
 
   // Adjust datetime to device timezone
   if (deviceTimezone) {
-    result = thisDate.setZone(zone).setZone(deviceTimezone);
+    result = Datez.setZone(thisDate, zone).setZone(deviceTimezone);
   } else {
     if (zone) {
-      result = thisDate.setZone(zone);
+      result = Datez.setZone(thisDate, zone);
     }
   }
 
@@ -220,10 +221,10 @@ export const parseToDateTimeFromJsDate = (
 
   // Adjust datetime to device timezone
   if (deviceTimezone) {
-    result = thisDate.setZone(zone).setZone(deviceTimezone);
+    result = Datez.setZone(thisDate, zone).setZone(deviceTimezone);
   } else {
     if (zone) {
-      result = thisDate.setZone(zone);
+      result = Datez.setZone(thisDate, zone);
     }
   }
 
