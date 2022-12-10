@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
 import { getOneResult } from '../../utils/common';
 import CalDavEventExceptionEntity from '../entity/CalDavEventExceptionEntity';
+import Datez from 'datez';
 
 export interface CalDavEventExceptionsRaw {
   id: string;
@@ -74,7 +75,7 @@ export default class CalDavEventExceptionRepository extends Repository<CalDavEve
     date: DateTimeObject
   ): Promise<CalDavEventExceptionsRaw> {
     const exceptionDate: string | DateTime = date.timezone
-      ? DateTime.fromISO(date.value, { zone: date.timezone }).toUTC().toString()
+      ? Datez.fromISO(date.value, { zone: date.timezone }).toUTC().toString()
       : DateTime.fromISO(date.value).toString();
 
     const result = await getRepository(CalDavEventExceptionEntity).query(
