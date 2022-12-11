@@ -33,14 +33,18 @@ export const formatEventForPartstatEmailResponse = (
 
 const handleCreateNewEvent = async (
   userID: string,
+  to: string,
   icalEvents: EventJSON[],
   data: EmailEventJobData
 ) => {
   // get email config for user
-  const userEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
+  const userEmailConfig =
+    await UserEmailConfigRepository.findByUserIDAndAddress(userID, to);
 
   if (!userEmailConfig?.calendarForImportID) {
-    throw Error('Calendar for importing email events not set');
+    throw Error(
+      `Calendar for importing email events for address ${to} are not set`
+    );
   }
 
   if (userEmailConfig.calendarForImportID) {
@@ -56,15 +60,19 @@ const handleCreateNewEvent = async (
 
 const handleUpdateEvent = async (
   userID: string,
+  to: string,
   existingEvent: CalDavEventsRaw,
   icalEvent: EventJSON,
   data: EmailEventJobData
 ) => {
   // get email config for user
-  const userEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
+  const userEmailConfig =
+    await UserEmailConfigRepository.findByUserIDAndAddress(userID, to);
 
   if (!userEmailConfig?.calendarForImportID) {
-    throw Error('Calendar for importing email events not set');
+    throw Error(
+      `Calendar for importing email events for address ${to} are not set`
+    );
   }
 
   if (userEmailConfig.calendarForImportID) {
@@ -81,14 +89,18 @@ const handleUpdateEvent = async (
 
 const handleDeleteEvent = async (
   userID: string,
+  to: string,
   existingEvent: CalDavEventsRaw,
   icalEvents: EventJSON[]
 ) => {
   // get email config for user
-  const userEmailConfig = await UserEmailConfigRepository.findByUserID(userID);
+  const userEmailConfig =
+    await UserEmailConfigRepository.findByUserIDAndAddress(userID, to);
 
   if (!userEmailConfig?.calendarForImportID) {
-    throw Error('Calendar for importing email events not set');
+    throw Error(
+      `Calendar for importing email events for address ${to} are not set`
+    );
   }
 
   if (userEmailConfig.calendarForImportID) {
@@ -263,7 +275,12 @@ export const processEmailEventJob = async (
     if (!existingEvent && method !== CALENDAR_METHOD.CANCEL && !iAmOrganizer) {
       // event invites
       logger.debug('Creating event from email invite');
-      result = await handleCreateNewEvent(data.userID, icalEvents, data);
+      result = await handleCreateNewEvent(
+        data.userID,
+        data.to,
+        icalEvents,
+        data
+      );
     } else if (isAlreadyCanceled) {
       logger.debug('Skipping cancelling not imported event');
       // skip
@@ -286,6 +303,7 @@ export const processEmailEventJob = async (
           logger.debug('Updating existing event from email');
           result = await handleUpdateEvent(
             data.userID,
+            data.to,
             existingEvent,
             icalEvents[0],
             data
@@ -295,6 +313,7 @@ export const processEmailEventJob = async (
 
           result = await handleDeleteEvent(
             data.userID,
+            data.to,
             existingEvent,
             icalEvents
           );

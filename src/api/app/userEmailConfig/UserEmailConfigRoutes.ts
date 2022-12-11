@@ -5,17 +5,29 @@ import { RATE_LIMIT } from '../../../utils/enums';
 import { USER_ROLE } from '../auth/UserEnums';
 import { authMiddleware } from '../../../middleware/authMiddleware';
 import { celebrate } from 'celebrate';
+import { createUserEmailConfigSchema } from './schemas/CreateUserEmailConfigSchema';
+import { deleteUserEmailConfigSchema } from './schemas/DeleteUserEmailConfigSchema';
 import { emptySchema } from '../../../common/schemas/emptySchema';
 import { patchUserEmailConfigSchema } from './schemas/PatchUserEmailConfigSchema';
 import { rateLimiterMiddleware } from '../../../middleware/rateLimiterMiddleware';
 import { roleMiddleware } from '../../../middleware/roleMiddleware';
 import { updateUserEmailConfigSchema } from './schemas/UpdateUserEmailConfigSchema';
-import { userMiddleware } from '../../../middleware/userMiddleware';
 
 const UserEmailConfigRoutes: Router = Router();
 
-UserEmailConfigRoutes.put(
+UserEmailConfigRoutes.post(
   '',
+  [
+    rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
+    celebrate(createUserEmailConfigSchema),
+    authMiddleware,
+    roleMiddleware([USER_ROLE.USER]),
+  ],
+  UserEmailConfigController.createUserEmailConfig
+);
+
+UserEmailConfigRoutes.put(
+  '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
     celebrate(updateUserEmailConfigSchema),
@@ -26,7 +38,7 @@ UserEmailConfigRoutes.put(
 );
 
 UserEmailConfigRoutes.patch(
-  '',
+  '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
     celebrate(patchUserEmailConfigSchema),
@@ -44,16 +56,15 @@ UserEmailConfigRoutes.get(
     authMiddleware,
     roleMiddleware([USER_ROLE.USER]),
   ],
-  UserEmailConfigController.getUserEmailConfig
+  UserEmailConfigController.getUserEmailConfigs
 );
 
 UserEmailConfigRoutes.delete(
-  '',
+  '/:id',
   [
     rateLimiterMiddleware(RATE_LIMIT.DEFAULT),
-    celebrate(emptySchema),
+    celebrate(deleteUserEmailConfigSchema),
     authMiddleware,
-    userMiddleware,
     roleMiddleware([USER_ROLE.USER]),
   ],
   UserEmailConfigController.deleteUserEmailConfig

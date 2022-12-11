@@ -104,7 +104,7 @@ export const sendEmailInvite = async (
     nodemailerTransport.sendMail(
       {
         ...emailPrepared,
-        from: configData.smtpEmail,
+        from: emailInvite.from,
         to: emailInvite.recipients,
       },
       (error: any, info: any): void => {

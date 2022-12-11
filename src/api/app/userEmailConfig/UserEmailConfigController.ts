@@ -2,6 +2,23 @@ import { NextFunction, Request, Response } from 'express';
 
 import UserEmailConfigService from './UserEmailConfigService';
 
+export const createUserEmailConfig = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const response = await UserEmailConfigService.createUserEmailConfig(
+      req,
+      res
+    );
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateUserEmailConfig = async (
   req: Request,
   res: Response,
@@ -36,13 +53,13 @@ export const patchUserEmailConfig = async (
   }
 };
 
-export const getUserEmailConfig = async (
+export const getUserEmailConfigs = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const response = await UserEmailConfigService.getUserEmailConfig(req, res);
+    const response = await UserEmailConfigService.getUserEmailConfigs(req, res);
 
     res.status(200).send(response);
   } catch (error) {

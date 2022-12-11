@@ -90,7 +90,7 @@
     "http-errors": "2.0.0",
     "http-proxy-middleware": "2.0.6",
     "ical-js-parser": "0.7.3",
-    "imapflow": "1.0.116",
+    "imapflow": "1.0.117",
     "ioredis": "5.2.4",
     "joi": "17.7.0",
     "kalend": "0.17.5",
