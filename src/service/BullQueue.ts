@@ -1,7 +1,7 @@
 import { BULL_QUEUE } from '../utils/enums';
 import { Queue, Worker } from 'bullmq';
 import { calculateWebcalAlarms } from '../jobs/queueJobs/calculateWebcalAlarmsJob';
-import { env } from '../index';
+import { createRedisConfig } from '../config/redis';
 import { processEmailEventJob } from '../jobs/queueJobs/processEmailEventJob';
 import { sendEmailQueueJob } from '../jobs/queueJobs/sendEmailQueueJob';
 import { syncCalDavQueueJob } from '../jobs/queueJobs/syncCalDavQueueJob';
@@ -21,12 +21,33 @@ export let webcalRemindersBullWorker;
 export let cardDavBullWorker;
 export let cardDavBullQueue;
 
+const getConnection = () => {
+  const config = createRedisConfig();
+
+  if (config.host && config.port) {
+    return {
+      host: config.host,
+      port: config.port,
+    };
+  } else {
+    const url = new URL(config);
+
+    if (url) {
+      return {
+        host: url.hostname,
+        port: Number(url.port),
+        username: url.username,
+        password: url.password,
+      };
+    }
+  }
+};
+
+const connection = getConnection();
+
 export const createBullQueue = (queueName: BULL_QUEUE) => {
   return new Queue(queueName, {
-    connection: {
-      host: env.redis.host,
-      port: Number(env.redis.port),
-    },
+    connection: connection,
   });
 };
 
@@ -37,10 +58,7 @@ export const createCalDavSyncBullWorker = async () => {
       await syncCalDavQueueJob(job);
     },
     {
-      connection: {
-        host: env.redis.host,
-        port: Number(env.redis.port),
-      },
+      connection,
     }
   );
 };
@@ -51,10 +69,7 @@ export const createEmailBullWorker = async () => {
       await sendEmailQueueJob(job);
     },
     {
-      connection: {
-        host: env.redis.host,
-        port: Number(env.redis.port),
-      },
+      connection,
     }
   );
 };
@@ -66,10 +81,7 @@ export const createWebcalSyncBullWorker = async () => {
       await syncWebcalEventsQueueJob(job);
     },
     {
-      connection: {
-        host: env.redis.host,
-        port: Number(env.redis.port),
-      },
+      connection,
     }
   );
 };
@@ -81,10 +93,7 @@ export const createEmailInviteBullWorker = async () => {
       await processEmailEventJob(job);
     },
     {
-      connection: {
-        host: env.redis.host,
-        port: Number(env.redis.port),
-      },
+      connection,
     }
   );
 };
@@ -96,10 +105,7 @@ export const createWebcalRemindersBullQueue = async () => {
       await calculateWebcalAlarms(job);
     },
     {
-      connection: {
-        host: env.redis.host,
-        port: Number(env.redis.port),
-      },
+      connection,
     }
   );
 };
@@ -111,10 +117,7 @@ export const createCardDavBullQueue = async () => {
       await syncCardDavQueueJob(job);
     },
     {
-      connection: {
-        host: env.redis.host,
-        port: Number(env.redis.port),
-      },
+      connection,
     }
   );
 };
