@@ -26,7 +26,7 @@ export const deleteCalDavCalendar = async (
   const { userID } = res.locals;
 
   const [useEmailConfig, calDavCalendar] = await Promise.all([
-    UserEmailConfigRepository.findByUserID(userID),
+    UserEmailConfigRepository.findByUserIDAndImportID(userID, id),
     CalDavCalendarRepository.getByIDWithAccount(id as string, userID),
   ]);
 
@@ -34,10 +34,7 @@ export const deleteCalDavCalendar = async (
     throw throwError(404, 'CalDav calendar not found');
   }
 
-  if (
-    useEmailConfig?.calendarForImportID &&
-    id === useEmailConfig.calendarForImportID
-  ) {
+  if (useEmailConfig) {
     throw throwError(
       409,
       'Cannot delete calendar used for importing email invites'

@@ -13,9 +13,9 @@ import {
 } from '../jobs/cronJobs/getImapEmails';
 import { emailInviteBullQueue } from './BullQueue';
 import { filter } from 'lodash';
+import Logger from '../utils/logger';
 import UserEmailConfigEntity from '../data/entity/UserEmailConfig';
 import UserEmailConfigRepository from '../data/repository/UserEmailConfigRepository';
-import logger from '../utils/logger';
 import mailparser from 'mailparser';
 
 const getToAddress = (data: any): string => {
@@ -78,7 +78,7 @@ class ImapService {
       const client = new ImapFlowLib.ImapFlow({
         host,
         port: Number(port),
-        secure,
+        secure: secure || Number(port) === 993,
         auth,
       });
 
@@ -88,6 +88,7 @@ class ImapService {
 
       return true;
     } catch (error) {
+      Logger.error('Imap connection failed', error, [LOG_TAG.EMAIL]);
       return false;
     }
   }
@@ -179,7 +180,7 @@ class ImapService {
           // when emails are deleted
           const sequenceNew = message.seq < lastSeq ? message.seq : lastSeq;
 
-          logger.info(
+          Logger.info(
             `Sequence for imap sync changed from ${lastSeq} to ${message.seq} for config userID ${userID}`,
             [LOG_TAG.CRON, LOG_TAG.EMAIL]
           );
@@ -231,7 +232,7 @@ class ImapService {
 
       return result;
     } catch (e) {
-      logger.error(`Imap service error`, e, [LOG_TAG.CRON, LOG_TAG.EMAIL]);
+      Logger.error(`Imap service error`, e, [LOG_TAG.CRON, LOG_TAG.EMAIL]);
 
       if (lock) {
         lock.release();

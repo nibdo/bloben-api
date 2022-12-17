@@ -8,7 +8,17 @@ import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepo
 import UserRepository from '../../data/repository/UserRepository';
 import logger, { groupLogs } from '../../utils/logger';
 
-export const sendEmailQueueJob = async (job: Job): Promise<void> => {
+export interface SendEmailQueueJob extends Job {
+  data: {
+    userID: string;
+    email: any;
+    from: string;
+  };
+}
+
+export const sendEmailQueueJob = async (
+  job: SendEmailQueueJob
+): Promise<void> => {
   const { data } = job;
 
   if (!data.userID || !data.email) {
@@ -16,7 +26,7 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
   }
 
   try {
-    const { userID, email } = data;
+    const { userID, email, from } = data;
 
     await groupLogs(
       GROUP_LOG_KEY.EMAIL_JOB,
@@ -26,16 +36,14 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
     const user = await UserRepository.findById(userID);
 
     // get user or system email config
-    const userEmailConfig = await UserEmailConfigRepository.findByUserID(
-      userID
-    );
+    const userEmailConfig =
+      await UserEmailConfigRepository.findByUserIDAndAddress(userID, from);
 
     const userEmailConfigData: UserEmailConfigData | null = userEmailConfig
       ? ((await CryptoAes.decrypt(userEmailConfig.data)) as UserEmailConfigData)
       : null;
 
     const emailConfigData = {
-      smtpEmail: userEmailConfigData?.smtp?.smtpEmail || env.email.identity,
       smtpHost: userEmailConfigData?.smtp?.smtpHost || env.email.smtpHost,
       smtpPort: userEmailConfigData?.smtp?.smtpPort || env.email.smtpPort,
       smtpPassword:
@@ -44,7 +52,7 @@ export const sendEmailQueueJob = async (job: Job): Promise<void> => {
         userEmailConfigData?.smtp?.smtpUsername || env.email.username,
     };
 
-    email.from = emailConfigData.smtpEmail;
+    email.from = from;
 
     if (!userEmailConfigData?.smtp?.smtpPassword && !env.email.password) {
       return;
