@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
 import { CryptoAes } from '../../../../utils/CryptoAes';
-import { EmailConfigData } from '../../../../../modules/bloben-interface/src';
 import {
+  EmailConfigData,
   GetUserEmailConfigResponse,
   UserEmailConfigData,
 } from 'bloben-interface';

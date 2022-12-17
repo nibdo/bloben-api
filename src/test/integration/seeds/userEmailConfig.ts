@@ -1,5 +1,5 @@
 import { CryptoAes } from '../../../utils/CryptoAes';
-import { UpdateUserEmailConfigRequest } from '../../../../modules/bloben-interface/src';
+import { UpdateUserEmailConfigRequest } from 'bloben-interface';
 import UserEmailConfigEntity from '../../../data/entity/UserEmailConfig';
 import UserEmailConfigRepository from '../../../data/repository/UserEmailConfigRepository';
 
