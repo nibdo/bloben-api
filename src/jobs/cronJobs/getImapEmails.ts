@@ -1,20 +1,14 @@
 import { GROUP_LOG_KEY, LOG_TAG, REDIS_PREFIX } from '../../utils/enums';
-import { ImapData } from 'bloben-interface';
 import { redisClient } from '../../index';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';
 import imapService from '../../service/ImapService';
 import logger, { groupLogs } from '../../utils/logger';
 
 export interface UserEmailConfigRaw {
+  id: string;
   data: string;
   lastSeq: number | null;
   userID: string;
-}
-
-interface UserEmailConfigDecrypted {
-  lastSeq: number | null;
-  userID: string;
-  imap: ImapData;
 }
 
 export const getTextCalendarAttachment = (data: any): string => {
@@ -34,6 +28,7 @@ export const getImapEmails = async (): Promise<void> => {
     const userEmailConfigs: UserEmailConfigRaw[] =
       await UserEmailConfigRepository.getRepository().query(`
       SELECT 
+        ec.id as id,
         ec.data as data,
         ec.last_seq as "lastSeq",
         ec.user_id as "userID"
@@ -42,8 +37,6 @@ export const getImapEmails = async (): Promise<void> => {
         ec.has_imap IS TRUE
         AND ec.data IS NOT NULL
     `);
-
-    const decryptedConfigs: UserEmailConfigDecrypted[] = [];
 
     for (const userEmailConfig of userEmailConfigs) {
       const wasActive = await redisClient.get(
@@ -60,7 +53,8 @@ export const getImapEmails = async (): Promise<void> => {
           const userEmailConfigData = await imapService.getDecryptedConfig(
             userEmailConfig
           );
-          decryptedConfigs.push(userEmailConfigData);
+
+          await imapService.syncEmails(userEmailConfig.id, userEmailConfigData);
         } catch (e) {
           logger.error(
             `Error decrypting email config data for userID ${userEmailConfig.userID}`,
@@ -69,10 +63,6 @@ export const getImapEmails = async (): Promise<void> => {
           );
         }
       }
-    }
-
-    for (const decryptedConfig of decryptedConfigs) {
-      await imapService.syncEmails(decryptedConfig);
     }
   } catch (e) {
     logger.error(`Error getImapEmails job`, e, [LOG_TAG.CRON, LOG_TAG.EMAIL]);

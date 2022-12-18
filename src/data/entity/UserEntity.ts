@@ -54,8 +54,8 @@ export default class UserEntity {
   @OneToMany(() => CalDavAccountEntity, (calDavAccount) => calDavAccount.user)
   calDavAccounts: CalDavAccountEntity[];
 
-  @OneToOne(() => UserEmailConfigEntity)
-  emailConfig: UserEmailConfigEntity;
+  @OneToMany(() => UserEmailConfigEntity, (config) => config.user)
+  emailConfig: UserEmailConfigEntity[];
 
   @OneToOne(() => CalendarSettingsEntity)
   calendarSettings: CalendarSettingsEntity;

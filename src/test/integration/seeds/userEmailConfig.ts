@@ -1,12 +1,11 @@
 import { CryptoAes } from '../../../utils/CryptoAes';
-import { UserEmailConfigData } from 'bloben-interface';
+import { UpdateUserEmailConfigRequest } from 'bloben-interface';
 import UserEmailConfigEntity from '../../../data/entity/UserEmailConfig';
 import UserEmailConfigRepository from '../../../data/repository/UserEmailConfigRepository';
 
-export const userEmailConfigData: UserEmailConfigData = {
+export const userEmailConfigData: UpdateUserEmailConfigRequest = {
   imapSyncingInterval: 15,
   smtp: {
-    smtpEmail: 'test@bloben.com',
     smtpHost: 'ebda',
     smtpPassword: 'asfasf',
     smtpPort: 100,
@@ -18,19 +17,32 @@ export const userEmailConfigData: UserEmailConfigData = {
     imapPassword: 'abd',
     imapUsername: 'abd',
   },
+  aliases: ['to@bloben.com'],
+  defaultAlias: 'to@bloben.com',
+  calendarForImportID: null,
 };
 
 export const seedUserEmailConfig = async (
   userID: string,
   calendarForImportID?: string
 ) => {
-  const data = await CryptoAes.encrypt(userEmailConfigData);
+  const data = await CryptoAes.encrypt({
+    smtp: userEmailConfigData.smtp,
+    imap: userEmailConfigData.imap,
+  });
 
-  const emailConfig = new UserEmailConfigEntity(userID, data, 15, false);
+  const emailConfig = new UserEmailConfigEntity(
+    userID,
+    data,
+    userEmailConfigData,
+    false
+  );
 
   if (calendarForImportID) {
     emailConfig.calendarForImportID = calendarForImportID;
   }
 
   await UserEmailConfigRepository.getRepository().save(emailConfig);
+
+  return emailConfig;
 };
