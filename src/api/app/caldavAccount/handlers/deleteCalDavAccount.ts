@@ -14,7 +14,6 @@ import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 
-import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 import CalendarSettingsEntity from '../../../../data/entity/CalendarSettings';
 import CalendarSettingsRepository from '../../../../data/repository/CalendarSettingsRepository';
 import CardDavAddressBookRepository from '../../../../data/repository/CardDavAddressBookRepository';
@@ -32,7 +31,7 @@ export const deleteCalDavAccount = async (
   const { id } = req.params;
 
   const [useEmailConfig, calDavAccount] = await Promise.all([
-    UserEmailConfigRepository.findByUserID(userID),
+    UserEmailConfigRepository.findByUserIDAndAccountID(userID, id),
     CalDavAccountRepository.getByIDAllTypes(id, userID),
   ]);
 
@@ -40,19 +39,11 @@ export const deleteCalDavAccount = async (
     throw throwError(404, 'Account not found', req);
   }
 
-  if (useEmailConfig?.calendarForImportID) {
-    const calendar = await CalDavCalendarRepository.getByIDAndAccountID(
-      useEmailConfig?.calendarForImportID,
-      calDavAccount.id,
-      userID
+  if (useEmailConfig) {
+    throw throwError(
+      409,
+      'Cannot delete account with calendar used for importing email invites'
     );
-
-    if (calendar) {
-      throw throwError(
-        409,
-        'Cannot delete account with calendar used for importing email invites'
-      );
-    }
   }
 
   try {

@@ -3,7 +3,6 @@ export interface SmtpData {
   smtpPort: number;
   smtpUsername: string;
   smtpPassword: string;
-  smtpEmail: string;
 }
 
 export interface ImapData {
@@ -21,15 +20,33 @@ export interface UserEmailConfigDecryptedData {
 export interface UpdateUserEmailConfigRequest
   extends UserEmailConfigDecryptedData {
   imapSyncingInterval?: number;
+  aliases: string[];
+  defaultAlias: string;
+  calendarForImportID: string | null;
+}
+
+export interface CreateUserEmailConfigRequest
+  extends UserEmailConfigDecryptedData {
+  imapSyncingInterval?: number;
+  aliases: string[];
+  defaultAlias: string;
+  calendarForImportID: string | null;
+}
+
+export interface EmailConfigData {
+  id: string;
+  smtp: SmtpData | null;
+  imap: ImapData | null;
+  aliases: string[];
+  defaultAlias: string;
+  isDefault: boolean;
+  calendarForImportID: string | null;
 }
 
 export interface GetUserEmailConfigResponse {
   hasSystemConfig: boolean;
   hasCustomConfig: boolean;
-  mailto: string | null;
-  smtp: SmtpData | null;
-  imap: ImapData | null;
-  calendarForImportID: string | null;
+  configs: EmailConfigData[];
 }
 
 export type UserEmailConfigData = UpdateUserEmailConfigRequest;
@@ -47,5 +64,5 @@ export interface ImapConfig {
 }
 
 export interface PatchUserEmailConfigRequest {
-  calendarForImportID: string | null;
+  isDefault: boolean;
 }

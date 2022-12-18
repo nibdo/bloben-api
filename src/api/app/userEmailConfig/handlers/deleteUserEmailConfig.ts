@@ -9,16 +9,20 @@ export const deleteUserEmailConfig = async (
   req: Request,
   res: Response
 ): Promise<CommonResponse> => {
-  const { user } = res.locals;
+  const { userID } = res.locals;
+  const { id } = req.params;
 
-  const userEmailConfig = await UserEmailConfigRepository.findByUserID(user.id);
+  const userEmailConfig = await UserEmailConfigRepository.findByUserIDAndID(
+    userID,
+    id
+  );
 
   if (!userEmailConfig) {
     throw throwError(404, 'User email config not found', req);
   }
 
   await UserEmailConfigRepository.getRepository().delete({
-    user,
+    id: userEmailConfig.id,
   });
 
   return createCommonResponse('User email config deleted');

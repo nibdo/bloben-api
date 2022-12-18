@@ -3,20 +3,25 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+import { CreateUserEmailConfigRequest } from 'bloben-interface';
 import CalDavCalendarEntity from './CalDavCalendar';
 import UserEntity from './UserEntity';
 
 @Entity('user_email_config')
 export default class UserEmailConfigEntity {
-  @PrimaryColumn({ type: 'uuid', name: 'user_id' })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'uuid', name: 'user_id', unique: false })
   userID: string;
 
-  @OneToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: UserEntity;
 
@@ -25,6 +30,15 @@ export default class UserEmailConfigEntity {
 
   @Column({ name: 'has_imap', default: false })
   hasImap: boolean;
+
+  @Column({ type: 'text', name: 'aliases', nullable: true, array: true })
+  aliases: string[];
+
+  @Column({ name: 'default_alias', nullable: true })
+  defaultAlias: string;
+
+  @Column({ name: 'is_default', default: false })
+  isDefault: boolean;
 
   @Column({ type: 'timestamptz', name: 'last_sync_at', nullable: true })
   lastSyncAt: Date;
@@ -50,14 +64,17 @@ export default class UserEmailConfigEntity {
   constructor(
     userID: string,
     data: string,
-    syncingInterval: number,
+    body: CreateUserEmailConfigRequest,
     hasImap: boolean
   ) {
     if (userID) {
       this.userID = userID;
       this.data = data;
-      this.imapSyncingInterval = syncingInterval;
+      this.imapSyncingInterval = body.imapSyncingInterval;
       this.hasImap = hasImap;
+      this.aliases = body.aliases;
+      this.calendarForImportID = body.calendarForImportID;
+      this.defaultAlias = body.defaultAlias;
     }
   }
 }
