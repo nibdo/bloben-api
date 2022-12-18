@@ -18,7 +18,7 @@ export const syncEmails = async (
       userEmailConfig
     );
 
-    await imapService.syncEmails(userEmailConfigData);
+    await imapService.syncEmails(userEmailConfig.id, userEmailConfigData);
   }
 
   return createCommonResponse('Emails will sync');

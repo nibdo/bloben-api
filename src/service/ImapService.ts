@@ -118,7 +118,10 @@ class ImapService {
     return null;
   }
 
-  public static async syncEmails(decryptedConfig: DecryptedConfigResult) {
+  public static async syncEmails(
+    id: string,
+    decryptedConfig: DecryptedConfigResult
+  ) {
     if (!decryptedConfig) {
       throw Error('Missing imap config');
     }
@@ -129,13 +132,10 @@ class ImapService {
       decryptedConfig.lastSeq
     );
 
-    await UserEmailConfigRepository.getRepository().update(
-      decryptedConfig.userID,
-      {
-        lastSeq: getEmailsResult?.lastSeq || decryptedConfig.lastSeq,
-        lastSyncAt: new Date(),
-      }
-    );
+    await UserEmailConfigRepository.getRepository().update(id, {
+      lastSeq: getEmailsResult?.lastSeq || decryptedConfig.lastSeq,
+      lastSyncAt: new Date(),
+    });
   }
 
   public static async getEmails(
