@@ -152,10 +152,7 @@ describe(`[E2E] Update calDav event [PUT] ${PATH}`, async function () {
 
     assert.equal(status, 200);
     assert.equal(reminders.length, 1);
-    assert.equal(
-      reminders?.[0].sendAt.toISOString(),
-      '2021-04-01T10:50:00.000Z'
-    );
+    assert.equal(reminders?.[0].sendAt, '2021-04-01T10:50:00.000Z');
   });
 
   it('Should get status 200 and create repeated reminders', async function () {
@@ -192,24 +189,21 @@ describe(`[E2E] Update calDav event [PUT] ${PATH}`, async function () {
     });
 
     assert.equal(status, 200);
+    assert.equal(reminders?.[0].sendAt, refDate.toUTC().toString());
     assert.equal(
-      reminders?.[0].sendAt.toISOString(),
-      refDate.toUTC().toString()
-    );
-    assert.equal(
-      reminders?.[1].sendAt.toISOString(),
+      reminders?.[1].sendAt,
       refDate.plus({ day: 1 }).toUTC().toString()
     );
     assert.equal(
-      reminders?.[2].sendAt.toISOString(),
+      reminders?.[2].sendAt,
       refDate.plus({ day: 2 }).toUTC().toString()
     );
     assert.equal(
-      reminders?.[3].sendAt.toISOString(),
+      reminders?.[3].sendAt,
       refDate.plus({ day: 3 }).toUTC().toString()
     );
     assert.equal(
-      reminders?.[4].sendAt.toISOString(),
+      reminders?.[4].sendAt,
       refDate.plus({ day: 4 }).toUTC().toString()
     );
   });

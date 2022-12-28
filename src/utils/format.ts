@@ -12,7 +12,7 @@ import { BLOBEN_EVENT_KEY } from './enums';
 import { CalDavEventObj } from './davHelper';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { find } from 'lodash';
-import { getDateTime } from './common';
+import { getDateTime, parseBoolean, parseToJSON } from './common';
 import {
   getEventStyle,
   getTaskStyle,
@@ -33,19 +33,21 @@ const parseCalDavStyle = (
     event.props?.[BLOBEN_EVENT_KEY.INVITE_TO] &&
     event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM];
 
-  if (event.organizer?.mailto || isEmailInvite) {
+  const organizer = parseToJSON(event.organizer);
+
+  if (organizer?.mailto || isEmailInvite) {
     let userAttendee;
 
     // get user attendee
     if (isEmailInvite) {
       userAttendee = find(
-        event.attendees,
+        parseToJSON(event.attendees),
         (item) => item.mailto === event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
       );
-    } else if (event.organizer?.mailto) {
+    } else if (organizer?.mailto) {
       userAttendee = find(
-        event.attendees,
-        (item) => item.mailto === event.organizer.mailto
+        parseToJSON(event.attendees),
+        (item) => item.mailto === organizer?.mailto
       );
     }
 
@@ -95,19 +97,23 @@ export const formatEventEntityToResult = (
   // externalID: event.externalID,
   isRepeated: event.isRepeated,
   rRule: event.rRule,
-  attendees: event.attendees.length ? (event.attendees as Attendee[]) : null,
-  exdates: event.exdates,
-  valarms: event.valarms,
-  organizer: event.organizer ? (event.organizer as Organizer) : null,
+  attendees: event.attendees.length
+    ? (JSON.parse(event.attendees) as Attendee[])
+    : null,
+  exdates: event.exdates ? JSON.parse(event.exdates) : null,
+  valarms: event.valarms ? JSON.parse(event.valarms) : null,
+  organizer: event.organizer
+    ? (JSON.parse(event.organizer) as Organizer)
+    : null,
   recurrenceID: event.recurrenceID,
   etag: event.etag,
   url: event.href,
-  props: event.props || null,
+  props: event.props ? JSON.parse(event.props) : null,
   sourceType: event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM]
     ? SOURCE_TYPE.EMAIL_INVITE
     : SOURCE_TYPE.CALDAV,
   updateDisabled: !!event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM],
-  type: event.type,
+  type: event.type as EVENT_TYPE,
   createdAt: event.createdAt.toISOString(),
   updatedAt: event.updatedAt.toISOString(),
 });
@@ -125,7 +131,7 @@ export const formatEventRawToResult = (
     location: event.location,
     description: event.description,
     // alarms: alarms[event.id] ? alarms[event.id] : [],
-    allDay: event.allDay,
+    allDay: parseBoolean(event.allDay),
     calendarID: event.calendarID,
     color: eventColor,
     // data: event.data,
@@ -135,7 +141,7 @@ export const formatEventRawToResult = (
     timezoneEndAt: event.timezoneEndAt || event.timezoneStartAt,
     etag: event.etag,
     url: event.href,
-    isRepeated: event.isRepeated,
+    isRepeated: parseBoolean(event.isRepeated),
     rRule: event.rRule,
     sourceType: event.props?.[BLOBEN_EVENT_KEY.INVITE_FROM]
       ? SOURCE_TYPE.EMAIL_INVITE
@@ -144,12 +150,12 @@ export const formatEventRawToResult = (
     type: event.type,
     // @ts-ignore
     status: event.status,
-    valarms: event.valarms,
-    attendees: event.attendees,
-    exdates: event.exdates,
-    organizer: event.organizer,
-    recurrenceID: event.recurrenceID,
-    props: event.props || null,
+    valarms: parseToJSON(event.valarms),
+    attendees: parseToJSON(event.attendees),
+    exdates: parseToJSON(event.exdates),
+    organizer: parseToJSON(event.organizer),
+    recurrenceID: parseToJSON(event.recurrenceID),
+    props: parseToJSON(event.props),
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
     style: parseCalDavStyle(event, eventColor, isDark),
@@ -258,13 +264,42 @@ export const formatEventRawToCalDavObj = (
     type: event.type,
     // @ts-ignore
     status: event.status,
-    valarms: event.valarms,
-    attendees: event.attendees,
-    exdates: event.exdates,
-    organizer: event.organizer,
+    valarms: parseToJSON(event.valarms),
+    attendees: parseToJSON(event.attendees),
+    exdates: parseToJSON(event.exdates),
+    organizer: parseToJSON(event.organizer),
     recurrenceID: event.recurrenceID,
     props: event.props || null,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
+  };
+};
+
+export const eventResultToCalDavEventObj = (
+  eventResult: EventResult,
+  href?: string
+): CalDavEventObj => {
+  return {
+    externalID: eventResult.externalID,
+    calendarID: eventResult.calendarID,
+    startAt: eventResult.startAt,
+    endAt: eventResult.endAt,
+    timezone: eventResult.timezoneStartAt,
+    timezoneEnd: eventResult.timezoneEndAt || eventResult.timezoneStartAt,
+    isRepeated: eventResult.isRepeated,
+    summary: eventResult.summary,
+    location: eventResult.location,
+    description: eventResult.description,
+    etag: eventResult.etag,
+    color: eventResult.color,
+    recurrenceID: eventResult.recurrenceID,
+    // @ts-ignore
+    organizer: eventResult?.organizer,
+    alarms: eventResult?.valarms || [],
+    attendees: eventResult?.attendees || [],
+    exdates: eventResult?.exdates || [],
+    rRule: eventResult.rRule,
+    href: href,
+    type: eventResult.type,
   };
 };

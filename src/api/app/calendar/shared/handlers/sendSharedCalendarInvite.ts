@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { BULL_QUEUE } from '../../../../../utils/enums';
 import { DateTime } from 'luxon';
 import { PostSendSharedCalendarInviteRequest } from 'bloben-interface';
+import { QueueClient } from '../../../../../service/init';
 import { createCommonResponse } from '../../../../../utils/common';
-import { emailBullQueue } from '../../../../../service/BullQueue';
 import { formatGeneralEmailData } from '../../../../../utils/davHelper';
 import { throwError } from '../../../../../utils/errorCodes';
 import SharedLinkRepository from '../../../../../data/repository/SharedLinkRepository';
@@ -37,8 +36,7 @@ export const sendSharedCalendarInvite = async (
       throw throwError(409, 'Cannot send invite to expired shared calendar');
     }
 
-    await emailBullQueue.add(
-      BULL_QUEUE.EMAIL,
+    await QueueClient.sendEmailQueue(
       formatGeneralEmailData(
         userID,
         body.recipients,

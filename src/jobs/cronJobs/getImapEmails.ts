@@ -1,5 +1,5 @@
 import { GROUP_LOG_KEY, LOG_TAG, REDIS_PREFIX } from '../../utils/enums';
-import { redisClient } from '../../index';
+import { MemoryClient } from '../../service/init';
 import UserEmailConfigRepository from '../../data/repository/UserEmailConfigRepository';
 import imapService from '../../service/ImapService';
 import logger, { groupLogs } from '../../utils/logger';
@@ -39,7 +39,7 @@ export const getImapEmails = async (): Promise<void> => {
     `);
 
     for (const userEmailConfig of userEmailConfigs) {
-      const wasActive = await redisClient.get(
+      const wasActive = await MemoryClient.get(
         `${REDIS_PREFIX.WAS_ACTIVE}_${userEmailConfig.userID}`
       );
 

@@ -44,17 +44,17 @@ export const sendEmailQueueJob = async (
       : null;
 
     const emailConfigData = {
-      smtpHost: userEmailConfigData?.smtp?.smtpHost || env.email.smtpHost,
-      smtpPort: userEmailConfigData?.smtp?.smtpPort || env.email.smtpPort,
+      smtpHost: userEmailConfigData?.smtp?.smtpHost || env.email?.smtpHost,
+      smtpPort: userEmailConfigData?.smtp?.smtpPort || env.email?.smtpPort,
       smtpPassword:
-        userEmailConfigData?.smtp?.smtpPassword || env.email.password,
+        userEmailConfigData?.smtp?.smtpPassword || env.email?.password,
       smtpUsername:
-        userEmailConfigData?.smtp?.smtpUsername || env.email.username,
+        userEmailConfigData?.smtp?.smtpUsername || env.email?.username,
     };
 
     email.from = from;
 
-    if (!userEmailConfigData?.smtp?.smtpPassword && !env.email.password) {
+    if (!userEmailConfigData?.smtp?.smtpPassword && !env.email?.password) {
       return;
     }
 

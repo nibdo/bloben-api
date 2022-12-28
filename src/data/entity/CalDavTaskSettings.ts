@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { datetimeColumnType } from '../../utils/constants';
 import CalDavCalendarEntity from './CalDavCalendar';
 
 @Entity('caldav_task_settings')
@@ -20,20 +21,17 @@ export default class CalDavTaskSettingsEntity {
 
   @Column({
     type: 'text',
-    name: 'order',
-    nullable: false,
-    default: [],
-    array: true,
+    nullable: true,
   })
-  order: string[];
+  order: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @ManyToOne(() => CalDavCalendarEntity, (calendar) => calendar.taskSettings, {

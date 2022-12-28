@@ -1,27 +1,24 @@
 import { AxiosResponse } from 'axios';
+import { Connection, QueryRunner, getConnection } from 'typeorm';
 import {
-  BULL_QUEUE,
   GROUP_LOG_KEY,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../utils/enums';
-import { Connection, QueryRunner, getConnection } from 'typeorm';
 import { Job } from 'bullmq';
+import { QueueClient, socketService } from '../../service/init';
 import {
   deleteWebcalEventsExceptionsSql,
   deleteWebcalEventsSql,
 } from '../../data/sql/deleteWebcalEvents';
 import { forEach } from 'lodash';
 import { getUserIDFromWsRoom } from '../../utils/common';
-import { io } from '../../app';
-import {
-  webcalRemindersBullQueue,
-  webcalSyncBullQueue,
-} from '../../service/BullQueue';
+import { isElectron } from '../../config/env';
 import AxiosService from '../../service/AxiosService';
 import ICalParser, { ICalJSON } from 'ical-js-parser';
+import UserRepository from '../../data/repository/UserRepository';
 import WebcalCalendarEntity from '../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../data/repository/WebcalCalendarRepository';
 import WebcalEventEntity from '../../data/entity/WebcalEventEntity';
@@ -55,7 +52,11 @@ export const getWebcalendarsForSync = (data?: {
             WHERE 
                 (
                     (SELECT wc.attempt = 0 AND wc.last_sync_at IS NULL) OR
-                    (wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 hours')
+                    ${
+                      isElectron
+                        ? `(wc.last_sync_at <= datetime('now', '-' || wc.sync_frequency || ' hours'))`
+                        : `(wc.last_sync_at <= now() - wc.sync_frequency::int * interval '1 hours')`
+                    }
                 )
                 AND wc.sync_frequency >= 1
                 AND u.deleted_at IS NULL
@@ -206,11 +207,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
           await queryRunner.commitTransaction();
           await queryRunner.release();
 
-          io.to(
-            `${SOCKET_ROOM_NAMESPACE.USER_ID}${webcalCalendar.userID}`
-          ).emit(
+          socketService.emit(
+            JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
             SOCKET_CHANNEL.SYNC,
-            JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+            `${SOCKET_ROOM_NAMESPACE.USER_ID}${webcalCalendar.userID}`
           );
 
           await groupLogs(
@@ -254,9 +254,7 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
         );
       }
 
-      await webcalRemindersBullQueue.add(BULL_QUEUE.WEBCAL_REMINDER, {
-        webcalCalendarID: webcalCalendar.id,
-      });
+      await QueueClient.webcalReminders(webcalCalendar.id);
     }
   } catch (e) {
     logger.error(`Error checking webcal calendars`, e, [
@@ -268,12 +266,20 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
 
 export const webcalSyncQueueSocketJob = async () => {
   try {
+    if (isElectron) {
+      const user = await UserRepository.getFirstUser();
+
+      await QueueClient.syncWebcal(user.id);
+
+      return;
+    }
+
     await groupLogs(
       GROUP_LOG_KEY.CALDAV_JOB_CONNECTED_USERS,
       'webcalSyncQueueSocketJob start'
     );
 
-    const socketClients = io.sockets.adapter.rooms;
+    const socketClients = socketService.io?.sockets?.adapter?.rooms;
 
     const activeUserIDs: string[] = [];
 
@@ -285,7 +291,7 @@ export const webcalSyncQueueSocketJob = async () => {
 
     // schedule sync job for each user
     for (const userID of activeUserIDs) {
-      await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID: userID });
+      await QueueClient.syncWebcal(userID);
     }
   } catch (e) {
     logger.error(`Error checking webcal calendars`, e, [

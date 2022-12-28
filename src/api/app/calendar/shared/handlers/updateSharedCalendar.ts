@@ -3,7 +3,10 @@ import { NextFunction, Request, Response } from 'express';
 import { CommonResponse, PostSharedLinkRequest } from 'bloben-interface';
 import { DateTime } from 'luxon';
 import { QueryRunner, getConnection } from 'typeorm';
-import { createCommonResponse } from '../../../../../utils/common';
+import {
+  createArrayQueryReplacement,
+  createCommonResponse,
+} from '../../../../../utils/common';
 import { forEach } from 'lodash';
 import { removeCachePublicCalendar } from './deleteSharedCalendar';
 import { throwError } from '../../../../../utils/errorCodes';
@@ -41,40 +44,45 @@ export const updateSharedCalendar = async (
       throw throwError(404, 'Shared link not found');
     }
 
-    const caldavCalendars =
-      await CalDavCalendarRepository.getRepository().query(
+    let caldavCalendars = [];
+
+    if (body.calDavCalendars.length) {
+      caldavCalendars = await CalDavCalendarRepository.getRepository().query(
         `
       SELECT
         c.id
       FROM caldav_calendars c
       INNER JOIN caldav_accounts ca ON c.caldav_account_id = ca.id
       WHERE 
-        c.id = ANY($1)
-        AND ca.user_id = $2
+        ca.user_id = $1
+        AND c.id IN (${createArrayQueryReplacement(body.calDavCalendars, 2)})
         AND c.deleted_at IS NULL
         AND ca.deleted_at IS NULL
     `,
-        [body.calDavCalendars, user.id]
+        [user.id, ...body.calDavCalendars]
       );
+    }
 
     if (caldavCalendars.length !== body.calDavCalendars.length) {
       throw throwError(404, 'CalDAV calendars not found');
     }
 
-    const webcalCalendars =
-      await WebcalCalendarRepository.getRepository().query(
+    let webcalCalendars = [];
+
+    if (body.webcalCalendars.length) {
+      webcalCalendars = await WebcalCalendarRepository.getRepository().query(
         `
       SELECT
         w.id
       FROM webcal_calendars w
       WHERE 
-        w.id = ANY($1)
-        AND w.user_id = $2
+        w.user_id = $1
+        AND w.id IN (${createArrayQueryReplacement(body.webcalCalendars, 2)})
         AND w.deleted_at IS NULL
     `,
-        [body.webcalCalendars, user.id]
+        [user.id, ...body.webcalCalendars]
       );
-
+    }
     if (webcalCalendars.length !== body.webcalCalendars.length) {
       throw throwError(404, 'Webcal calendars not found');
     }

@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { MemoryClient } from '../../../../../service/init';
 import { REDIS_PREFIX } from '../../../../../utils/enums';
 import { createCommonResponse } from '../../../../../utils/common';
-import { redisClient } from '../../../../../index';
 import { throwError } from '../../../../../utils/errorCodes';
 import SharedLinkRepository from '../../../../../data/repository/SharedLinkRepository';
 
 export const removeCachePublicCalendar = async (id: string) => {
-  await redisClient.del(`${REDIS_PREFIX.PUBLIC_SHARED_LINK}_${id}`);
-  await redisClient.del(`${REDIS_PREFIX.PUBLIC_CALENDAR_CACHE}_${id}`);
-  await redisClient.del(`${REDIS_PREFIX.PUBLIC_EVENTS_CACHE}_${id}_*`);
+  await MemoryClient.del(`${REDIS_PREFIX.PUBLIC_SHARED_LINK}_${id}`);
+  await MemoryClient.del(`${REDIS_PREFIX.PUBLIC_CALENDAR_CACHE}_${id}`);
+  await MemoryClient.del(`${REDIS_PREFIX.PUBLIC_EVENTS_CACHE}_${id}_*`);
 };
 
 export const deleteSharedCalendar = async (

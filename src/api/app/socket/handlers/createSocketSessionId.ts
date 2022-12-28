@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 
 import { CommonResponse, CreateSocketSessionRequest } from 'bloben-interface';
+import { MemoryClient } from '../../../../service/init';
 import { REDIS_PREFIX } from '../../../../utils/enums';
 import { SocketSession } from '../../../../common/interface/common';
 import { createCommonResponse } from '../../../../utils/common';
-import { redisClient } from '../../../../index';
 
 /**
  * Matching record in Redis to pair socketSessionId with client with server session id
@@ -26,7 +26,7 @@ export const createSocketSessionId = async (
     createdAt: new Date().toISOString(),
   };
 
-  await redisClient.set(redisKey, JSON.stringify(userData));
+  await MemoryClient.set(redisKey, JSON.stringify(userData));
 
   return createCommonResponse();
 };

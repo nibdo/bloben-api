@@ -66,7 +66,8 @@ describe(`processEmailEventJob [JOB]`, async function () {
           calendar.id,
           event.event.externalID,
           CALENDAR_METHOD.REPLY,
-          'from@bloben.com'
+          'from@bloben.com',
+          `ATTENDEE;CN=a;PARTSTAT=NEEDS-ACTION:mailto:to@bloben.com`
         ).iCalString,
         userID,
         from: 'from@bloben.com',
@@ -92,7 +93,9 @@ describe(`processEmailEventJob [JOB]`, async function () {
         icalString: createDummyCalDavEventFromInvite(
           calendar.id,
           event.event.externalID,
-          CALENDAR_METHOD.CANCEL
+          CALENDAR_METHOD.CANCEL,
+          'from@bloben.com',
+          `ATTENDEE;CN=a;PARTSTAT=NEEDS-ACTION:mailto:to@bloben.com`
         ).iCalString,
         userID,
         from: 'from@bloben.com',

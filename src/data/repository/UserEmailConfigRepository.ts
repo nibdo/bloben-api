@@ -29,7 +29,7 @@ export default class UserEmailConfigRepository extends Repository<UserEmailConfi
       .createQueryBuilder('ue')
       .innerJoin('users', 'u', 'ue.user_id = :userID', { userID })
       .where('u.id = :userID', { userID })
-      .andWhere(':address = ANY(ue.aliases)', { address })
+      .andWhere('ue.aliases LIKE :address', { address: `%${address}%` })
       .getOne();
   }
 

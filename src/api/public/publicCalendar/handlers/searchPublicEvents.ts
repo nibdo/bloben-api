@@ -2,6 +2,7 @@ import { EVENT_TYPE, SearchEventsResponse } from 'bloben-interface';
 import { NextFunction, Request, Response } from 'express';
 import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { SearchResult } from '../../../app/event/handlers/searchEvents';
+import { createArrayQueryReplacement } from '../../../../utils/common';
 import { map } from 'lodash';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 import SharedLinkRepository from '../../../../data/repository/SharedLinkRepository';
@@ -24,8 +25,9 @@ export const searchPublicEvents = async (
       await SharedLinkRepository.getWebcalSharedCalendars(sharedLink.id);
     const sharedWebcalCalendarIDs = map(sharedWebcalCalendars, 'id');
 
-    const calDavResultPromise = CalDavEventRepository.getRepository().query(
-      `
+    const calDavResultPromise = sharedCalDavCalendarIDs.length
+      ? CalDavEventRepository.getRepository().query(
+          `
     SELECT
         ce.id as id,
         ce.summary as summary,
@@ -37,16 +39,21 @@ export const searchPublicEvents = async (
     INNER JOIN caldav_calendars cc ON ce.caldav_calendar_id = cc.id
     WHERE
         cc.deleted_at IS NULL
-        AND cc.id = ANY($1)
-        AND ce.summary ILIKE $2
+        AND ce.summary LIKE $1
+        AND cc.id IN (${createArrayQueryReplacement(
+          sharedCalDavCalendarIDs,
+          2
+        )})
     ORDER BY ce.start_at DESC
     LIMIT 50    
   `,
-      [sharedCalDavCalendarIDs, `%${summary}%`]
-    );
+          [`%${summary}%`, ...sharedCalDavCalendarIDs]
+        )
+      : () => Promise.resolve();
 
-    const webcalResultPromise = WebcalEventRepository.getRepository().query(
-      `
+    const webcalResultPromise = sharedWebcalCalendarIDs.length
+      ? WebcalEventRepository.getRepository().query(
+          `
     SELECT
         DISTINCT we.external_id,
         we.id as id,
@@ -60,13 +67,17 @@ export const searchPublicEvents = async (
     WHERE
         we.deleted_at IS NULL
         AND wc.deleted_at IS NULL
-        AND wc.id = ANY($1)
-        AND we.summary ILIKE $2
+        AND we.summary LIKE $1
+        AND wc.id IN (${createArrayQueryReplacement(
+          sharedWebcalCalendarIDs,
+          2
+        )})
     ORDER BY we.start_at DESC
     LIMIT 50
   `,
-      [sharedWebcalCalendarIDs, `%${summary}%`]
-    );
+          [`%${summary}%`, ...sharedWebcalCalendarIDs]
+        )
+      : () => Promise.resolve();
 
     const [calDavResult, webcalResult]: SearchResult[][] = await Promise.all([
       calDavResultPromise,

@@ -12,7 +12,7 @@ import CalendarSettingsEntity from '../../../data/entity/CalendarSettings';
 import CalendarSettingsRepository from '../../../data/repository/CalendarSettingsRepository';
 import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export const TEST_USER_PASSWORD = 'asivi2xxco59af';
 

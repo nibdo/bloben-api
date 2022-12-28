@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { LOCATION_PROVIDER } from '../types/enums';
+import { datetimeColumnType } from '../../utils/constants';
 
 @Entity('server_settings')
 export default class ServerSettingsEntity {
@@ -27,9 +28,9 @@ export default class ServerSettingsEntity {
   })
   locationProvider: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 }

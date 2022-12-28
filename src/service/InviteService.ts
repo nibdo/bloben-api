@@ -1,6 +1,6 @@
 import { ATTENDEE_PARTSTAT } from '../data/types/enums';
 import { Attendee } from 'bloben-interface';
-import { BLOBEN_EVENT_KEY, BULL_QUEUE } from '../utils/enums';
+import { BLOBEN_EVENT_KEY } from '../utils/enums';
 import {
   CalDavEventObj,
   formatPartstatResponseData,
@@ -10,8 +10,7 @@ import {
 } from '../utils/davHelper';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DateTimeObject } from 'ical-js-parser';
-import { createICalStringForAttendees } from '../api/app/calDavEvent/handlers/updateRepeatedCalDavEvent';
-import { emailBullQueue } from './BullQueue';
+import { QueueClient } from './init';
 import {
   formatEventCancelSubject,
   formatEventInviteSubject,
@@ -21,6 +20,12 @@ import { formatEventForPartstatEmailResponse } from '../jobs/queueJobs/processEm
 import { removeOrganizerFromAttendees } from '../api/app/calDavEvent/handlers/createCalDavEvent';
 import ICalHelper, { CALENDAR_METHOD } from '../utils/ICalHelper';
 import ICalHelperV2 from '../utils/ICalHelperV2';
+
+const createICalStringForAttendees = (data: CalDavEventObj) => {
+  if (data?.attendees?.length) {
+    return new ICalHelperV2([data]).parseTo();
+  }
+};
 
 const formatInviteData = (
   userID: string,
@@ -32,6 +37,7 @@ const formatInviteData = (
 ) => {
   return {
     userID,
+    from: event.organizer.mailto,
     email: {
       subject: formatEventInviteSubject(
         event.summary,
@@ -66,7 +72,7 @@ const createEvent = async (
     inviteMessage
   );
 
-  await emailBullQueue.add(BULL_QUEUE.EMAIL, inviteData);
+  await QueueClient.sendEmailQueue(inviteData);
 };
 
 const formatCancelInviteData = (
@@ -82,12 +88,12 @@ const formatCancelInviteData = (
     email: {
       subject: `${formatEventCancelSubject(
         event.summary,
-        (event.startAt as unknown as Date).toISOString(),
+        event.startAt,
         event.timezoneStartAt
       )}`,
       body: formatEventInviteSubject(
         event.summary,
-        (event.startAt as unknown as Date).toISOString(),
+        event.startAt,
         event.timezoneStartAt,
         inviteMessage
       ),
@@ -115,7 +121,7 @@ const cancelNormalEventAsOrganizer = async (
     inviteMessage
   );
 
-  await emailBullQueue.add(BULL_QUEUE.EMAIL, inviteData);
+  await QueueClient.sendEmailQueue(inviteData);
 };
 
 const cancelNormalEventAsGuest = async (
@@ -155,8 +161,7 @@ const cancelNormalEventAsGuest = async (
     true
   ).parseTo();
 
-  await emailBullQueue.add(
-    BULL_QUEUE.EMAIL,
+  await QueueClient.sendEmailQueue(
     formatPartstatResponseData(
       userID,
       event,
@@ -207,8 +212,7 @@ const updateNormalEvent = async (
 
   // send invite to new attendees
   if (attendeesNew?.length) {
-    await emailBullQueue.add(
-      BULL_QUEUE.EMAIL,
+    await QueueClient.sendEmailQueue(
       formatInviteData(
         userID,
         eventNew,
@@ -234,7 +238,7 @@ const updateNormalEvent = async (
       CALENDAR_METHOD.CANCEL
     );
 
-    await emailBullQueue.add(BULL_QUEUE.EMAIL, inviteData);
+    await QueueClient.sendEmailQueue(inviteData);
   }
 };
 
@@ -262,8 +266,7 @@ const cancelSingleRepeatedEventAsOrganizer = async (
     recurrenceID: recurrenceID,
   };
 
-  await emailBullQueue.add(
-    BULL_QUEUE.EMAIL,
+  await QueueClient.sendEmailQueue(
     formatRecurringCancelInviteData(
       userID,
       eventToCancel,
@@ -319,8 +322,7 @@ const cancelSingleRepeatedEventAsGuest = async (
     true
   ).parseTo();
 
-  await emailBullQueue.add(
-    BULL_QUEUE.EMAIL,
+  await QueueClient.sendEmailQueue(
     formatPartstatResponseData(
       userID,
       event,
@@ -356,8 +358,7 @@ const updateSingleRepeatedEvent = async (
 
   // send invite to new attendees
   if (attendeesNew?.length) {
-    await emailBullQueue.add(
-      BULL_QUEUE.EMAIL,
+    await QueueClient.sendEmailQueue(
       formatInviteData(
         userID,
         eventNew,
@@ -383,7 +384,7 @@ const updateSingleRepeatedEvent = async (
       CALENDAR_METHOD.CANCEL
     );
 
-    await emailBullQueue.add(BULL_QUEUE.EMAIL, inviteData);
+    await QueueClient.sendEmailQueue(inviteData);
   }
 };
 
@@ -405,8 +406,7 @@ const changePartstatStatus = async (
 
   // send email only to organizer
   if (attendee.mailto !== eventTemp.organizer.mailto) {
-    await emailBullQueue.add(
-      BULL_QUEUE.EMAIL,
+    await QueueClient.sendEmailQueue(
       formatPartstatResponseData(
         userID,
         eventTemp,

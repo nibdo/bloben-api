@@ -6,7 +6,7 @@ import { SESSION } from '../../../../utils/enums';
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export const loginDemo = async (req: Request, res: Response): Promise<void> => {
   const { username, password, redirect } =

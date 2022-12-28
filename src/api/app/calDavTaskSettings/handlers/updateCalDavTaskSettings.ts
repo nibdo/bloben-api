@@ -11,7 +11,7 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 import { createCommonResponse } from '../../../../utils/common';
-import { io } from '../../../../app';
+import { socketService } from '../../../../service/init';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavCalendarEntity from '../../../../data/entity/CalDavCalendar';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
@@ -49,7 +49,7 @@ export const updateCalDavTaskSettings = async (
 
     const newSettings = new CalDavTaskSettingsEntity();
     newSettings.calendar = calendarEntity;
-    newSettings.order = body.order;
+    // newSettings.order = body.order;
     newSettings.orderBy = body.orderBy;
 
     await CalDavTaskSettingsRepository.getRepository().save(newSettings);
@@ -59,15 +59,16 @@ export const updateCalDavTaskSettings = async (
         id: settings.id,
       },
       {
-        order: body.order,
+        // order: body.order,
         orderBy: body.orderBy,
       }
     );
   }
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_TASK_SETTINGS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_TASK_SETTINGS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
 
   return createCommonResponse('Task settings updated');

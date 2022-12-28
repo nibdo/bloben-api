@@ -7,7 +7,9 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../utils/enums';
 import { formatInviteStartDate } from '../../utils/format';
-import { io } from '../../app';
+import { formatSQLDateTime } from '../../data/repository/CalDavEventRepository';
+import { isElectron } from '../../config/env';
+import { socketService } from '../../service/init';
 import ReminderRepository from '../../data/repository/ReminderRepository';
 import logger from '../../utils/logger';
 
@@ -24,7 +26,7 @@ const formatEventTitle = (reminder: ReminderResult) => {
 
 const formatEventBody = (reminder: ReminderResult) => {
   return `${reminder.summary} @ ${formatInviteStartDate(
-    DateTime.fromJSDate(reminder.sendAt)
+    DateTime.fromISO(reminder.sendAt)
       .plus({
         [reminder.timeUnit]: reminder.amount,
       })
@@ -35,7 +37,7 @@ const formatEventBody = (reminder: ReminderResult) => {
 
 interface ReminderResult {
   id: string;
-  sendAt: Date;
+  sendAt: string;
   attempt: number;
   userID: string;
   summary: string;
@@ -50,7 +52,7 @@ const handleCalDavReminders = async (connection: Connection) => {
     `
       SELECT
         r.id as "id",
-        r.send_at as "sendAt",
+        ${formatSQLDateTime('r.send_at')} as "sendAt",
         r.attempt as "attempt",
         u.id as "userID",
         ce.summary as "summary",
@@ -67,20 +69,32 @@ const handleCalDavReminders = async (connection: Connection) => {
       WHERE
         "r"."was_fired" = false
         AND r.attempt < 5
-        AND r.send_at <= now()
-        AND r.send_at + INTERVAL '10 MINUTES' >= now()
+        ${
+          isElectron
+            ? `
+              AND r.send_at <= datetime('now')
+              AND datetime(r.send_at, '+10 MINUTES') >= datetime('now')`
+            : `
+              AND r.send_at <= now()
+              AND r.send_at + INTERVAL '10 MINUTES' >= now()`
+        }
         AND u.deleted_at IS NULL`
   );
 
   for (const item of reminders) {
     try {
-      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${item.userID}`).emit(
-        SOCKET_CHANNEL.SYNC,
+      socketService.emit(
         JSON.stringify({
           type: SOCKET_MSG_TYPE.NOTIFICATIONS,
           title: formatEventTitle(item),
           body: formatEventBody(item),
-        })
+        }),
+        SOCKET_CHANNEL.SYNC,
+        `${SOCKET_ROOM_NAMESPACE.USER_ID}${item.userID}`
+      );
+
+      logger.info(
+        `[Notification]: Sending notification for reminder ${item.id}`
       );
 
       await ReminderRepository.getRepository().update(
@@ -94,6 +108,11 @@ const handleCalDavReminders = async (connection: Connection) => {
         }
       );
     } catch (e) {
+      logger.error(
+        `[Error]: Sending notification error for reminder ${item.id}`,
+        e
+      );
+
       await ReminderRepository.getRepository().update(
         {
           id: item.id,
@@ -112,7 +131,7 @@ const handleWebcalReminders = async (connection: Connection) => {
     `
       SELECT
         r.id as "id",
-        r.send_at as "sendAt",
+        ${formatSQLDateTime('r.send_at')} as "sendAt",
         r.attempt as "attempt",
         u.id as "userID",
         we.summary as "summary",
@@ -126,20 +145,28 @@ const handleWebcalReminders = async (connection: Connection) => {
       WHERE
         "r"."was_fired" = false
         AND r.attempt < 5
-        AND r.send_at <= now()
-        AND r.send_at + INTERVAL '10 MINUTES' >= now()
+       ${
+         isElectron
+           ? `
+              AND r.send_at <= datetime('now')
+              AND datetime(r.send_at, '+10 MINUTES') >= datetime('now')`
+           : `
+              AND r.send_at <= now()
+              AND r.send_at + INTERVAL '10 MINUTES' >= now()`
+       }
         AND u.deleted_at IS NULL`
   );
 
   for (const item of reminders) {
     try {
-      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${item.userID}`).emit(
-        SOCKET_CHANNEL.SYNC,
+      socketService.emit(
         JSON.stringify({
           type: SOCKET_MSG_TYPE.NOTIFICATIONS,
           title: `Reminder: ${item.summary}`,
           body: `Reminder: ${item.summary}`,
-        })
+        }),
+        SOCKET_CHANNEL.SYNC,
+        `${SOCKET_ROOM_NAMESPACE.USER_ID}${item.userID}`
       );
 
       await ReminderRepository.getRepository().update(

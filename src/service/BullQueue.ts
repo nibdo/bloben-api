@@ -2,17 +2,19 @@ import { BULL_QUEUE } from '../utils/enums';
 import { Queue, Worker } from 'bullmq';
 import { calculateWebcalAlarms } from '../jobs/queueJobs/calculateWebcalAlarmsJob';
 import { createRedisConfig } from '../config/redis';
+import { isElectron } from '../config/env';
 import { processEmailEventJob } from '../jobs/queueJobs/processEmailEventJob';
 import { sendEmailQueueJob } from '../jobs/queueJobs/sendEmailQueueJob';
 import { syncCalDavQueueJob } from '../jobs/queueJobs/syncCalDavQueueJob';
 import { syncCardDavQueueJob } from '../jobs/queueJobs/syncCardDavQueueJob';
 import { syncWebcalEventsQueueJob } from '../jobs/queueJobs/syncWebcalEventsQueueJob';
+import Logger from '../utils/logger';
 
 export let calDavSyncBullWorker;
 export let calDavSyncBullQueue;
 export let webcalSyncBullWorker;
 export let webcalSyncBullQueue;
-export let emailBullQueue;
+export let sendEmailBullQueue;
 export let emailBullWorker;
 export let emailInviteBullQueue;
 export let emailInviteBullWorker;
@@ -22,6 +24,10 @@ export let cardDavBullWorker;
 export let cardDavBullQueue;
 
 const getConnection = () => {
+  if (isElectron) {
+    return;
+  }
+
   const config = createRedisConfig();
 
   if (config.host && config.port) {
@@ -123,13 +129,17 @@ export const createCardDavBullQueue = async () => {
 };
 
 export const initBullQueue = async () => {
+  if (isElectron) {
+    return;
+  }
+
   calDavSyncBullQueue = createBullQueue(BULL_QUEUE.CALDAV_SYNC);
   calDavSyncBullWorker = await createCalDavSyncBullWorker();
 
   webcalSyncBullQueue = createBullQueue(BULL_QUEUE.WEBCAL_SYNC);
   webcalSyncBullWorker = await createWebcalSyncBullWorker();
 
-  emailBullQueue = createBullQueue(BULL_QUEUE.EMAIL);
+  sendEmailBullQueue = createBullQueue(BULL_QUEUE.EMAIL);
   emailBullWorker = await createEmailBullWorker();
 
   emailInviteBullQueue = createBullQueue(BULL_QUEUE.EMAIL_INVITE);
@@ -140,4 +150,6 @@ export const initBullQueue = async () => {
 
   cardDavBullQueue = createBullQueue(BULL_QUEUE.CARDDAV_SYNC);
   cardDavBullWorker = await createCardDavBullQueue();
+
+  Logger.info('[INIT]: BullQueue initialized');
 };

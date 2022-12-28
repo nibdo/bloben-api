@@ -54,7 +54,7 @@ export const seedCardDavAddressBooks = async (
     newBook.url = `http://${user.username}`;
     newBook.calDavAccount = newAccount;
     newBook.displayName = 'default';
-    newBook.data = { displayName: 'default' };
+    newBook.data = JSON.stringify({ displayName: 'default' });
 
     calDavAccounts.push(newAccount);
     cardDavAddressBooks.push(newBook);

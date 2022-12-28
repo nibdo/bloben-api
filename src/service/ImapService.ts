@@ -1,5 +1,4 @@
 import * as ImapFlowLib from 'imapflow';
-import { BULL_QUEUE, LOG_TAG } from '../utils/enums';
 import { CryptoAes } from '../utils/CryptoAes';
 import { EmailEventJobData } from '../jobs/queueJobs/processEmailEventJob';
 import {
@@ -7,11 +6,12 @@ import {
   ImapData,
   UserEmailConfigDecryptedData,
 } from 'bloben-interface';
+import { LOG_TAG } from '../utils/enums';
+import { QueueClient } from './init';
 import {
   UserEmailConfigRaw,
   getTextCalendarAttachment,
 } from '../jobs/cronJobs/getImapEmails';
-import { emailInviteBullQueue } from './BullQueue';
 import { filter } from 'lodash';
 import Logger from '../utils/logger';
 import UserEmailConfigEntity from '../data/entity/UserEmailConfig';
@@ -215,7 +215,7 @@ class ImapService {
           if (isCalendarEvent) {
             const textCalendarString: string = getTextCalendarAttachment(data);
 
-            await emailInviteBullQueue.add(BULL_QUEUE.EMAIL_INVITE, {
+            await QueueClient.processEmails({
               userID,
               icalString: textCalendarString,
               from: fromAddress,

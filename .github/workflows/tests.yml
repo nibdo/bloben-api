@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: 16.18.1
+          node-version: 16.19.0
           registry-url: https://registry.npmjs.org/
       - uses: actions/checkout@v2
       -
@@ -26,7 +26,7 @@ jobs:
           POSTGRES_PASSWORD: bloben_test
         run: docker-compose -f docker-compose.test-pipeline.yml up -d
       - name: Install dependencies
-        run: npm run setup
+        run: npm run prepare-web && npm run setup
       - name: Lint code
         run: npm run lint
       - name: Build app

@@ -14,39 +14,43 @@ import {
   validateImapCredentials,
   validateSmtpCredentials,
 } from './createUserEmailConfig';
+import UserEmailConfigEntity from '../../../../data/entity/UserEmailConfig';
 import UserEmailConfigRepository from '../../../../data/repository/UserEmailConfigRepository';
 import logger from '../../../../utils/logger';
 
 const checkConfigWasChanged = (
-  config: UserEmailConfigData,
+  config: UserEmailConfigEntity,
+  configData: UserEmailConfigData,
   body: UpdateUserEmailConfigRequest
 ) => {
   const { imap, smtp } = body;
   if (body.imap) {
-    if (!config || !config.imap) {
+    if (!config || !configData.imap) {
       return true;
     }
 
     if (
-      imap.imapHost !== config.imap.imapHost ||
-      (imap.imapPassword && imap.imapPassword !== config.imap.imapPassword) ||
-      imap.imapPort !== config.imap.imapPort ||
-      imap.imapUsername !== config.imap.imapUsername
+      imap.imapHost !== configData.imap.imapHost ||
+      (imap.imapPassword &&
+        imap.imapPassword !== configData.imap.imapPassword) ||
+      imap.imapPort !== configData.imap.imapPort ||
+      imap.imapUsername !== configData.imap.imapUsername
     ) {
       return true;
     }
   }
 
   if (body.smtp) {
-    if (!config || !config.smtp) {
+    if (!config || !configData.smtp) {
       return true;
     }
 
     if (
-      smtp.smtpHost !== config.smtp.smtpHost ||
-      (smtp.smtpPassword && smtp.smtpPassword !== config.smtp.smtpPassword) ||
-      smtp.smtpPort !== config.smtp.smtpPort ||
-      smtp.smtpUsername !== config.smtp.smtpUsername
+      smtp.smtpHost !== configData.smtp.smtpHost ||
+      (smtp.smtpPassword &&
+        smtp.smtpPassword !== configData.smtp.smtpPassword) ||
+      smtp.smtpPort !== configData.smtp.smtpPort ||
+      smtp.smtpUsername !== configData.smtp.smtpUsername
     ) {
       return true;
     }
@@ -77,7 +81,7 @@ export const updateUserEmailConfig = async (
     config.data
   )) as UserEmailConfigData;
 
-  const configWasChanged = checkConfigWasChanged(config, body);
+  const configWasChanged = checkConfigWasChanged(config, configData, body);
 
   // validate config
   try {
@@ -105,7 +109,7 @@ export const updateUserEmailConfig = async (
   const dataToUpdate: any = {
     hasImap: !!body.imap,
     imapSyncingInterval: body.imapSyncingInterval || 15,
-    aliases: body.aliases,
+    aliases: JSON.stringify(body.aliases),
     defaultAlias: body.defaultAlias,
     calendarForImportID: body.calendarForImportID,
   };

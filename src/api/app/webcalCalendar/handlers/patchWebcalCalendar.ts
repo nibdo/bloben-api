@@ -9,7 +9,7 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { io } from '../../../../app';
+import { socketService } from '../../../../service/init';
 import { throwError } from '../../../../utils/errorCodes';
 import WebcalCalendarEntity from '../../../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../../../data/repository/WebcalCalendarRepository';
@@ -38,13 +38,15 @@ export const patchWebcalCalendar = async (
     }
   );
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
 
   return createCommonResponse();

@@ -49,14 +49,13 @@ export const getOccurrences = (
       typeof event.endAt === 'string' ? event.endAt : event.endAt.toISOString();
   }
 
-  const startAtDate = DateTime.fromISO(startAtISO).toUTC().toString();
+  const startAtDate = DateTime.fromISO(startAtISO, { zone: 'UTC' }).toString();
 
   if (endAtISO) {
-    endAtDate = DateTime.fromISO(endAtISO).toUTC().toString();
+    endAtDate = DateTime.fromISO(endAtISO, { zone: 'UTC' }).toString();
   } else {
-    endAtDate = DateTime.fromISO(startAtISO)
+    endAtDate = DateTime.fromISO(startAtISO, { zone: 'UTC' })
       .plus({ minutes: 30 })
-      .toUTC()
       .toString();
   }
 
@@ -111,11 +110,12 @@ export const getOccurrences = (
     }
 
     eventClone.internalID = v4();
-    eventClone.startAt = startAtDateTime.toJSDate();
+    eventClone.startAt = startAtDateTime.toString();
+
     eventClone.endAt = LuxonHelper.addMinutes(
       startAtDateTime.toString(),
       diffInMinutes
-    ).toJSDate();
+    ).toString();
 
     if (!isException(rRuleResult, event)) {
       result.push(eventClone);
@@ -175,9 +175,7 @@ export const getRepeatedEvents = async (
       // check if it is exceptions
       const hasExceptions = find(
         repeatedEventExceptions,
-        (item) =>
-          item.exceptionDate.toISOString() ===
-          repeatedEvent.startAt.toISOString()
+        (item) => item.exceptionDate === repeatedEvent.startAt
       );
       if (!hasExceptions) {
         return repeatedEvent;

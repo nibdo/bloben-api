@@ -6,8 +6,8 @@ import {
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { createCommonResponse } from '../../../../utils/common';
-import { io } from '../../../../app';
+import { createCommonResponse, parseJSON } from '../../../../utils/common';
+import { socketService } from '../../../../service/init';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 
@@ -35,17 +35,19 @@ export const updateCalDavCalendar = async (
     {
       customColor: body.color,
       customDisplayName: body.name,
-      alarms: body.alarms,
+      alarms: parseJSON(body.alarms),
     }
   );
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
 
   return createCommonResponse('CalDav calendar updated');

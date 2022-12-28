@@ -10,6 +10,7 @@ export class CreateServerSettings1659503032000 implements MigrationInterface {
 
     if (!serverSettings) {
       const newServerSettings = new ServerSettingsEntity();
+      newServerSettings.id = 1;
       await ServerSettingsRepository.getRepository().save(newServerSettings);
     }
   }

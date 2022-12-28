@@ -9,11 +9,11 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 import { createCommonResponse } from '../../../../utils/common';
-import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 
+import { socketService } from '../../../../service/init';
 import CalendarSettingsEntity from '../../../../data/entity/CalendarSettings';
 import CalendarSettingsRepository from '../../../../data/repository/CalendarSettingsRepository';
 import CardDavAddressBookRepository from '../../../../data/repository/CardDavAddressBookRepository';
@@ -106,13 +106,15 @@ export const deleteCalDavAccount = async (
     await queryRunner.commitTransaction();
     await queryRunner.release();
 
-    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    socketService.emit(
+      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
       SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+      `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
     );
-    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    socketService.emit(
+      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS }),
       SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+      `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
     );
 
     return createCommonResponse('CalDav account deleted', {

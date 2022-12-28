@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import { CALENDAR_VIEW } from 'kalend/common/enums';
+import { datetimeColumnType } from '../../utils/constants';
 import CardDavAddressBook from './CardDavAddressBook';
 import UserEntity from './UserEntity';
 
@@ -59,9 +60,9 @@ export default class CalendarSettingsEntity {
   @Column({ name: 'timezone', nullable: true })
   timezone: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 }

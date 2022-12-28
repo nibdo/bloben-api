@@ -1,18 +1,16 @@
 import { Request, Response } from 'express';
 
-import { createCommonResponse } from '../../../../utils/common';
+import { createCommonResponse, parseJSON } from '../../../../utils/common';
 
+import { CommonResponse, CreateWebcalCalendarRequest } from 'bloben-interface';
 import {
-  BULL_QUEUE,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse, CreateWebcalCalendarRequest } from 'bloben-interface';
 
-import { io } from '../../../../app';
+import { QueueClient, socketService } from '../../../../service/init';
 import { throwError } from '../../../../utils/errorCodes';
-import { webcalRemindersBullQueue } from '../../../../service/BullQueue';
 import WebcalCalendarEntity from '../../../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../../../data/repository/WebcalCalendarRepository';
 
@@ -36,7 +34,7 @@ export const updateWebcalCalendar = async (
       id: webcalCalendar.id,
     },
     {
-      alarms: body.alarms,
+      alarms: parseJSON(body.alarms),
       syncFrequency: body.syncFrequency,
       color: body.color,
       name: body.name,
@@ -44,18 +42,18 @@ export const updateWebcalCalendar = async (
     }
   );
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`
   );
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`
   );
 
-  await webcalRemindersBullQueue.add(BULL_QUEUE.WEBCAL_REMINDER, {
-    webcalCalendarID: webcalCalendar.id,
-  });
+  await QueueClient.webcalReminders(webcalCalendar.id);
 
   return createCommonResponse();
 };

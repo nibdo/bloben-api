@@ -5,23 +5,25 @@ import {
   CommonResponse,
   CreateCalDavEventRequest,
 } from 'bloben-interface';
+import { Connection, QueryRunner, getConnection } from 'typeorm';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
 import {
-  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { DavService } from '../../../../service/davService';
-import { InviteService } from '../../../../service/InviteService';
-import { cardDavBullQueue } from '../../../../service/BullQueue';
+import {
+  QueueClient,
+  electronService,
+  socketService,
+} from '../../../../service/init';
 import { createCommonResponse } from '../../../../utils/common';
 import { createEventFromCalendarObject } from '../../../../utils/davHelper';
 import { createVCard, fetchCalendarObjects } from 'tsdav';
 import { forEach, map } from 'lodash';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
-import { io } from '../../../../app';
 import { parseVcardToString } from '../../../../utils/vcardParser';
 import { processCaldavAlarms } from './updateCalDavEvent';
 import { throwError } from '../../../../utils/errorCodes';
@@ -205,14 +207,17 @@ export const createCalDavEvent = async (
 
         await Promise.all(carddavPromises);
 
-        await cardDavBullQueue.add(BULL_QUEUE.CARDDAV_SYNC, { userID });
+        await QueueClient.syncCardDav(userID);
       }
     }
 
-    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    socketService.emit(
+      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
       SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+      `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
     );
+
+    await electronService.processWidgetFile();
 
     return createCommonResponse('Event created');
   } catch (e) {

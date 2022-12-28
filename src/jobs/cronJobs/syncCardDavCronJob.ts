@@ -1,5 +1,5 @@
-import { BULL_QUEUE, GROUP_LOG_KEY } from '../../utils/enums';
-import { cardDavBullQueue } from '../../service/BullQueue';
+import { GROUP_LOG_KEY } from '../../utils/enums';
+import { QueueClient } from '../../service/init';
 import { groupLogs } from '../../utils/logger';
 import UserRepository from '../../data/repository/UserRepository';
 
@@ -13,6 +13,6 @@ export const syncCardDavCronJob = async (): Promise<void> => {
 
   // schedule sync job for each user
   for (const user of users) {
-    await cardDavBullQueue.add(BULL_QUEUE.CARDDAV_SYNC, { userID: user.id });
+    await QueueClient.syncCardDav(user.id);
   }
 };

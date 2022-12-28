@@ -4,6 +4,7 @@ import { DAVCalendar } from 'tsdav';
 import { DAV_ACCOUNT_TYPE } from '../types/enums';
 import { forEach, groupBy } from 'lodash';
 import { getOneResult } from '../../utils/common';
+import { isElectron } from '../../config/env';
 import CalDavAccountEntity from '../entity/CalDavAccount';
 
 interface CardDavAccountRaw {
@@ -347,7 +348,9 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         AND cc.deleted_at IS NULL
         AND ca.account_type = 'caldav'
         ${userID ? 'AND ca.user_id = $1' : ''}
-        AND (cc.last_update_at IS NULL OR now() >= cc.last_update_at) 
+        AND (cc.last_update_at IS NULL OR ${
+          isElectron ? `datetime('now')` : 'now()'
+        } >= cc.last_update_at) 
   `,
         parameters
       );
@@ -483,7 +486,9 @@ export default class CalDavAccountRepository extends Repository<CalDavAccountEnt
         AND ca.account_type = 'carddav'
         ${userID ? 'AND ca.user_id = $1' : ''}
         ${addressBookID ? 'AND ab.id = $2' : ''}
-        AND (ab.last_update_at IS NULL OR now() >= ab.last_update_at) 
+        AND (ab.last_update_at IS NULL OR ${
+          isElectron ? `datetime('now')` : 'now()'
+        } >= ab.last_update_at) 
   `,
         parameters
       );

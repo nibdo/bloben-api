@@ -38,7 +38,7 @@ export const searchEvents = async (
         cc.deleted_at IS NULL
         AND ca.deleted_at IS NULL
         AND ca.user_id = $1
-        AND ce.summary ILIKE $2
+        AND ce.summary LIKE $2
     ORDER BY ce.start_at DESC
     LIMIT 50    
   `,
@@ -62,7 +62,7 @@ export const searchEvents = async (
         we.deleted_at IS NULL
         AND wc.deleted_at IS NULL
         AND wc.user_id = $1
-        AND we.summary ILIKE $2
+        AND we.summary LIKE $2
     ORDER BY we.start_at DESC
     LIMIT 50
   `,

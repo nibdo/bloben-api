@@ -31,16 +31,16 @@ export const seedUserEmailConfig = async (
     imap: userEmailConfigData.imap,
   });
 
+  if (calendarForImportID) {
+    userEmailConfigData.calendarForImportID = calendarForImportID;
+  }
+
   const emailConfig = new UserEmailConfigEntity(
     userID,
     data,
     userEmailConfigData,
     false
   );
-
-  if (calendarForImportID) {
-    emailConfig.calendarForImportID = calendarForImportID;
-  }
 
   await UserEmailConfigRepository.getRepository().save(emailConfig);
 

@@ -6,16 +6,12 @@ import {
   UpdatePartstatStatusRepeatedEventRequest,
 } from 'bloben-interface';
 
-import { BULL_QUEUE } from '../../../../utils/enums';
 import {
   CalDavEventObj,
   formatPartstatResponseData,
 } from '../../../../utils/davHelper';
 import { DavService } from '../../../../service/davService';
-import {
-  calDavSyncBullQueue,
-  emailBullQueue,
-} from '../../../../service/BullQueue';
+import { QueueClient } from '../../../../service/init';
 import {
   createCommonResponse,
   getUserMailto,
@@ -78,8 +74,7 @@ export const updatePartstatStatusRepeatedEvent = async (
     });
     const icalStringResponse: string = new ICalHelperV2(events, true).parseTo();
 
-    await emailBullQueue.add(
-      BULL_QUEUE.EMAIL,
+    await QueueClient.sendEmailQueue(
       formatPartstatResponseData(
         userID,
         event,
@@ -91,7 +86,7 @@ export const updatePartstatStatusRepeatedEvent = async (
     );
   }
 
-  await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
+  await QueueClient.syncCalDav(userID);
 
   return createCommonResponse('Event partstat status updated');
 };

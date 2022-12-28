@@ -2,11 +2,11 @@ import {} from '../api/app/event/handlers/getEventsInRange';
 
 import { DAVCalendarObject } from 'tsdav';
 import { DateTime } from 'luxon';
+import { MemoryClient } from './init';
 import { Range } from 'bloben-interface';
 import { createDavClient } from './davService';
 import { createEventsFromCalendarObject } from '../utils/davHelper';
 import { forEach } from 'lodash';
-import { redisClient } from '../index';
 
 export class CalDavCacheService {
   static createRangeKey(range: Range) {
@@ -16,10 +16,10 @@ export class CalDavCacheService {
   static async set(userID: string, range: Range, data: any) {
     const key = `${userID}_${this.createRangeKey(range)}`;
 
-    await redisClient.set(key, JSON.stringify(data), 'EX', 60 * 60 * 2);
+    await MemoryClient.set(key, JSON.stringify(data), 'EX', 60 * 60 * 2);
 
     // get all user keys
-    const userKeys = await redisClient.get(userID);
+    const userKeys = await MemoryClient.get(userID);
     let userParsedKeys: string[] = [];
     if (userKeys) {
       userParsedKeys = JSON.parse(userKeys);
@@ -28,33 +28,38 @@ export class CalDavCacheService {
     // add current key
     userParsedKeys.push(key);
 
-    await redisClient.set(userID, JSON.stringify(userParsedKeys), 'EX', 500000);
+    await MemoryClient.set(
+      userID,
+      JSON.stringify(userParsedKeys),
+      'EX',
+      500000
+    );
   }
 
   static async deleteByUserID(userID: string) {
-    if (!redisClient) {
+    if (!MemoryClient) {
       return;
     }
 
     // get all user keys
-    const userKeys = await redisClient.get(userID);
+    const userKeys = await MemoryClient.get(userID);
     if (userKeys) {
       const userParsedKeys: string[] = JSON.parse(userKeys);
 
       const promises: any = [];
 
       forEach(userParsedKeys, (key) => {
-        promises.push(redisClient.del(key));
+        promises.push(MemoryClient.del(key));
       });
 
       await Promise.all(promises);
     }
 
-    await redisClient.del(userID);
+    await MemoryClient.del(userID);
   }
 
   static async get(userID: string, range: Range) {
-    const resultRaw = await redisClient.get(
+    const resultRaw = await MemoryClient.get(
       `${userID}_${this.createRangeKey(range)}`
     );
 

@@ -1,6 +1,7 @@
 import { CalendarAlarms, GetWebcalCalendarsResponse } from 'bloben-interface';
 import { Request, Response } from 'express';
 import { map } from 'lodash';
+import { parseToJSON } from '../../../../utils/common';
 import WebcalCalendarRepository from '../../../../data/repository/WebcalCalendarRepository';
 
 interface WebcalendarRaw {
@@ -52,7 +53,7 @@ export const getWebcalCalendars = async (
     syncFrequency: item.syncFrequency,
     url: item.url,
     isHidden: item.isHidden,
-    alarms: item.alarms || [],
+    alarms: parseToJSON(item.alarms) || [],
     userMailto: item.userMailto,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,

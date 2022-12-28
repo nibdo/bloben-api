@@ -11,6 +11,7 @@ import { resetEmailDailyLimit } from './cronJobs/resetEmailDailyLimit';
 import { sendNotification } from './cronJobs/sendNotification';
 import { syncCardDavCronJobConnectedUsers } from './cronJobs/syncCardDavCronJobConnectedUsers';
 import { webcalSyncQueueSocketJob } from './queueJobs/syncWebcalEventsQueueJob';
+import Logger from '../utils/logger';
 
 export const initCronJobs = () => {
   const resetEmailDailyLimitJob = new CronJob(
@@ -23,6 +24,10 @@ export const initCronJobs = () => {
   const clearLogsJob = new CronJob('0 1 * * *', clearLogs);
   clearLogsJob.start();
 
+  const groupLogsJob = new CronJob('10 */3 * * *', groupLogsCronJob); // At
+  // minute 10 past every 3rd hour
+  groupLogsJob.start();
+
   const webcalJob = new CronJob('*/30 * * * *', webcalSyncQueueSocketJob);
   webcalJob.start();
 
@@ -34,10 +39,6 @@ export const initCronJobs = () => {
     syncCalDavCronJobConnectedUsers
   ); // every ten minutes
   syncCalDavConnectedUsersJob.start();
-
-  const groupLogsJob = new CronJob('10 */3 * * *', groupLogsCronJob); // At
-  // minute 10 past every 3rd hour
-  groupLogsJob.start();
 
   const remindersJob = new CronJob('*/1 * * * *', sendNotification); // every two minutes
   remindersJob.start();
@@ -62,4 +63,6 @@ export const initCronJobs = () => {
     syncCardDavCronJobConnectedUsers
   );
   syncCardDavJob.start();
+
+  Logger.info('[INIT]: Cron initialized');
 };

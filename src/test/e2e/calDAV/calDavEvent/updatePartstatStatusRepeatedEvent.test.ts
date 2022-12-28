@@ -6,12 +6,10 @@ import { DateTime } from 'luxon';
 import { UpdatePartstatStatusRepeatedEventRequest } from 'bloben-interface';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
 import {
-  createRepeatedTestCalDavEventWithAttendee,
-  createUpdatePartstatRepeatedEventBodyJSON,
-} from '../calDavServerTestHelper';
-import { createTestCalendarCalendar } from '../../../testHelpers/calDavServerTestHelper';
-import { invalidUUID } from '../../../testHelpers/common';
-import { seedUsersE2E } from '../../seeds/user-caldav-seed';
+  createE2EUserWithCalendars,
+  invalidUUID,
+} from '../../../testHelpers/common';
+import { createUpdatePartstatRepeatedEventBodyJSON } from '../calDavServerTestHelper';
 import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 
@@ -25,18 +23,22 @@ const PATH = (eventID: string) =>
 
 const createBody = (body: UpdatePartstatStatusRepeatedEventRequest) => body;
 
-const getSyncedEvents = async (userID: string, remoteID: string) => {
+const getSyncedEvents = async (
+  userID: string,
+  remoteID: string,
+  calendarID: string
+) => {
   await syncCalDavQueueJob({ data: { userID } } as any);
 
   return CalDavEventRepository.getRepository().find({
     where: {
       externalID: remoteID,
+      calendarID,
     },
   });
 };
 
 describe(`[E2E] Update partstat status repeated [PATCH] ${PATH}`, async function () {
-  let eventData;
   const baseDateTime = DateTime.now()
     .set({
       hour: 14,
@@ -46,25 +48,10 @@ describe(`[E2E] Update partstat status repeated [PATCH] ${PATH}`, async function
     })
     .toUTC();
 
-  let userID;
-  beforeEach(async () => {
-    const { userData } = await seedUsersE2E();
-    userID = userData.user.id;
-    const calDavCalendar = await createTestCalendarCalendar(
-      userData.user.id,
-      userData.calDavAccount
-    );
-
-    eventData = await createRepeatedTestCalDavEventWithAttendee(
-      userData.user.id,
-      userData.calDavAccount,
-      calDavCalendar.id,
-      baseDateTime
-    );
-  });
-
   it('Should get status 404', async function () {
     const newDate = baseDateTime.plus({ day: 1 });
+
+    const { userID } = await createE2EUserWithCalendars(true);
 
     const body = createBody(
       createUpdatePartstatRepeatedEventBodyJSON(
@@ -86,6 +73,10 @@ describe(`[E2E] Update partstat status repeated [PATCH] ${PATH}`, async function
   it('Should get status 200 all', async function () {
     const newDate = baseDateTime.plus({ day: 1 });
 
+    const { userID, eventData, calendarID } = await createE2EUserWithCalendars(
+      true
+    );
+
     const body = createBody(
       createUpdatePartstatRepeatedEventBodyJSON(
         REPEATED_EVENT_CHANGE_TYPE.ALL,
@@ -103,13 +94,19 @@ describe(`[E2E] Update partstat status repeated [PATCH] ${PATH}`, async function
 
     assert.equal(status, 200);
 
-    const events = await getSyncedEvents(userID, eventData.remoteID);
+    const events = await getSyncedEvents(
+      userID,
+      eventData.remoteID,
+      calendarID
+    );
 
     assert.equal(events.length, 1);
   });
 
   it('Should get status 200 single with no existing recurrence', async function () {
     const newDate = baseDateTime.plus({ day: 1 });
+
+    const { userID, eventData } = await createE2EUserWithCalendars(true);
 
     const body = createBody(
       createUpdatePartstatRepeatedEventBodyJSON(

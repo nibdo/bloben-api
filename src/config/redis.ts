@@ -9,7 +9,8 @@ export const createRedisConfig = (): any => {
     config.host = process.env.REDIS_HOST;
     config.port = Number(process.env.REDIS_PORT);
   } else {
-    throw Error('Invalid redis config');
+    // console.log('missing redis config');
+    // throw Error('Invalid redis config');
   }
 
   return config;

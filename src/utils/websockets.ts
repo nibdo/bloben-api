@@ -1,15 +1,14 @@
 import { LOG_TAG, REDIS_PREFIX, SOCKET_ROOM_NAMESPACE } from './enums';
+import { MemoryClient, socketService } from '../service/init';
 import { SocketSession } from '../common/interface/common';
-import { io } from '../app';
-import { redisClient } from '../index';
-import logger from './logger';
+import Logger from './logger';
 
 const getSocketSession = async (socket: any): Promise<SocketSession | null> => {
   const socketId: string = socket.handshake.auth.token;
 
   const redisKey = `${REDIS_PREFIX.SOCKET}_${socketId}`;
 
-  const data: string = await redisClient.get(redisKey);
+  const data: string = await MemoryClient.get(redisKey);
 
   if (!data) {
     return null;
@@ -23,7 +22,7 @@ const handleJoinRoom = async (socket: any) => {
   const socketSession: SocketSession = await getSocketSession(socket);
 
   if (socketSession?.userID) {
-    await redisClient.set(
+    await MemoryClient.set(
       `${REDIS_PREFIX.WAS_ACTIVE}_${socketSession.userID}`,
       'true',
       'EX',
@@ -35,10 +34,12 @@ const handleJoinRoom = async (socket: any) => {
 };
 
 export const initWebsockets = () => {
-  io.on('connection', async (socket: any) => {
+  socketService.io.on('connection', async (socket: any) => {
     await handleJoinRoom(socket);
   });
-  io.on('error', (error: any) => {
-    logger.error(error.toString(), 'ws', [LOG_TAG.WEBSOCKET]);
+  socketService.io.on('error', (error: any) => {
+    Logger.error(error.toString(), 'ws', [LOG_TAG.WEBSOCKET]);
   });
+
+  Logger.info('[INIT]: Websockets initialized');
 };

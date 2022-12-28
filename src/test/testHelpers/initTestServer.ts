@@ -12,7 +12,6 @@ import {
   createSessionConfig,
 } from '../../config/session';
 import { createRedisConfig } from '../../config/redis';
-import { env } from '../../index';
 import { getTestUser } from './getTestUser';
 import Router from '../../routes/appRoutes';
 import UserEntity from '../../data/entity/UserEntity';
@@ -21,13 +20,91 @@ import errorMiddleware from '../../middleware/errorMiddleware';
 let redisClient = new Redis();
 const redisStore: any = connect_redis(session);
 import { Server } from 'socket.io';
+import { Settings } from 'luxon';
+import { electronMiddleware } from '../../middleware/electronMiddleware';
 import { initBullQueue } from '../../service/BullQueue';
-import { loadEnv } from '../../config/env';
+import { initServices, initSocketService } from '../../service/init';
+import { initWebsockets } from '../../utils/websockets';
+import { isElectron, loadEnv } from '../../config/env';
 import AdminRoutes from '../../routes/adminRoutes';
+import ElectronRouter from '../../routes/electronRoutes';
 import PublicRouter from '../../routes/publicRoutes';
 
-loadEnv();
-export let io: Server = null;
+const env = loadEnv();
+export const io: Server = null;
+
+const createElectronTestApp = (userID: string) => {
+  const BlobenApp = Express();
+
+  BlobenApp.use(bodyParser.urlencoded({ extended: false }));
+  BlobenApp.use(bodyParser.json());
+  BlobenApp.use(`/api/electron/${API_VERSIONS.V1}`, ElectronRouter);
+  BlobenApp.use(
+    `/api/app/${API_VERSIONS.V1}`,
+    [testElectronMiddleware(userID), testSessionMiddleware(userID)],
+    Router
+  );
+
+  BlobenApp.use(errorMiddleware);
+
+  Settings.defaultZone = 'utc';
+
+  initServices();
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  initSocketService(() => {});
+
+  return BlobenApp;
+};
+
+const createElectronTestAppNoUser = () => {
+  const BlobenApp = Express();
+
+  BlobenApp.use(bodyParser.urlencoded({ extended: false }));
+  BlobenApp.use(bodyParser.json());
+  BlobenApp.use(`/api/electron/${API_VERSIONS.V1}`, ElectronRouter);
+  BlobenApp.use(
+    `/api/app/${API_VERSIONS.V1}`,
+    [electronEmptyMiddleware],
+    Router
+  );
+
+  BlobenApp.use(errorMiddleware);
+
+  Settings.defaultZone = 'utc';
+
+  initServices();
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  initSocketService(() => {});
+
+  return BlobenApp;
+};
+
+const electronEmptyMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.headers = {};
+    req.headers['content-type'] = 'Application/JSON';
+
+    res.contentType('Application/JSON');
+
+    // @ts-ignore
+    req.session = {
+      // @ts-ignore
+      save: () => {
+        return 'ok';
+      },
+    };
+
+    return next();
+  } catch (e) {
+    next(e);
+  }
+};
 
 export const testSessionMiddleware = (
   id: string
@@ -38,58 +115,85 @@ export const testSessionMiddleware = (
     if (testUser) {
       req.session[SESSION.USER_ID] = testUser.id;
       req.session[SESSION.ROLE] = testUser.role;
-      req.session.save();
+      req.session?.save();
     }
 
     return next();
   };
 };
 
+export const testElectronMiddleware = (
+  id: string
+): ((req: Request, res: Response, next: NextFunction) => any) => {
+  return async (req, res, next) => {
+    const testUser: UserEntity = await getTestUser(id);
+
+    if (testUser) {
+      res.locals.userID = testUser.id;
+      res.locals.user = testUser;
+    }
+
+    // @ts-ignore
+    req.session = {
+      // @ts-ignore
+      save: () => 'Ok',
+    };
+
+    return next();
+  };
+};
+
 export const createTestServerWithSession = (userID: string) => {
-  loadEnv();
+  if (isElectron) {
+    return createElectronTestApp(userID);
+  }
+  // initServices();
+  initWebsockets();
+
   const redisConfig: any = createRedisConfig();
-  redisClient = new Redis(redisConfig);
+  if (!isElectron) {
+    redisClient = new Redis(redisConfig);
+  }
   const TestBlobenApp: any = Express();
   TestBlobenApp.use(cors(corsOptions));
 
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());
 
-  const adminSession = session(
-    createAdminSessionConfig(redisStore, redisClient)
-  );
-  const appSession = session(createSessionConfig(redisStore, redisClient));
+  const adminSession = !isElectron
+    ? session(createAdminSessionConfig(redisStore, redisClient))
+    : undefined;
+  const appSession = !isElectron
+    ? session(createSessionConfig(redisStore, redisClient))
+    : undefined;
 
-  TestBlobenApp.use(
-    '/api/admin/v1',
-    adminSession,
-    testSessionMiddleware(userID),
-    AdminRoutes
-  );
+  if (isElectron) {
+    TestBlobenApp.use(
+      `/api/app/${API_VERSIONS.V1}`,
+      [electronMiddleware, testSessionMiddleware(userID)],
+      Router
+    );
+  } else {
+    TestBlobenApp.use(
+      '/api/app/v1',
+      appSession,
+      testSessionMiddleware(userID),
+      Router
+    );
+  }
 
-  TestBlobenApp.use(
-    '/api/app/v1',
-    appSession,
-    testSessionMiddleware(userID),
-    Router
-  );
+  if (!isElectron) {
+    TestBlobenApp.use(
+      '/api/admin/v1',
+      adminSession,
+      testSessionMiddleware(userID),
+      AdminRoutes
+    );
+  }
 
   TestBlobenApp.use(errorMiddleware);
 
   initBullQueue();
-
-  // temp mock for socketio
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  io = {
-    to: () => {
-      return {
-        emit: () => {
-          return;
-        },
-      };
-    },
-  };
 
   env.email = {
     smtpHost: 'smtp.bloben.com',
@@ -103,23 +207,40 @@ export const createTestServerWithSession = (userID: string) => {
 };
 
 export const createTestServer = () => {
+  if (isElectron) {
+    return createElectronTestAppNoUser();
+  }
   const redisConfig: any = createRedisConfig();
-  redisClient = new Redis(redisConfig);
+  let redisClient;
+  if (!isElectron) {
+    redisClient = new Redis(redisConfig);
+  }
+  // initServices();
+  initWebsockets();
 
   const TestBlobenApp = Express();
   TestBlobenApp.use(bodyParser.urlencoded({ extended: false }));
   TestBlobenApp.use(bodyParser.json());
-  TestBlobenApp.use(
-    '/api/app/v1',
-    session(createSessionConfig(redisStore, redisClient)),
-    Router
-  );
+
+  if (isElectron) {
+    TestBlobenApp.use('/api/app/v1', electronEmptyMiddleware, Router);
+  } else {
+    TestBlobenApp.use(
+      '/api/app/v1',
+      session(createSessionConfig(redisStore, redisClient)),
+      Router
+    );
+  }
+
   TestBlobenApp.use(`/api/${API_VERSIONS.V1}/public`, PublicRouter);
-  TestBlobenApp.use(
-    '/api/admin/v1',
-    session(createAdminSessionConfig(redisStore, redisClient)),
-    AdminRoutes
-  );
+
+  if (!isElectron) {
+    TestBlobenApp.use(
+      '/api/admin/v1',
+      session(createAdminSessionConfig(redisStore, redisClient)),
+      AdminRoutes
+    );
+  }
 
   TestBlobenApp.use(errorMiddleware);
 
