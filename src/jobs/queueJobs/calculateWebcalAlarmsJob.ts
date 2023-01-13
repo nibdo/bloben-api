@@ -4,6 +4,7 @@ import { CalendarAlarms } from 'bloben-interface';
 import { DateTime } from 'luxon';
 import { Job } from 'bullmq';
 import { LOG_TAG, TIMEZONE } from '../../utils/enums';
+import { createArrayQueryReplacement } from '../../utils/common';
 import { getWebcalEvents } from '../../api/app/event/helpers/getWebCalEvents';
 import { map } from 'lodash';
 import CalendarSettingsRepository from '../../data/repository/CalendarSettingsRepository';
@@ -85,9 +86,9 @@ export const calculateWebcalAlarms = async (job: Job) => {
       DELETE
         FROM reminders r
       WHERE
-        r.id = ANY($1)
+        r.id IN (${createArrayQueryReplacement(map(idsToDelete, 'id'), 1)})
     `,
-        [map(idsToDelete, 'id')]
+        [...map(idsToDelete, 'id')]
       );
     }
 

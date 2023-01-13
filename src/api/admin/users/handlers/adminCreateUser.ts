@@ -7,7 +7,7 @@ import { throwError } from '../../../../utils/errorCodes';
 import CalendarSettingsEntity from '../../../../data/entity/CalendarSettings';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import logger from '../../../../utils/logger';
 
 export const validateUsername = (username: string) => {

@@ -7,6 +7,7 @@ import {
   UserEmailConfigData,
 } from 'bloben-interface';
 import { env } from '../../../../index';
+import { parseToJSON } from '../../../../utils/common';
 import UserEmailConfigRepository from '../../../../data/repository/UserEmailConfigRepository';
 
 export const getUserEmailConfigs = async (
@@ -47,7 +48,7 @@ export const getUserEmailConfigs = async (
             }
           : null,
         calendarForImportID: userEmailConfig?.calendarForImportID,
-        aliases: userEmailConfig.aliases,
+        aliases: parseToJSON(userEmailConfig.aliases),
         defaultAlias: userEmailConfig.defaultAlias,
         isDefault: userEmailConfig.isDefault,
       });

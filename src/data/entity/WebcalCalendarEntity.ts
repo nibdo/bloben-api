@@ -1,4 +1,3 @@
-import { CalendarAlarms, CreateWebcalCalendarRequest } from 'bloben-interface';
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +8,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CreateWebcalCalendarRequest } from 'bloben-interface';
+import { datetimeColumnType } from '../../utils/constants';
+import { parseJSON } from '../../utils/common';
 import SharedLinkCalendarEntity from './SharedLinkCalendars';
 import UserEntity from './UserEntity';
 import WebcalEventEntity from './WebcalEventEntity';
@@ -33,10 +35,10 @@ export default class WebcalCalendarEntity {
   @Column({ default: 0 })
   attempt: number;
 
-  @Column({ type: 'jsonb', nullable: true })
-  alarms: CalendarAlarms[];
+  @Column({ type: 'text', nullable: true })
+  alarms: string;
 
-  @Column({ type: 'timestamptz', name: 'last_sync_at', nullable: true }) // prevent spamming sync
+  @Column({ type: datetimeColumnType, name: 'last_sync_at', nullable: true }) // prevent spamming sync
   lastSyncAt: Date;
 
   @Column({ name: 'is_hidden', default: false })
@@ -45,13 +47,13 @@ export default class WebcalCalendarEntity {
   @Column({ name: 'user_mailto', nullable: true })
   userMailto: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @Column({ type: 'uuid', name: 'user_id' })
@@ -91,7 +93,7 @@ export default class WebcalCalendarEntity {
       this.name = body.name;
       this.user = user;
       this.syncFrequency = body.syncFrequency;
-      this.alarms = body.alarms;
+      this.alarms = parseJSON(body.alarms);
       this.userMailto = body.userMailto;
     }
   }

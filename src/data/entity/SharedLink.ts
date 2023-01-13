@@ -11,6 +11,7 @@ import {
 
 import { DateTime } from 'luxon';
 import { PostSharedLinkRequest } from 'bloben-interface';
+import { datetimeColumnType } from '../../utils/constants';
 import SharedLinkCalendarEntity from './SharedLinkCalendars';
 import UserEntity from './UserEntity';
 
@@ -31,16 +32,16 @@ export default class SharedLinkEntity {
   @Column({ type: 'date', name: 'expire_at', nullable: true })
   expireAt: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'text', nullable: true })
   settings: any;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @ManyToOne(() => UserEntity, (user) => user.calDavAccounts, {

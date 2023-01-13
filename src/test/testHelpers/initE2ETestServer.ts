@@ -16,6 +16,8 @@ import errorMiddleware from '../../middleware/errorMiddleware';
 
 let redisClient = new Redis();
 const redisStore: any = connect_redis(session);
+import { initServices } from '../../service/init';
+import { initWebsockets } from '../../utils/websockets';
 import { loadEnv } from '../../config/env';
 
 loadEnv();
@@ -38,6 +40,9 @@ export const testSessionMiddleware = (
 
 export const createE2ETestServerWithSession = (userID: string) => {
   loadEnv();
+  initServices();
+  initWebsockets();
+
   const redisConfig: any = createRedisConfig();
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

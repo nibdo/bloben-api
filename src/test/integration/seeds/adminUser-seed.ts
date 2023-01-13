@@ -6,7 +6,7 @@ import { generateRandomSimpleString } from '../../../utils/common';
 import { v4 } from 'uuid';
 import UserEntity from '../../../data/entity/UserEntity';
 import UserRepository from '../../../data/repository/UserRepository';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export const seedAdminUser = async (
   data?: any
@@ -24,7 +24,7 @@ export const seedAdminUser = async (
   const adminID = v4();
 
   const username = generateRandomSimpleString(20);
-  await connection.query(`INSERT INTO public.users 
+  await connection.query(`INSERT INTO users 
 (id, username, hash, role)
 VALUES ('${adminID}', '${generateRandomSimpleString(20)}', '${hash}', '${
     USER_ROLE.ADMIN

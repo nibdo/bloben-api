@@ -2,7 +2,9 @@ import { CalDavTask, EVENT_TYPE } from 'bloben-interface';
 import { Request, Response } from 'express';
 import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { map } from 'lodash';
-import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
+import CalDavEventRepository, {
+  formatSQLDateTime,
+} from '../../../../data/repository/CalDavEventRepository';
 
 export const getLatestCalDavTasks = async (
   req: Request,
@@ -15,8 +17,8 @@ export const getLatestCalDavTasks = async (
       SELECT 
         e.id as "id",
         e.type as type,
-        e.start_at as "startAt",
-        e.end_at as "endAt",
+        ${formatSQLDateTime('e.start_at')} as "startAt",
+        ${formatSQLDateTime('e.end_at')} as "endAt",
         e.timezone_start_at as "timezoneStartAt",
         e.summary as "summary",
         e.description as "description",

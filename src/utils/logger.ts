@@ -1,11 +1,11 @@
 import { LOG_LEVEL, LOG_TAG, NODE_ENV } from './enums';
-import { env, redisClient, winstonLogger } from '../index';
+import { MemoryClient } from '../service/init';
+import { env, winstonLogger } from '../index';
 
 const logger = {
   info: (message: string, tags?: LOG_TAG[]) => {
-    if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
-      // eslint-disable-next-line no-console
-      console.log(message);
+    if (process.env.NODE_ENV === NODE_ENV.TEST) {
+      return;
     }
 
     winstonLogger?.log({
@@ -26,7 +26,7 @@ const logger = {
   },
 
   debug: (message: string, tags?: LOG_TAG[]) => {
-    if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
+    if (env.nodeEnv === NODE_ENV.DEVELOPMENT || env.isElectron) {
       // eslint-disable-next-line no-console
       console.log(message);
     }
@@ -61,10 +61,10 @@ const logger = {
 };
 
 export const groupLogs = async (key: string, msg: string) => {
-  if (env.nodeEnv === NODE_ENV.TEST) {
+  if (env.nodeEnv === NODE_ENV.TEST || env.isElectron) {
     return;
   }
-  const resultRaw = await redisClient.get(key);
+  const resultRaw = await MemoryClient.get(key);
   const result = resultRaw ? JSON.parse(resultRaw) : [];
 
   if (env.nodeEnv === NODE_ENV.DEVELOPMENT) {
@@ -77,7 +77,7 @@ export const groupLogs = async (key: string, msg: string) => {
     message: msg,
   });
 
-  await redisClient.set(key, JSON.stringify(result));
+  await MemoryClient.set(key, JSON.stringify(result));
 };
 
 export default logger;

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import { CommonResponse, CreateCardDavContactRequest } from 'bloben-interface';
 import { LOG_TAG } from '../../../../utils/enums';
-import { createCommonResponse } from '../../../../utils/common';
+import { createCommonResponse, parseToJSON } from '../../../../utils/common';
 import { createVCard, fetchVCards } from 'tsdav';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
 import {
@@ -54,7 +54,7 @@ export const createCardDavContact = async (
 
     const davResponse = await createVCard({
       headers: davHeaders,
-      addressBook: addressBook.data,
+      addressBook: parseToJSON(addressBook.data),
       filename: `${id}.ics`,
       vCardString: parseVcardToString(
         id,
@@ -75,7 +75,7 @@ export const createCardDavContact = async (
     const vcards = await fetchVCards({
       headers: davHeaders,
       objectUrls: [davResponse.url],
-      addressBook: addressBook.data,
+      addressBook: parseToJSON(addressBook.data),
     });
 
     const vcard = vcards?.[0];

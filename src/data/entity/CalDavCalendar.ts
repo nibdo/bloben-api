@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { CalendarAlarms } from 'bloben-interface';
+import { datetimeColumnType } from '../../utils/constants';
 import CalDavAccountEntity from './CalDavAccount';
 import CalDavEventEntity from './CalDavEventEntity';
 import CalDavTaskSettingsEntity from './CalDavTaskSettings';
@@ -50,22 +50,22 @@ export default class CalDavCalendarEntity {
   @Column({ name: 'is_hidden', default: false })
   isHidden: boolean;
 
-  @Column({ type: 'timestamptz', name: 'last_update_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'last_update_at', nullable: true })
   lastUpdateAt: Date;
 
-  @Column({ type: 'text', name: 'components', nullable: true, array: true })
-  components: string[];
+  @Column({ type: 'text', name: 'components', nullable: true })
+  components: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  alarms: CalendarAlarms[];
+  @Column({ type: 'text', nullable: true })
+  alarms: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @ManyToOne(

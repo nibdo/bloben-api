@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { DateTime } from 'luxon';
 import { DateTimeObject } from 'ical-js-parser';
+import { datetimeColumnType } from '../../utils/constants';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventEntity from './CalDavEventEntity';
 import Datez from 'datez';
@@ -37,7 +38,8 @@ export default class CalDavEventExceptionEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'timestamptz', name: 'exception_date', nullable: true }) // original date
+  @Column({ type: datetimeColumnType, name: 'exception_date', nullable: true }) // original
+  // date
   exceptionDate: Date;
 
   @Column({ name: 'exception_timezone', nullable: true })
@@ -51,7 +53,7 @@ export default class CalDavEventExceptionEntity {
   @ManyToOne(() => CalDavEventEntity, (caldavEvent) => caldavEvent.exceptions, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'caldav_event_id' })
+  @JoinColumn({ name: 'caldav_event_id', referencedColumnName: 'id' })
   caldavEvent: CalDavEventEntity;
 
   @Column({ name: 'caldav_calendar_id' })
@@ -72,8 +74,7 @@ export default class CalDavEventExceptionEntity {
     userID: string,
     caldavCalendarID: string,
     event: CalDavEventObj,
-    exception: DateTimeObject,
-    eventEntity: CalDavEventEntity
+    exception: DateTimeObject
   ) {
     if (userID && event) {
       this.userID = userID;
@@ -81,7 +82,7 @@ export default class CalDavEventExceptionEntity {
       this.exceptionTimezone = event.timezone;
       this.externalID = event.externalID;
       this.calDavCalendarID = caldavCalendarID;
-      this.caldavEvent = eventEntity;
+      // this.caldavEvent = eventEntity;
       // this.caldavEventID = eventEntity.id;
     }
   }

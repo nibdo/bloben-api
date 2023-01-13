@@ -189,7 +189,10 @@ export const createTestCalendarCalendar = async (
       'freeBusyQuery',
     ],
   });
-  newCalendar.components = [CALDAV_COMPONENTS.VEVENT, CALDAV_COMPONENTS.VTODO];
+  newCalendar.components = JSON.stringify([
+    CALDAV_COMPONENTS.VEVENT,
+    CALDAV_COMPONENTS.VTODO,
+  ]);
 
   await CalDavCalendarRepository.create(newCalendar);
 

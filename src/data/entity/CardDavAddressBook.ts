@@ -10,6 +10,8 @@ import {
 } from 'typeorm';
 
 import { DAVCollection } from 'tsdav';
+import { datetimeColumnType } from '../../utils/constants';
+import { parseJSON } from '../../utils/common';
 import CalDavAccountEntity from './CalDavAccount';
 import CardDavContact from './CardDavContact';
 
@@ -21,8 +23,8 @@ export default class CardDavAddressBook {
   @Column({ name: 'display_name', nullable: false })
   displayName: string;
 
-  @Column({ name: 'data', type: 'jsonb', nullable: true })
-  data: object;
+  @Column({ name: 'data', type: 'text', nullable: true })
+  data: string;
 
   @Column({ nullable: true })
   url: string;
@@ -33,16 +35,16 @@ export default class CardDavAddressBook {
   @Column({ type: 'text', name: 'resource_type', nullable: true, array: true })
   resourceType: string[];
 
-  @Column({ type: 'timestamptz', name: 'last_update_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'last_update_at', nullable: true })
   lastUpdateAt: Date;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @Column({ type: 'uuid', name: 'caldav_account_id' })
@@ -65,7 +67,7 @@ export default class CardDavAddressBook {
       this.displayName = data.displayName;
       this.ctag = data.ctag;
       this.caldavAccountID = caldavAccountID;
-      this.data = data;
+      this.data = parseJSON(data);
     }
   }
 }

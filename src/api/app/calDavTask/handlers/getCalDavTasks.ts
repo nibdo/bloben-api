@@ -4,7 +4,9 @@ import { SOURCE_TYPE } from '../../../../data/types/enums';
 import { map } from 'lodash';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
-import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
+import CalDavEventRepository, {
+  formatSQLDateTime,
+} from '../../../../data/repository/CalDavEventRepository';
 
 interface GetCalDavTasksResponse {
   todos: CalDavTask[];
@@ -37,8 +39,8 @@ export const getCalDavTasks = async (
       SELECT 
         e.id as "id",
         e.type as type,
-        e.start_at as "startAt",
-        e.end_at as "endAt",
+        ${formatSQLDateTime('e.start_at')} as "startAt",
+        ${formatSQLDateTime('e.end_at')} as "endAt",
         e.timezone_start_at as "timezoneStartAt",
         e.summary as "summary",
         e.description as "description",
@@ -65,15 +67,15 @@ export const getCalDavTasks = async (
         AND ca.deleted_at IS NULL
         AND ca.user_id = $1
         AND c.id = $2
-        AND e.type = $5
+        AND e.type = $3
       ORDER BY
         e.external_created_at DESC,
         e.created_at DESC,
         e.summary ASC
-      LIMIT $3
-      OFFSET $4
+      LIMIT $4
+      OFFSET $5
       `,
-    [userID, calendarID, limit, offset, EVENT_TYPE.TASK]
+    [userID, calendarID, EVENT_TYPE.TASK, limit, offset]
   );
 
   const count: { count: number } =

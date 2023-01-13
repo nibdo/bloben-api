@@ -1,5 +1,4 @@
 import { Application, default as Express } from 'express';
-import { Server } from 'socket.io';
 import { default as cors } from 'cors';
 import { corsOptions } from './config/cors';
 import {
@@ -15,12 +14,12 @@ import http from 'http';
 import session from 'express-session';
 
 import { API_VERSIONS, NODE_ENV } from './utils/enums';
-import { createSocketOptions } from './config/socketio';
-import { env, redisClient } from './index';
-import { initBullQueue } from './service/BullQueue';
+import { MemoryClient, initServices, initSocketService } from './service/init';
+import { env } from './index';
 import { initCronJobs } from './jobs/init';
 import { initWebsockets } from './utils/websockets';
 import AdminRoutes from './routes/adminRoutes';
+import Logger from './utils/logger';
 import PublicRouter from './routes/publicRoutes';
 import helmet from 'helmet';
 
@@ -28,11 +27,11 @@ dotenv.config();
 
 export let BlobenApp: Application | null;
 
-const createBlobenApp = () => {
+export const createBlobenApp = () => {
   BlobenApp = null;
   BlobenApp = Express();
 
-  const redisStore = connect_redis(session);
+  const store = connect_redis(session);
 
   BlobenApp.use(helmet());
   BlobenApp.use(
@@ -50,11 +49,14 @@ const createBlobenApp = () => {
       },
     })
   );
-
-  const userSession = session(createSessionConfig(redisStore, redisClient));
   const adminSession = session(
-    createAdminSessionConfig(redisStore, redisClient)
+    createAdminSessionConfig(store, MemoryClient.redisClient)
   );
+  const userSession = session(
+    createSessionConfig(store, MemoryClient.redisClient)
+  );
+
+  Logger.info('[INIT]: Session initialized');
 
   // for nginx
   if (env.nodeEnv !== NODE_ENV.DEVELOPMENT) {
@@ -65,37 +67,42 @@ const createBlobenApp = () => {
   BlobenApp.use(bodyParser.urlencoded({ extended: false }));
   BlobenApp.use(bodyParser.json({ limit: 1024 * 100 }));
 
-  BlobenApp.use(`/api/admin/${API_VERSIONS.V1}`, adminSession, AdminRoutes);
   BlobenApp.use(`/api/app/${API_VERSIONS.V1}`, userSession, Router);
+
+  BlobenApp.use(`/api/admin/${API_VERSIONS.V1}`, adminSession, AdminRoutes);
   BlobenApp.use(`/api/${API_VERSIONS.V1}/public`, PublicRouter);
 
   BlobenApp.use(errorMiddleware);
 
+  Logger.info('[INIT]: App initialized');
+
   return BlobenApp;
 };
 
-export let io: Server = null;
-
 const createApp = (): Promise<void> => {
-  return new Promise((resolve) => {
-    // eslint-disable-next-line no-console
-    console.log(`[NODE_ENV]:  ${env.nodeEnv}`);
+  // eslint-disable-next-line no-async-promise-executor
+  return new Promise(async (resolve) => {
+    Logger.info(`[NODE_ENV]:  ${env.nodeEnv}`);
+
+    await initServices();
 
     createBlobenApp();
+
     const server = http.createServer(BlobenApp);
 
-    if (env.nodeEnv !== NODE_ENV.TEST) {
-      server.listen(env.port);
-    }
-    io = new Server(server, createSocketOptions());
-    initWebsockets();
+    await initSocketService(undefined, server);
 
-    // eslint-disable-next-line no-console
-    console.log(`Bloben Api listening at http://localhost:${env.port}`);
+    if (env.nodeEnv !== NODE_ENV.TEST) {
+      server.listen(env.port || 8080);
+    }
+
+    initWebsockets();
 
     initCronJobs();
 
-    initBullQueue();
+    Logger.info(`[INIT]: Bloben Api listening at http://localhost:${env.port}`);
+    // eslint-disable-next-line no-console
+    console.log(`[INIT]: Bloben Api listening at http://localhost:${env.port}`);
 
     resolve();
   });

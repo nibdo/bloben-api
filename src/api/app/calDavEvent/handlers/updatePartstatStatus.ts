@@ -11,7 +11,7 @@ import {
 import { DavService } from '../../../../service/davService';
 import { InviteService } from '../../../../service/InviteService';
 import { createCommonResponse } from '../../../../utils/common';
-import { io } from '../../../../app';
+import { electronService, socketService } from '../../../../service/init';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 
 export const updatePartstatStatus = async (
@@ -51,14 +51,16 @@ export const updatePartstatStatus = async (
 
   if (eventTemp.attendees?.length) {
     await CalDavEventRepository.getRepository().update(eventID, {
-      attendees: eventTemp.attendees,
+      attendees: JSON.stringify(eventTemp.attendees),
     });
   }
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
+  await electronService.processWidgetFile();
 
   return createCommonResponse('Event partstat status updated');
 };

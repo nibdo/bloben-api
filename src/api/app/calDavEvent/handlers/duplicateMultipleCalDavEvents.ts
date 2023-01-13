@@ -17,11 +17,13 @@ import { DateTime } from 'luxon';
 import { DavService } from '../../../../service/davService';
 import { InviteService } from '../../../../service/InviteService';
 import { Job } from 'bullmq';
-import { eventResultToCalDavEventObj } from './updateRepeatedCalDavEvent';
+import { electronService, socketService } from '../../../../service/init';
+import {
+  eventResultToCalDavEventObj,
+  formatEventRawToResult,
+} from '../../../../utils/format';
 import { find, forEach } from 'lodash';
-import { formatEventRawToResult } from '../../../../utils/format';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
-import { io } from '../../../../app';
 import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import { throwError } from '../../../../utils/errorCodes';
 import { v4 } from 'uuid';
@@ -158,9 +160,10 @@ export const duplicateMultipleCalDavEvents = async (
       `${successes} events created${failed > 0 ? `, ${failed} failed` : ''}`
     );
 
-    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    socketService.emit(
+      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
       SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+      `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
     );
 
     const emailPromises: any = [];
@@ -186,6 +189,8 @@ export const duplicateMultipleCalDavEvents = async (
     });
 
     await Promise.all(emailPromises);
+
+    await electronService.processWidgetFile();
 
     return res.json(response);
   } catch (e) {

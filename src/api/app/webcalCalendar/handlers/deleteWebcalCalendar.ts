@@ -9,7 +9,7 @@ import {
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
 
-import { io } from '../../../../app';
+import { socketService } from '../../../../service/init';
 import { throwError } from '../../../../utils/errorCodes';
 import WebcalCalendarEntity from '../../../../data/entity/WebcalCalendarEntity';
 import WebcalCalendarRepository from '../../../../data/repository/WebcalCalendarRepository';
@@ -30,23 +30,16 @@ export const deleteWebcalCalendar = async (
 
   await WebcalCalendarRepository.getRepository().delete(webcalCalendar.id);
 
-  // io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
-  //   SOCKET_CHANNEL.CALENDAR,
-  //   createSocketCrudMsg(
-  //     webcalCalendar.id,
-  //     new Date().toISOString(),
-  //     SOCKET_CRUD_ACTION.DELETE,
-  //     SOCKET_APP_TYPE.WEBCAL_CALENDAR
-  //   )
-  // );
-
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.WEBCAL_CALENDARS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`
   );
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`).emit(
+
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${user.id}`
   );
 
   return createCommonResponse();

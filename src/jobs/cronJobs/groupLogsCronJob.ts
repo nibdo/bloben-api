@@ -1,6 +1,6 @@
 import { GROUP_LOG_KEY, LOG_TAG } from '../../utils/enums';
+import { MemoryClient } from '../../service/init';
 import { forEach } from 'lodash';
-import { redisClient } from '../../index';
 import logger from '../../utils/logger';
 
 export const groupLogsCronJob = async () => {
@@ -9,7 +9,7 @@ export const groupLogsCronJob = async () => {
   const promises: any = [];
 
   forEach(groupLogEnums, (groupLogEnum) => {
-    promises.push(redisClient.get(groupLogEnum[1]));
+    promises.push(MemoryClient.get(groupLogEnum[1]));
   });
 
   const resultPromises = await Promise.all(promises);
@@ -21,7 +21,7 @@ export const groupLogsCronJob = async () => {
   const cleanCachePromises: any = [];
 
   forEach(groupLogEnums, (groupLogEnum) => {
-    cleanCachePromises.push(redisClient.del(groupLogEnum[1]));
+    cleanCachePromises.push(MemoryClient.del(groupLogEnum[1]));
   });
 
   await Promise.all(cleanCachePromises);

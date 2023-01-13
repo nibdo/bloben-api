@@ -9,9 +9,13 @@ import {
 } from 'typeorm';
 import { DateTime } from 'luxon';
 import { EventJSON } from 'ical-js-parser';
-import { formatDTEndValue, formatDTStartValue } from '../../utils/davHelper';
+import { datetimeColumnType } from '../../utils/constants';
+import {
+  formatDTEndValueJsDate,
+  formatDTStartValueJsDate,
+} from '../../utils/davHelper';
 import { map } from 'lodash';
-import { removeArtifacts } from '../../utils/common';
+import { parseJSON, removeArtifacts } from '../../utils/common';
 import ReminderEntity from './ReminderEntity';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 import WebcalEventExceptionEntity from './WebcalEventExceptionEntity';
@@ -24,10 +28,10 @@ export default class WebcalEventEntity {
   @Column({ nullable: true })
   summary: string;
 
-  @Column({ type: 'timestamptz', name: 'start_at' })
+  @Column({ type: datetimeColumnType, name: 'start_at' })
   startAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'end_at' })
+  @Column({ type: datetimeColumnType, name: 'end_at' })
   endAt: Date;
 
   @Column({ name: 'timezone_start_at', nullable: true })
@@ -49,26 +53,22 @@ export default class WebcalEventEntity {
   location: string;
 
   @Column({
-    type: 'jsonb',
-    array: false,
-    default: () => "'[]'",
+    type: 'text',
     nullable: true,
   })
-  attendees: object;
+  attendees: string;
 
-  @Column({ name: 'organizer', type: 'json', nullable: true })
-  organizer: object;
+  @Column({ name: 'organizer', type: 'text', nullable: true })
+  organizer: string;
 
   @Column({ name: 'r_rule', nullable: true })
   rRule: string;
 
   @Column({
-    type: 'jsonb',
-    array: false,
-    default: () => "'[]'",
+    type: 'text',
     nullable: true,
   })
-  exceptions: object;
+  exceptions: string;
 
   @Column({ nullable: false, default: 1 })
   sequence: number;
@@ -82,13 +82,13 @@ export default class WebcalEventEntity {
   )
   webcalEventException: WebcalEventExceptionEntity[];
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'updated_at' })
+  @Column({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @Column({ type: 'uuid', name: 'external_calendar_id' })
@@ -115,13 +115,17 @@ export default class WebcalEventEntity {
       const isAllDay = data?.dtstart?.value?.length === '20220318'.length;
 
       this.summary = data.summary;
-      this.startAt = formatDTStartValue(data, isAllDay);
+      if (data.dtstart.value) {
+        this.startAt = formatDTStartValueJsDate(data, isAllDay);
+      }
+      if (data.dtend.value) {
+        this.endAt = formatDTEndValueJsDate(data, isAllDay);
+      }
       this.timezoneStartAt = isAllDay
         ? 'floating'
         : data.dtstart.timezone
         ? data.dtstart.timezone
         : defaultTimezone;
-      this.endAt = formatDTEndValue(data, isAllDay);
       this.timezoneEndAt = isAllDay
         ? 'floating'
         : data.dtend?.timezone
@@ -129,16 +133,18 @@ export default class WebcalEventEntity {
         : defaultTimezone;
       this.externalID = data.uid;
       this.organizer = data.organizer
-        ? ({
+        ? parseJSON({
             ...data.organizer,
             mailto: removeArtifacts(data.organizer.mailto),
           } as any)
         : null;
-      this.attendees = map(data.attendee, (item) => ({
-        ...item,
-        CN: removeArtifacts(item.CN),
-        mailto: removeArtifacts(item.mailto),
-      })) as any;
+      this.attendees = parseJSON(
+        map(data.attendee, (item) => ({
+          ...item,
+          CN: removeArtifacts(item.CN),
+          mailto: removeArtifacts(item.mailto),
+        })) as any
+      );
       this.description = data.description;
       this.location = data.location;
       this.updatedAt = DateTime.fromISO(data.lastModified?.value)

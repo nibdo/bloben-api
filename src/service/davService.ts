@@ -34,10 +34,12 @@ import {
 } from '../utils/davAccountHelper';
 import { EmailEventJobData } from '../jobs/queueJobs/processEmailEventJob';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../data/types/enums';
-import { eventResultToCalDavEventObj } from '../api/app/calDavEvent/handlers/updateRepeatedCalDavEvent';
+import {
+  eventResultToCalDavEventObj,
+  formatEventRawToCalDavObj,
+} from '../utils/format';
 import { filter, find, forEach, map } from 'lodash';
-import { formatEventRawToCalDavObj } from '../utils/format';
-import { handleDavResponse } from '../utils/common';
+import { handleDavResponse, parseToJSON } from '../utils/common';
 import { throwError } from '../utils/errorCodes';
 import { v4 } from 'uuid';
 import CalDavAccountRepository, {
@@ -973,8 +975,8 @@ const formatAttendeesSingleEvent = (
   event: CalDavEventsRaw | CalDavEventObj,
   partstat: ATTENDEE_PARTSTAT,
   userMailto: string
-) => {
-  return map(event.attendees, (item) => {
+): Attendee[] => {
+  return map(parseToJSON(event.attendees), (item) => {
     if (item.mailto === userMailto) {
       return {
         ...item,

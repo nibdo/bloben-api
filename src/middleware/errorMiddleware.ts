@@ -36,12 +36,12 @@ export default (
     if (error.appError) {
       return res
         .status(error.code)
-        .json({ code: error.code, message: error.message })
-        .send();
+        .json({ code: error.code, message: error.message });
     } else {
       if (
         env.nodeEnv === NODE_ENV.DEVELOPMENT ||
-        env.nodeEnv === NODE_ENV.TEST
+        env.nodeEnv === NODE_ENV.TEST ||
+        env.isElectron
       ) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -56,8 +56,7 @@ export default (
       );
       return res
         .status(500)
-        .json({ code: 500, message: 'Something went wrong' })
-        .send();
+        .json({ code: 500, message: 'Something went wrong' });
     }
   } catch (e) {
     if (env.nodeEnv === NODE_ENV.DEVELOPMENT || env.nodeEnv === NODE_ENV.TEST) {
@@ -71,9 +70,6 @@ export default (
       req.method,
       req.originalUrl
     );
-    return res
-      .status(500)
-      .json({ code: 500, message: 'Something went wrong' })
-      .send();
+    return res.status(500).json({ code: 500, message: 'Something went wrong' });
   }
 };

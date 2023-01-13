@@ -1,13 +1,5 @@
 import { Request, Response } from 'express';
-
-import { DateTime } from 'luxon';
-import { EventResult } from 'bloben-interface';
-import { formatEventRawToResult } from '../../../../utils/format';
-import { getRepeatedEvents } from '../helpers/getRepeatedEvents';
-import { getWebcalEvents } from '../helpers/getWebCalEvents';
-import { map } from 'lodash';
-import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
-import LuxonHelper from '../../../../utils/luxonHelper';
+import { getRangeEventsFunc } from '../helpers/getInRangeHelper';
 
 interface Query {
   rangeFrom: string;
@@ -29,54 +21,11 @@ export const getEventsInRange = async (
   const { rangeFrom, rangeTo, isDark, showTasks } =
     req.query as unknown as Query;
 
-  let result: EventResult[] = [];
-
-  // try to get events from cache
-  // const cacheResult = await CalDavCacheService.get(userID, {
-  //   rangeFrom,
-  //   rangeTo,
-  // });
-
-  // if (cacheResult) {
-  //   return cacheResult;
-  // } else {
-  const rangeFromDateTime: DateTime = LuxonHelper.parseToDateTime(
-    rangeFrom as string
+  return await getRangeEventsFunc(
+    userID,
+    rangeFrom,
+    rangeTo,
+    showTasks,
+    isDark
   );
-  const rangeToDateTime: DateTime = LuxonHelper.parseToDateTime(
-    rangeTo as string
-  );
-
-  const promises: any[] = [
-    CalDavEventRepository.getEventsInRange(
-      userID,
-      rangeFrom,
-      rangeTo,
-      showTasks
-    ),
-    getRepeatedEvents(
-      userID,
-      rangeFromDateTime,
-      rangeToDateTime,
-      undefined,
-      showTasks
-    ),
-    getWebcalEvents(userID, rangeFrom, rangeTo, isDark),
-  ];
-
-  const [normalEvents, repeatedEvents, webCalEvents] = await Promise.all(
-    promises
-  );
-
-  const calDavEventsNormal = map(normalEvents, (event) =>
-    formatEventRawToResult(event, isDark)
-  );
-  const calDavEventsRepeated = map(repeatedEvents, (event) =>
-    formatEventRawToResult(event, isDark)
-  );
-
-  // @ts-ignore
-  result = [...calDavEventsNormal, ...calDavEventsRepeated, ...webCalEvents];
-
-  return result;
 };

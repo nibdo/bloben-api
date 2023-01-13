@@ -1,12 +1,5 @@
 import { Request, Response } from 'express';
 
-import {
-  BULL_QUEUE,
-  LOG_TAG,
-  SOCKET_CHANNEL,
-  SOCKET_MSG_TYPE,
-  SOCKET_ROOM_NAMESPACE,
-} from '../../../../utils/enums';
 import { CALENDAR_METHOD } from '../../../../utils/ICalHelper';
 import { CalDavEventObj } from '../../../../utils/davHelper';
 import {
@@ -19,14 +12,23 @@ import {
 } from '../../../../utils/davAccountHelper';
 import { DavService } from '../../../../service/davService';
 import { InviteService } from '../../../../service/InviteService';
+import {
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../../utils/enums';
+import {
+  QueueClient,
+  electronService,
+  socketService,
+} from '../../../../service/init';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
-import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import {
   createCommonResponse,
   isExternalEmailInvite,
 } from '../../../../utils/common';
 import { excludeEmailsFromAttendees } from './createCalDavEvent';
-import { io } from '../../../../app';
 import { map } from 'lodash';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
@@ -237,17 +239,20 @@ export const deleteRepeatedCalDavEvent = async (
     throw throwError(409, `Cannot delete event: ${result.response.statusText}`);
   }
 
-  await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
+  await QueueClient.syncCalDav(userID);
 
   await CalDavEventRepository.getRepository().delete({
     href: body.url,
     id: body.id,
   });
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
+
+  await electronService.processWidgetFile();
 
   return createCommonResponse('Event deleted');
 };

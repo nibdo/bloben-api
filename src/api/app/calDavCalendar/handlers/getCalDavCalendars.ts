@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 
 import { CalendarAlarms, GetCalDavCalendar } from 'bloben-interface';
 import { map } from 'lodash';
+import { parseToJSON } from '../../../../utils/common';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 
 export const formatCalendarResponse = (
@@ -13,10 +14,10 @@ export const formatCalendarResponse = (
     displayName: calendar.customDisplayName || calendar.displayName,
     url: calendar.url,
     isHidden: calendar.isHidden,
-    components: calendar.components,
+    components: parseToJSON(calendar.components),
     color: calendar.customColor || calendar.color || null,
     timezone: calendar.timezone || null,
-    alarms: calendar.alarms || [],
+    alarms: parseToJSON(calendar.alarms) || [],
     calDavAccountID: calDavAccount
       ? calDavAccount.id
       : calendar.calDavAccountID,
@@ -68,7 +69,7 @@ export const getCalDavCalendars = async (
         ca.user_id = $1
         AND c.deleted_at IS NULL
         AND ca.account_type = 'caldav'
-        ${component ? 'AND $2 = ANY(c.components)' : ''};
+        ${component ? 'AND $2 IN (c.components)' : ''};
     `,
       parameters
     );

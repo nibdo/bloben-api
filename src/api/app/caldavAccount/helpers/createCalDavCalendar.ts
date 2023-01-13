@@ -3,6 +3,7 @@ import { DAVCalendar } from 'tsdav';
 import { DateTime } from 'luxon';
 import { GetCalDavCalendar } from 'bloben-interface';
 import { QueryRunner } from 'typeorm';
+import { parseJSON } from '../../../../utils/common';
 import CalDavAccountEntity from '../../../../data/entity/CalDavAccount';
 import CalDavCalendarEntity from '../../../../data/entity/CalDavCalendar';
 import CalDavTaskSettingsEntity from '../../../../data/entity/CalDavTaskSettings';
@@ -40,9 +41,9 @@ export const createCalDavCalendar = async (
   calDavCalendar.displayName = data.displayName;
   calDavCalendar.timezone = parseCalDavCalendarTimezone(data.timezone);
   calDavCalendar.ctag = data.ctag;
-  calDavCalendar.data = JSON.stringify(data);
+  calDavCalendar.data = parseJSON(data);
   calDavCalendar.calDavAccount = calDavAccountEnt;
-  calDavCalendar.components = data.components;
+  calDavCalendar.components = parseJSON(data.components);
   calDavCalendar.color =
     // @ts-ignore
     typeof data.calendarColor === 'string' ? data.calendarColor : 'indigo';
@@ -72,7 +73,7 @@ export const updateCalDavCalendar = async (
     displayName: data.displayName,
     timezone: parseCalDavCalendarTimezone(data.timezone),
     ctag: data.ctag,
-    data: JSON.stringify(data),
+    data: parseJSON(data),
     calDavAccount: calDavAccountEnt,
     color:
       // @ts-ignore

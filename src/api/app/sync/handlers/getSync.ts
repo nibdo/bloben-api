@@ -1,18 +1,13 @@
+import { CommonResponse } from 'bloben-interface';
+import { Request, Response } from 'express';
 import {
-  BULL_QUEUE,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse } from 'bloben-interface';
-import { Request, Response } from 'express';
-import {
-  calDavSyncBullQueue,
-  cardDavBullQueue,
-  webcalSyncBullQueue,
-} from '../../../../service/BullQueue';
+
+import { QueueClient, socketService } from '../../../../service/init';
 import { createCommonResponse } from '../../../../utils/common';
-import { io } from '../../../../app';
 
 export const getSync = async (
   req: Request,
@@ -20,14 +15,15 @@ export const getSync = async (
 ): Promise<CommonResponse> => {
   const { userID } = res.locals;
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.SYNCING, value: false }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.SYNCING, value: false })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
 
-  await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
-  await webcalSyncBullQueue.add(BULL_QUEUE.WEBCAL_SYNC, { userID });
-  await cardDavBullQueue.add(BULL_QUEUE.CARDDAV_SYNC, { userID });
+  await QueueClient.syncCalDav(userID);
+  await QueueClient.syncCardDav(userID);
+  await QueueClient.syncWebcal(userID);
 
   return createCommonResponse('Sync success');
 };

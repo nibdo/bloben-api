@@ -7,7 +7,10 @@ import {
 } from 'bloben-interface';
 import { CryptoAes } from '../../../../utils/CryptoAes';
 import { LOG_TAG } from '../../../../utils/enums';
-import { createCommonResponse } from '../../../../utils/common';
+import {
+  checkIfHasDefaultEmailConfig,
+  createCommonResponse,
+} from '../../../../utils/common';
 import { createTransport } from 'nodemailer';
 import { env } from '../../../../index';
 import {
@@ -78,12 +81,18 @@ export const createUserEmailConfig = async (
     throw throwError(409, 'Cannot connect to email server', req);
   }
 
+  const hasDefaultConfig = await checkIfHasDefaultEmailConfig(userID);
+
   const userEmailConfig = new UserEmailConfigEntity(
     userID,
     data,
     body,
     !!body.imap
   );
+
+  if (!hasDefaultConfig) {
+    userEmailConfig.isDefault = true;
+  }
 
   await UserEmailConfigRepository.getRepository().save(userEmailConfig);
 

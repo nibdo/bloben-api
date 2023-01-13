@@ -2,6 +2,7 @@
 /node_modules/
 .env
 /env/
+logs
 /build/
 /.tsconfig.json
 .env.docker
@@ -12,3 +13,9 @@
 /.husky/
 
 /modules/bloben-interface/dist/
+/data.sqlite
+/tmp/
+./data.sqlite
+data.sqlite
+*.sqlite
+/src/logs/

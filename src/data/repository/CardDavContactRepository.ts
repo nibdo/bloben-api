@@ -1,6 +1,11 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
-import { getOneResult } from '../../utils/common';
+import {
+  createArrayQueryReplacement,
+  getOneResult,
+  parseToJSON,
+} from '../../utils/common';
+import { map } from 'lodash';
 import CardDavContact from '../entity/CardDavContact';
 
 @EntityRepository(CardDavContact)
@@ -19,13 +24,13 @@ export default class CardDavContactRepository extends Repository<CardDavContact>
     INNER JOIN carddav_address_books ab ON c.carddav_address_book_id = ab.id
     INNER JOIN caldav_accounts ca ON ca.id = ab.caldav_account_id
     WHERE
-        c.url = ANY($1)
-        AND ca.user_id = $2
+        ca.user_id = $1
+        AND c.url IN (${createArrayQueryReplacement(urls, 2)})
         AND c.deleted_at IS NULL
         AND ca.deleted_at IS NULL
         AND ab.deleted_at IS NULL           
         `,
-        [urls, userID]
+        [userID, ...urls]
       );
 
     return rawResult;
@@ -41,13 +46,13 @@ export default class CardDavContactRepository extends Repository<CardDavContact>
     INNER JOIN carddav_address_books ab ON c.carddav_address_book_id = ab.id
     INNER JOIN caldav_accounts ca ON ca.id = ab.caldav_account_id
     WHERE
-        c.emails = $1
+        c.emails LIKE $1
         AND ca.user_id = $2
         AND c.deleted_at IS NULL
         AND ca.deleted_at IS NULL
         AND ab.deleted_at IS NULL           
         `,
-        [[email], userID]
+        [`%${email}%`, userID]
       );
 
     return rawResult;
@@ -94,8 +99,8 @@ export default class CardDavContactRepository extends Repository<CardDavContact>
     INNER JOIN carddav_address_books ab ON c.carddav_address_book_id = ab.id
     INNER JOIN caldav_accounts ca ON ca.id = ab.caldav_account_id
     WHERE
-        (ARRAY_TO_STRING(c.emails, ',') ILIKE $1
-        OR c.full_name ILIKE $1)
+        c.emails LIKE $1
+        OR c.full_name LIKE $1
         AND ca.user_id = $2
         AND c.deleted_at IS NULL
         AND ca.deleted_at IS NULL
@@ -131,7 +136,10 @@ export default class CardDavContactRepository extends Repository<CardDavContact>
         [userID, addressBookID]
       );
 
-    return rawResult;
+    return map(rawResult, (item) => ({
+      ...item,
+      emails: parseToJSON(item.emails),
+    }));
   }
 
   public static async getNewest(userID: string) {

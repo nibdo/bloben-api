@@ -13,6 +13,7 @@ export const mochaHooks = function () {
       mockSocketio();
       mockRedisService();
       mockBullQueue();
+
       await initDatabase();
     },
     async afterAll() {

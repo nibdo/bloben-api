@@ -1,6 +1,7 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 
 import { ROLE } from '../types/enums';
+import { getOneResult } from '../../utils/common';
 import UserEntity from '../entity/UserEntity';
 
 @EntityRepository(UserEntity)
@@ -60,6 +61,20 @@ export default class UserRepository extends Repository<UserEntity> {
         'emailsAllowed',
       ],
     });
+  }
+
+  public static async getFirstUser(): Promise<{ id: string } | undefined> {
+    const result = await getRepository(UserEntity).query(
+      `
+      SELECT 
+        u.id as id
+      FROM users u
+      WHERE u.role = $1
+    `,
+      [ROLE.USER]
+    );
+
+    return getOneResult(result);
   }
 
   public static async create(data: UserEntity) {

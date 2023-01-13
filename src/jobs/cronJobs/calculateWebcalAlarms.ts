@@ -1,6 +1,5 @@
-import { BULL_QUEUE } from '../../utils/enums';
 import { CalendarAlarms } from 'bloben-interface';
-import { webcalRemindersBullQueue } from '../../service/BullQueue';
+import { QueueClient } from '../../service/init';
 import WebcalCalendarRepository from '../../data/repository/WebcalCalendarRepository';
 import logger from '../../utils/logger';
 
@@ -31,9 +30,7 @@ export const calculateWebcalAlarms = async () => {
 
     // schedule sync job for each user
     for (const webcalCalendar of webcalCalendars) {
-      await webcalRemindersBullQueue.add(BULL_QUEUE.WEBCAL_REMINDER, {
-        webcalCalendarID: webcalCalendar.id,
-      });
+      await QueueClient.webcalReminders(webcalCalendar.id);
     }
   } catch (e) {
     logger.error('[CRON]: Calculate webcal reminders error', e);
