@@ -211,7 +211,6 @@ export const createTestServer = () => {
     return createElectronTestAppNoUser();
   }
   const redisConfig: any = createRedisConfig();
-  let redisClient;
   if (!isElectron) {
     redisClient = new Redis(redisConfig);
   }

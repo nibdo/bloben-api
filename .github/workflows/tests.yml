@@ -64,3 +64,12 @@ jobs:
           SMTP_PASSWORD: asfasf
           ENCRYPTION_PASSWORD: sdoifjsdiog
         run: npm run test-pipeline
+      - name: Run electron tests
+        env:
+          NODE_ENV: development
+          HOST: localhost
+          SESSION_SECRET: asdasd
+          OTP_SECRET: vmiorigvds
+          APP_DOMAIN: test1
+          ENCRYPTION_PASSWORD: sdoifjsdiog
+        run: npm run prepare-electron && npm run test-integration-electron

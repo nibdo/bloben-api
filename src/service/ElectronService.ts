@@ -1,5 +1,6 @@
 import * as os from 'os';
 import { DateTime } from 'luxon';
+import { NODE_ENV } from '../utils/enums';
 import { ROLE } from '../data/types/enums';
 import { getRangeEventsFunc } from '../api/app/event/helpers/getInRangeHelper';
 import { sortBy } from 'lodash';
@@ -24,7 +25,7 @@ export class ElectronService {
    * Get events for today and tomorrow
    */
   public processWidgetFile = async () => {
-    if (!this.isElectron) {
+    if (!this.isElectron || process.env.NODE_ENV === NODE_ENV.TEST) {
       return;
     }
 
