@@ -15,7 +15,7 @@ RUN npm run build-web
 
 RUN mkdir /usr/app/api
 
-RUN cp -r build/* /usr/app/api
+RUN cp -r ./* /usr/app/api
 
 # delete build
 RUN rm -r build
@@ -27,6 +27,10 @@ RUN npm run build-electron
 
 RUN mkdir /usr/app/electron
 
-RUN cp -r build/* /usr/app/electron
+RUN cp -r ./* /usr/app/electron
 
 ENV NODE_ENV production
+
+WORKDIR /usr/app/api
+
+RUN rm -r /usr/app/source

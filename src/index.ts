@@ -35,7 +35,6 @@ const checkIfDatabaseWasCreated = async () => {
     }
   }
 
-  await initConnection.close();
   await initConnection.destroy();
 
   return wasSynced;
