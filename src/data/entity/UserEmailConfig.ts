@@ -10,6 +10,8 @@ import {
 } from 'typeorm';
 
 import { CreateUserEmailConfigRequest } from 'bloben-interface';
+import { datetimeColumnType } from '../../utils/constants';
+import { parseJSON } from '../../utils/common';
 import CalDavCalendarEntity from './CalDavCalendar';
 import UserEntity from './UserEntity';
 
@@ -31,8 +33,8 @@ export default class UserEmailConfigEntity {
   @Column({ name: 'has_imap', default: false })
   hasImap: boolean;
 
-  @Column({ type: 'text', name: 'aliases', nullable: true, array: true })
-  aliases: string[];
+  @Column({ type: 'text', name: 'aliases', nullable: true })
+  aliases: string;
 
   @Column({ name: 'default_alias', nullable: true })
   defaultAlias: string;
@@ -40,7 +42,7 @@ export default class UserEmailConfigEntity {
   @Column({ name: 'is_default', default: false })
   isDefault: boolean;
 
-  @Column({ type: 'timestamptz', name: 'last_sync_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'last_sync_at', nullable: true })
   lastSyncAt: Date;
 
   @Column({ name: 'last_seq', nullable: true })
@@ -55,10 +57,10 @@ export default class UserEmailConfigEntity {
   @JoinColumn({ name: 'calendar_for_import_id', referencedColumnName: 'id' })
   calendarForImport: CalDavCalendarEntity;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
   constructor(
@@ -72,7 +74,7 @@ export default class UserEmailConfigEntity {
       this.data = data;
       this.imapSyncingInterval = body.imapSyncingInterval;
       this.hasImap = hasImap;
-      this.aliases = body.aliases;
+      this.aliases = parseJSON(body.aliases);
       this.calendarForImportID = body.calendarForImportID;
       this.defaultAlias = body.defaultAlias;
     }

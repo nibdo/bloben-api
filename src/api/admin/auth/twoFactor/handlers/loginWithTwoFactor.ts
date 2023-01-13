@@ -6,17 +6,17 @@ import {
   LoginWithTwoFactorAdminResponse,
   LoginWithTwoFactorRequest,
 } from 'bloben-interface';
+import { MemoryClient } from '../../../../../service/init';
 import { ROLE } from '../../../../../data/types/enums';
 import {
   TRUSTED_BROWSER_EXPIRATION,
   addUserToSessionOnSuccessAuth,
 } from '../../../../../utils/common';
 import { getTrustedBrowserRedisKey } from '../../../../../service/RedisService';
-import { redisClient } from '../../../../../index';
 import { throwError } from '../../../../../utils/errorCodes';
 import UserEntity from '../../../../../data/entity/UserEntity';
 import UserRepository from '../../../../../data/repository/UserRepository';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import logger from '../../../../../utils/logger';
 
 export const loginWithTwoFactor = async (
@@ -76,7 +76,7 @@ export const loginWithTwoFactor = async (
 
   // save browserID as trusted to disable 2FA
   if (browserID) {
-    await redisClient.set(
+    await MemoryClient.set(
       getTrustedBrowserRedisKey(
         REDIS_PREFIX.BROWSER_ID_ADMIN,
         user.id,

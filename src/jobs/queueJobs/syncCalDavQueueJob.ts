@@ -7,7 +7,7 @@ import {
 import { Job } from 'bullmq';
 import { groupBy } from 'lodash';
 import { groupLogs } from '../../utils/logger';
-import { io } from '../../app';
+import { socketService } from '../../service/init';
 import { syncCalDavEvents } from '../../utils/davHelper';
 import CalDavAccountRepository from '../../data/repository/CalDavAccountRepository';
 
@@ -36,15 +36,17 @@ export const syncCalDavQueueJob = async (job: Job): Promise<void> => {
 
     // notify to refetch if data changed
     if (wasChanged) {
-      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+      socketService.emit(
+        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
         SOCKET_CHANNEL.SYNC,
-        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+        `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
       );
     }
 
-    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    socketService.emit(
+      JSON.stringify({ type: SOCKET_MSG_TYPE.SYNCING }),
       SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: SOCKET_MSG_TYPE.SYNCING, value: false })
+      `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
     );
   }
 };

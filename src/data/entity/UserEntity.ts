@@ -11,6 +11,7 @@ import { v4 } from 'uuid';
 
 import { AdminCreateUserRequest, GetProfileResponse } from 'bloben-interface';
 import { ROLE } from '../types/enums';
+import { datetimeColumnType } from '../../utils/constants';
 import CalDavAccountEntity from './CalDavAccount';
 import CalendarSettingsEntity from './CalendarSettings';
 import UserEmailConfigEntity from './UserEmailConfig';
@@ -60,13 +61,13 @@ export default class UserEntity {
   @OneToOne(() => CalendarSettingsEntity)
   calendarSettings: CalendarSettingsEntity;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   constructor(body: AdminCreateUserRequest) {

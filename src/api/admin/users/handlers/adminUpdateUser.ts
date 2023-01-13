@@ -6,7 +6,7 @@ import { throwError } from '../../../../utils/errorCodes';
 import { validateUsername } from './adminCreateUser';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export const adminUpdateUser = async (
   req: Request,

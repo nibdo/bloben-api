@@ -9,16 +9,20 @@ import { CalDavEvent, CommonResponse, Range } from 'bloben-interface';
 import { CalDavEventsRaw } from '../data/repository/CalDavEventRepository';
 import { DAVResponse } from 'tsdav';
 import { DateTime, Interval } from 'luxon';
+import { MemoryClient } from '../service/init';
+import { Organizer } from 'ical-js-parser';
 import { Request } from 'express';
 import { SOCKET_APP_TYPE, SOCKET_CRUD_ACTION } from '../data/types/enums';
 import { WEEKDAY_START } from 'kalend/common/enums';
-import { forEach } from 'lodash';
+import { createConnection } from 'typeorm';
+import { createORMConfig } from '../config/ormconfig';
+import { find, forEach, map } from 'lodash';
 import { getMonthDays } from './calendarDays';
 import { getTrustedBrowserRedisKey } from '../service/RedisService';
 import { parseDurationString } from './caldavAlarmHelper';
-import { redisClient } from '../index';
 import { throwError } from './errorCodes';
 import Datez from 'datez';
+import UserEmailConfigRepository from '../data/repository/UserEmailConfigRepository';
 import UserEntity from '../data/entity/UserEntity';
 import logger from './logger';
 
@@ -449,9 +453,12 @@ export const getDateTime = (date: string | Date) => {
 };
 
 export const getUserMailto = (event: CalDavEventsRaw) => {
-  return event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
-    ? event.props?.[BLOBEN_EVENT_KEY.INVITE_TO]
-    : event.organizer.mailto;
+  const props = parseToJSON(event.props);
+  const organizer: Organizer | null = parseToJSON(event.organizer);
+
+  return props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+    ? props?.[BLOBEN_EVENT_KEY.INVITE_TO]
+    : organizer?.mailto;
 };
 
 export const addUserToSessionOnSuccessAuth = (
@@ -473,7 +480,7 @@ export const checkTrustedBrowser = async (
     ? REDIS_PREFIX.BROWSER_ID_ADMIN
     : REDIS_PREFIX.BROWSER_ID_APP;
   // check if browser is trusted and does not need 2FA code
-  const savedBrowserID = await redisClient.get(
+  const savedBrowserID = await MemoryClient.get(
     getTrustedBrowserRedisKey(prefix, userID, browserID)
   );
 
@@ -488,3 +495,92 @@ export const checkTrustedBrowser = async (
 };
 
 export const TRUSTED_BROWSER_EXPIRATION = 60 * 60 * 24 * 7; // 7 days
+
+export const parseToJSON = (value?: any) => {
+  if (value) {
+    if (typeof value === 'string') {
+      return JSON.parse(value);
+    }
+
+    if (typeof value === 'object') {
+      return value;
+    }
+  }
+
+  return null;
+};
+
+export const parseJSON = (value?: any) => {
+  if (value && typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+
+  if (value && typeof value === 'string') {
+    return value;
+  }
+
+  return null;
+};
+
+export const parseBoolean = (value: boolean | number) => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  return value === 1;
+};
+
+export const createZuluDateTime = (date: string) => {
+  if (typeof date === 'string') {
+    if (date?.slice(-1) !== 'Z') {
+      return `${date}Z`;
+    }
+  }
+
+  return date;
+};
+
+export const createArrayQueryReplacement = (data: string[], order: number) => {
+  const result = map(data, (item, index) => {
+    return `$${index + order}`;
+  });
+
+  return result.join(',');
+};
+
+export const checkIfDatabaseWasCreated = async () => {
+  let wasSynced = false;
+
+  const initConnection = await createConnection(createORMConfig());
+  try {
+    const dbResult = await initConnection.query(
+      `SELECT id from server_settings`
+    );
+    if (dbResult?.length) {
+      wasSynced = true;
+    }
+  } catch (e) {
+    if (e.message === 'SQLITE_ERROR: no such table: server_settings') {
+      logger?.info('[DATABASE]: Initial sync SQLITE database');
+    }
+  }
+
+  await initConnection.close();
+
+  return wasSynced;
+};
+
+export const checkIfHasDefaultEmailConfig = async (userID: string) => {
+  let hasDefaultConfig = true;
+
+  const existingConfigs = await UserEmailConfigRepository.findByUserID(userID);
+
+  if (
+    !existingConfigs.length ||
+    !find(existingConfigs, (item) => item.isDefault)
+  ) {
+    hasDefaultConfig = false;
+  }
+
+  return hasDefaultConfig;
+};

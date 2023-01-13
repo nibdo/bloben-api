@@ -1,19 +1,34 @@
-import { BULL_QUEUE, GROUP_LOG_KEY } from '../../utils/enums';
-import { calDavSyncBullQueue } from '../../service/BullQueue';
+import { GROUP_LOG_KEY } from '../../utils/enums';
+import { QueueClient, socketService } from '../../service/init';
 import { getUserIDFromWsRoom } from '../../utils/common';
-import { groupLogs } from '../../utils/logger';
-import { io } from '../../app';
+import { isElectron } from '../../config/env';
+import Logger, { groupLogs } from '../../utils/logger';
+import UserRepository from '../../data/repository/UserRepository';
 
 /**
  * Get users connected with ws for more frequent sync
  */
 export const syncCalDavCronJobConnectedUsers = async (): Promise<void> => {
+  if (isElectron) {
+    const user = await UserRepository.getRepository().findOne({
+      select: ['id'],
+    });
+
+    if (user) {
+      await QueueClient.syncCalDav(user.id);
+
+      await Logger.info('[SYNC]: CalDAV data');
+    }
+
+    return;
+  }
+
   await groupLogs(
     GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
     'syncCalDavCronJobConnectedUsers start'
   );
 
-  const socketClients = io.sockets.adapter.rooms;
+  const socketClients = socketService.io?.sockets?.adapter?.rooms;
 
   const activeUserIDs: string[] = [];
 
@@ -25,6 +40,6 @@ export const syncCalDavCronJobConnectedUsers = async (): Promise<void> => {
 
   // schedule sync job for each user
   for (const userID of activeUserIDs) {
-    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID: userID });
+    await QueueClient.syncCalDav(userID);
   }
 };

@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { datetimeColumnType } from '../../utils/constants';
 import CalDavEventEntity from './CalDavEventEntity';
 import ReminderEntity from './ReminderEntity';
 
@@ -26,10 +27,10 @@ export default class CalDavEventAlarmEntity {
   @Column({ name: 'time_unit' })
   timeUnit: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
   @ManyToOne(() => CalDavEventEntity, (event) => event.alarms, {
@@ -41,9 +42,9 @@ export default class CalDavEventAlarmEntity {
   @OneToMany(() => ReminderEntity, (reminder) => reminder.caldavEventAlarm)
   reminders: ReminderEntity[];
 
-  constructor(event?: CalDavEventEntity) {
-    if (event) {
-      this.event = event;
-    }
-  }
+  // constructor(event?: CalDavEventEntity) {
+  //   if (event) {
+  //     this.event = event;
+  //   }
+  // }
 }

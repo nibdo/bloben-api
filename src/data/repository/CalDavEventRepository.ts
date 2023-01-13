@@ -3,9 +3,47 @@ import { EntityRepository, Repository, getRepository } from 'typeorm';
 import { Attendee, EVENT_TYPE, Organizer } from 'bloben-interface';
 import { BLOBEN_EVENT_KEY } from '../../utils/enums';
 import { DateTimeObject } from 'ical-js-parser';
-import { getOneResult } from '../../utils/common';
+import {
+  createArrayQueryReplacement,
+  getOneResult,
+  parseToJSON,
+} from '../../utils/common';
+import { isElectron } from '../../config/env';
+import { map } from 'lodash';
 import { throwError } from '../../utils/errorCodes';
 import CalDavEventEntity from '../entity/CalDavEventEntity';
+
+export interface CalDavEventQueryResult {
+  id: string;
+  type: EVENT_TYPE;
+  status: string | null;
+  externalID: string;
+  internalID?: string;
+  startAt: string;
+  endAt: string;
+  timezoneStartAt: string | null;
+  timezoneEndAt: string | null;
+  summary: string;
+  props: any;
+  description: string;
+  allDay?: boolean;
+  location: string;
+  rRule: string | null;
+  isRepeated: boolean;
+  etag: string;
+  href: string;
+  color: string;
+  eventCustomColor: string;
+  customCalendarColor: string | null;
+  calendarID: string;
+  attendees: string;
+  organizer: string;
+  valarms: string;
+  exdates: string;
+  recurrenceID: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface CalDavEventsRaw {
   id: string;
@@ -30,8 +68,8 @@ export interface CalDavEventsRaw {
   eventCustomColor: string;
   customCalendarColor: string | null;
   calendarID: string;
-  attendees: any[];
-  organizer: any;
+  attendees: Attendee[] | null;
+  organizer: Organizer | null;
   valarms: any[];
   exdates: any[];
   recurrenceID: DateTimeObject;
@@ -47,14 +85,45 @@ const getComponentsCondition = (showTasks: boolean) => {
   return [EVENT_TYPE.EVENT, EVENT_TYPE.TASK];
 };
 
+export const formatSQLDateTime = (column: string) => {
+  if (isElectron) {
+    return `strftime('%Y-%m-%dT%H:%M:%S.000Z', ${column})`;
+  }
+
+  return `to_char(${column}, 'YYYY-MM-DD"T"HH24:MI:SS."000Z"')`;
+};
+
+const formatEventData = (event: CalDavEventQueryResult): CalDavEventsRaw => {
+  const eventResult = { ...event };
+
+  const organizer: Organizer | null = parseToJSON(eventResult.organizer);
+  const attendees: Attendee[] | null = parseToJSON(eventResult.attendees);
+  const valarms: any[] | null = parseToJSON(eventResult.valarms);
+  const exdates: any[] | null = parseToJSON(eventResult.exdates);
+  const recurrenceID: DateTimeObject | null = parseToJSON(
+    eventResult.recurrenceID
+  );
+  const props: any | null = parseToJSON(eventResult.props);
+
+  return {
+    ...event,
+    organizer,
+    attendees,
+    valarms,
+    exdates,
+    recurrenceID,
+    props,
+  };
+};
+
 @EntityRepository(CalDavEventEntity)
 export default class CalDavEventRepository extends Repository<CalDavEventEntity> {
   private static calDavEventRawProps = `
         e.id as "id",
         e.type as type,
         e.status as status,
-        e.start_at as "startAt",
-        e.end_at as "endAt",
+        ${formatSQLDateTime('e.start_at')} as "startAt",
+        ${formatSQLDateTime('e.end_at')} as "endAt",
         e.timezone_start_at as "timezoneStartAt",
         e.timezone_end_at as "timezoneEndAt",
         e.summary as "summary",
@@ -85,7 +154,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
   }
 
   public static getCalDavEventsByID = async (userID: string) => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -101,7 +170,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         [userID]
       );
 
-    return resultCalDavEvents;
+    return map(resultCalDavEvents, formatEventData);
   };
 
   public static getEventsInRange = async (
@@ -110,7 +179,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
     rangeTo: string,
     showTasks: boolean
   ) => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -124,13 +193,20 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         AND c.is_hidden IS FALSE
         AND e.is_repeated = FALSE
         AND e.start_at IS NOT NULL
-        AND e.type = ANY ($4)
-        AND (e.start_at, e.end_at) OVERLAPS (CAST($2 AS timestamp), CAST($3 AS timestamp))
+        AND (
+            e.start_at BETWEEN $2 AND $3 
+            OR 
+            e.end_at BETWEEN $2 AND $3)
+        AND e.type IN (${createArrayQueryReplacement(
+          getComponentsCondition(showTasks),
+          4
+        )})
+
   `,
-        [userID, rangeFrom, rangeTo, getComponentsCondition(showTasks)]
+        [userID, rangeFrom, rangeTo, ...getComponentsCondition(showTasks)]
       );
 
-    return resultCalDavEvents;
+    return map(resultCalDavEvents, formatEventData);
   };
 
   public static getPublicEventsInRange = async (
@@ -138,7 +214,11 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
     rangeFrom: string,
     rangeTo: string
   ) => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    if (!sharedCalDavCalendarIDs?.length) {
+      return Promise.resolve([]);
+    }
+
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -147,18 +227,20 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         caldav_events e
         INNER JOIN caldav_calendars c on c.id = e.caldav_calendar_id
       WHERE 
-        c.id = ANY($1)
+        (e.start_at BETWEEN $1 AND $2 
+          OR 
+        e.end_at BETWEEN $1 AND $2)
+        AND c.id IN (${createArrayQueryReplacement(sharedCalDavCalendarIDs, 3)})
         AND e.is_repeated = FALSE
-        AND (e.start_at, e.end_at) OVERLAPS (CAST($2 AS timestamp), CAST($3 AS timestamp))
-  `,
-        [sharedCalDavCalendarIDs, rangeFrom, rangeTo]
+            `,
+        [rangeFrom, rangeTo, ...sharedCalDavCalendarIDs]
       );
 
-    return resultCalDavEvents;
+    return map(resultCalDavEvents, formatEventData);
   };
 
   public static getEventByID = async (userID: string, id: string) => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -178,11 +260,13 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       return null;
     }
 
-    return resultCalDavEvents[0];
+    const result = map(resultCalDavEvents, formatEventData);
+
+    return result[0];
   };
 
   public static getEventByExternalID = async (userID: string, id: string) => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -202,14 +286,16 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       return null;
     }
 
-    return resultCalDavEvents[0];
+    const result = map(resultCalDavEvents, formatEventData);
+
+    return result[0];
   };
 
   public static getRepeatedEvents = async (
     userID: string,
     showTasks: boolean
   ) => {
-    const repeatedEvents: CalDavEventsRaw[] =
+    const repeatedEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -222,19 +308,26 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         a.user_id = $1
         AND c.is_hidden IS FALSE
         AND e.is_repeated = TRUE
-        AND e.type = ANY ($2)
+        AND e.type IN (${createArrayQueryReplacement(
+          getComponentsCondition(showTasks),
+          2
+        )})
   `,
-        [userID, getComponentsCondition(showTasks)]
+        [userID, ...getComponentsCondition(showTasks)]
       );
 
-    return repeatedEvents;
+    return map(repeatedEvents, formatEventData);
   };
 
   public static getPublicRepeatedEvents = async (
     calDavCalendarIDs: string[],
     showTasks: boolean
   ) => {
-    const repeatedEvents: CalDavEventsRaw[] =
+    if (!calDavCalendarIDs?.length) {
+      return Promise.resolve([]);
+    }
+
+    const repeatedEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -243,21 +336,24 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         caldav_events e
         INNER JOIN caldav_calendars c ON c.id = e.caldav_calendar_id
       WHERE 
-        c.id = ANY($1)
+        c.id IN (${createArrayQueryReplacement(calDavCalendarIDs, 1)})
         AND e.is_repeated = TRUE
-        AND e.type = ANY ($2)
+        AND e.type IN (${createArrayQueryReplacement(
+          getComponentsCondition(showTasks),
+          calDavCalendarIDs.length + 1
+        )})
   `,
-        [calDavCalendarIDs, getComponentsCondition(showTasks)]
+        [...calDavCalendarIDs, ...getComponentsCondition(showTasks)]
       );
 
-    return repeatedEvents;
+    return map(repeatedEvents, formatEventData);
   };
 
   public static getCalDavEventByID = async (
     userID: string,
     id: string
   ): Promise<CalDavEventsRaw> => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -277,11 +373,11 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       return null;
     }
 
-    return getOneResult(resultCalDavEvents);
+    return formatEventData(getOneResult(resultCalDavEvents));
   };
 
   public static getCalDavEventsByCalendarUrl = async (calendarUrl: string) => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -297,14 +393,14 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         [calendarUrl]
       );
 
-    return resultCalDavEvents;
+    return map(resultCalDavEvents, formatEventData);
   };
 
   public static getCalDavEventsByIDForSync = async (
     userID: string,
     syncDate: string
   ) => {
-    const resultCalDavEvents: CalDavEventsRaw[] =
+    const resultCalDavEvents: CalDavEventQueryResult[] =
       await CalDavEventRepository.getRepository().query(
         `
       SELECT 
@@ -320,7 +416,7 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
         [userID, syncDate]
       );
 
-    return resultCalDavEvents;
+    return map(resultCalDavEvents, formatEventData);
   };
 
   static getExistingEventRaw = async (
@@ -372,6 +468,6 @@ export default class CalDavEventRepository extends Repository<CalDavEventEntity>
       throw throwError(409, 'Missing required event data');
     }
 
-    return existingEvent;
+    return formatEventData(existingEvent);
   };
 }

@@ -29,6 +29,13 @@ import { DateTime } from 'luxon';
 import { RRule } from 'rrule';
 import { cloneDeep, filter, find, forEach, keyBy, map } from 'lodash';
 import {
+  createArrayQueryReplacement,
+  formatToRRule,
+  parseEventDuration,
+  parseJSON,
+  parseToJSON,
+} from './common';
+import {
   createCalDavCalendar,
   updateCalDavCalendar,
 } from '../api/app/caldavAccount/helpers/createCalDavCalendar';
@@ -38,13 +45,9 @@ import {
   formatEventInviteSubject,
   formatPartstatResponseSubject,
 } from './format';
-import { formatToRRule, parseEventDuration } from './common';
-import { io } from '../app';
-import { processCaldavAlarms } from '../api/app/calDavEvent/handlers/updateCalDavEvent';
 import { v4 } from 'uuid';
 import CalDavCalendarEntity from '../data/entity/CalDavCalendar';
 import CalDavEventEntity from '../data/entity/CalDavEventEntity';
-import CalDavEventExceptionEntity from '../data/entity/CalDavEventExceptionEntity';
 import CalDavEventRepository, {
   CalDavEventsRaw,
 } from '../data/repository/CalDavEventRepository';
@@ -58,6 +61,9 @@ import LuxonHelper from './luxonHelper';
 import { ATTENDEE_PARTSTAT } from '../data/types/enums';
 import { DavRequestData, getDavRequestData } from './davAccountHelper';
 import { VcardParsed, parseFromVcardString } from './vcardParser';
+import { processCaldavAlarms } from '../api/app/calDavEvent/handlers/updateCalDavEvent';
+import { socketService } from '../service/init';
+import CalDavEventExceptionEntity from '../data/entity/CalDavEventExceptionEntity';
 import CalendarSettingsRepository from '../data/repository/CalendarSettingsRepository';
 import CardDavAddressBook from '../data/entity/CardDavAddressBook';
 import CardDavAddressBookRepository from '../data/repository/CardDavAddressBookRepository';
@@ -134,7 +140,7 @@ export const formatDTStartValue = (event: EventJSON, isAllDay: boolean) => {
         .toUTC()
         .toString();
     } else {
-      result = event.dtstart.value;
+      result = DateTime.fromISO(event.dtstart.value).toUTC().toString();
     }
   }
 
@@ -177,7 +183,84 @@ export const formatDTEndValue = (event: EventJSON, isAllDay: boolean) => {
           .toUTC()
           .toString();
       } else {
-        result = event.dtend.value;
+        result = DateTime.fromISO(event.dtend.value).toUTC().toString();
+      }
+    }
+  }
+
+  return result;
+};
+
+export const formatDTStartValueJsDate = (
+  event: EventJSON,
+  isAllDay: boolean
+) => {
+  let result;
+
+  if (!event?.dtstart?.value) {
+    throw Error(`Cannot parse date ${event?.dtstart?.value}`);
+  }
+
+  if (isAllDay) {
+    const dateTime = DateTime.fromFormat(event.dtstart.value, 'yyyyMMdd');
+
+    if (!dateTime.isValid) {
+      throw Error(`Cannot parse date ${event.dtstart.value}`);
+    }
+
+    result = dateTime.toJSDate();
+  } else {
+    if (event.dtstart.timezone) {
+      result = Datez.fromISO(event.dtstart.value, {
+        zone: event.dtstart.timezone,
+      })
+        .toUTC()
+        .toJSDate();
+    } else {
+      result = DateTime.fromISO(event.dtstart.value).toUTC().toJSDate();
+    }
+  }
+
+  return result;
+};
+export const formatDTEndValueJsDate = (event: EventJSON, isAllDay: boolean) => {
+  let result;
+
+  if (!event?.dtstart?.value) {
+    throw Error(`Cannot parse date ${event?.dtstart?.value}`);
+  }
+
+  if (!event.dtend?.value) {
+    if (event.duration) {
+      result = parseEventDuration(
+        formatDTStartValueJsDate(event, isAllDay),
+        event.duration
+      );
+    } else {
+      result = formatDTStartValueJsDate(event, isAllDay);
+    }
+  } else {
+    if (isAllDay) {
+      const dateTime = DateTime.fromFormat(event.dtend.value, 'yyyyMMdd');
+
+      if (!dateTime.isValid) {
+        throw Error(`Cannot parse date ${event.dtend.value}`);
+      }
+
+      result = dateTime
+        .minus({ day: 1 })
+        .set({ hour: 0, minute: 0, second: 0 })
+        .toUTC()
+        .toJSDate();
+    } else {
+      if (event.dtend.timezone) {
+        result = Datez.fromISO(event.dtend.value, {
+          zone: event.dtend.timezone,
+        })
+          .toUTC()
+          .toJSDate();
+      } else {
+        result = DateTime.fromISO(event.dtend.value).toUTC().toJSDate();
       }
     }
   }
@@ -541,9 +624,9 @@ const syncCalDavEventsWithServer = async (
     DELETE FROM
       caldav_events 
     WHERE
-        id = ANY($1)
+        id IN (${createArrayQueryReplacement(toDelete, 1)})
   `,
-      [toDelete]
+      [...toDelete]
     );
   }
 
@@ -561,6 +644,14 @@ const syncCalDavEventsWithServer = async (
     );
 
     const promises: any = [];
+    const promisesEvents: any = [];
+
+    const alarmsData: { event: CalDavEventEntity; alarms: any }[] = [];
+    const exceptionsData: { event: CalDavEventEntity; date: any }[] = [];
+
+    const calendarTemp = new CalDavCalendarEntity();
+    calendarTemp.id = calDavCalendar.id;
+
     forEach(toInsertResponse, (item: any) => {
       if (item.data) {
         try {
@@ -569,42 +660,25 @@ const syncCalDavEventsWithServer = async (
           forEach(eventsTemp, (eventTemp) => {
             if (eventTemp) {
               const newEvent = new CalDavEventEntity(eventTemp);
+              newEvent.calendar = calendarTemp;
               eventsToSync.push(formatEventEntityToResult(newEvent));
-              promises.push(queryRunner.manager.save(newEvent));
+              promisesEvents.push(
+                queryRunner.manager.insert(CalDavEventEntity, newEvent)
+              );
 
               if (eventTemp.recurrenceID) {
-                const eventException = new CalDavEventExceptionEntity(
-                  userID,
-                  calDavCalendar.id,
-                  eventTemp,
-                  eventTemp.recurrenceID,
-                  newEvent
-                );
-                promises.push(queryRunner.manager.save(eventException));
-              }
-
-              if (eventTemp.exdates?.length) {
-                forEach(eventTemp.exdates, (exDate) => {
-                  const eventException = new CalDavEventExceptionEntity(
-                    userID,
-                    calDavCalendar.id,
-                    eventTemp,
-                    exDate,
-                    newEvent
-                  );
-                  promises.push(queryRunner.manager.save(eventException));
+                exceptionsData.push({
+                  event: newEvent,
+                  date: eventTemp.recurrenceID,
                 });
               }
-
+              if (eventTemp.exdates?.length) {
+                forEach(eventTemp.exdates, (exDate) => {
+                  exceptionsData.push({ event: newEvent, date: exDate });
+                });
+              }
               if (eventTemp.alarms) {
-                promises.push(
-                  processCaldavAlarms(
-                    queryRunner,
-                    eventTemp.alarms,
-                    newEvent,
-                    userID
-                  )
-                );
+                alarmsData.push({ event: newEvent, alarms: eventTemp.alarms });
               }
             }
           });
@@ -618,7 +692,38 @@ const syncCalDavEventsWithServer = async (
       }
     });
 
+    await Promise.all(promisesEvents);
+
+    forEach(exceptionsData, (item: any) => {
+      const eventException = new CalDavEventExceptionEntity(
+        userID,
+        calDavCalendar.id,
+        item.event,
+        item.date
+      );
+      eventException.caldavEvent = item.event;
+      eventException.caldavCalendar = calendarTemp;
+      promises.push(
+        queryRunner.manager.insert(CalDavEventExceptionEntity, eventException)
+      );
+    });
+
     await Promise.all(promises);
+
+    const alarmPromises: any = [];
+
+    forEach(alarmsData, (alarmItem) => {
+      alarmPromises.push(
+        processCaldavAlarms(
+          queryRunner,
+          alarmItem.alarms,
+          alarmItem.event,
+          userID
+        )
+      );
+    });
+
+    await Promise.all(alarmPromises);
   }
 
   return {
@@ -731,15 +836,9 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
       });
 
       if (calendarsToDelete.length > 0) {
-        await queryRunner.manager.query(
-          `
-                  DELETE FROM
-                    caldav_calendars 
-                  WHERE
-                      id = ANY($1)
-            `,
-          [calendarsToDelete]
-        );
+        await queryRunner.manager
+          .getRepository(CalDavCalendarEntity)
+          .delete(calendarsToDelete);
       }
     }
 
@@ -761,9 +860,10 @@ const syncEventsForAccount = async (calDavAccount: AccountWithCalendars) => {
     await queryRunner.release();
 
     if (calendarsChanged) {
-      io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${calDavAccount.userID}`).emit(
+      socketService.emit(
+        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS }),
         SOCKET_CHANNEL.SYNC,
-        JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+        `${SOCKET_ROOM_NAMESPACE.USER_ID}${calDavAccount.userID}`
       );
     }
 
@@ -1047,7 +1147,7 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
               resourceType: item.resourcetype,
               displayName: item.displayName,
               ctag: item.ctag,
-              data: item,
+              data: parseJSON(item),
             }
           )
         );
@@ -1105,7 +1205,7 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
   for (const addressBook of addressBooksNew) {
     const vcards = await fetchVCards({
       headers: davHeaders,
-      addressBook: addressBook.data,
+      addressBook: parseToJSON(addressBook.data),
     });
 
     const parsedServerContacts: ParsedContact[] = map(vcards, (item) => {
@@ -1169,7 +1269,7 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
         CardDavContactRepository.getRepository().update(localItem.id, {
           etag: item.etag,
           fullName: item.data?.fullName,
-          emails: item.data?.emails,
+          emails: parseJSON(item.data?.emails),
         })
       );
     });

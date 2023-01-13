@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import { SearchCardDavContactResponse } from 'bloben-interface';
 import { forEach } from 'lodash';
+import { parseToJSON } from '../../../../utils/common';
 import CardDavContactRepository from '../../../../data/repository/CardDavContactRepository';
 
 interface Query {
@@ -28,15 +29,17 @@ export const searchCardDavContact = async (
     const response: SearchCardDavContactResponse[] = [];
 
     forEach(result, (item) => {
+      const emails = parseToJSON(item.emails);
+
       if (item.fullName.includes(text)) {
-        forEach(item.emails, (email) => {
+        forEach(emails, (email) => {
           response.push({
             id: item.id,
             email,
           });
         });
       } else {
-        forEach(item.emails, (email) => {
+        forEach(emails, (email) => {
           if (email.includes(text)) {
             response.push({
               id: item.id,

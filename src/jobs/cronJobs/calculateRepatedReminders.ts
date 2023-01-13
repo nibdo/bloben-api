@@ -3,8 +3,8 @@ import { QueryRunner, getConnection } from 'typeorm';
 import { DateTime } from 'luxon';
 import { LOG_TAG, TIMEZONE } from '../../utils/enums';
 import { RRule } from 'rrule';
+import { createArrayQueryReplacement, formatToRRule } from '../../utils/common';
 import { forEach, map } from 'lodash';
-import { formatToRRule } from '../../utils/common';
 import CalDavEventAlarmEntity from '../../data/entity/CalDavEventAlarmEntity';
 import LuxonHelper from '../../utils/luxonHelper';
 import ReminderEntity from '../../data/entity/ReminderEntity';
@@ -68,11 +68,14 @@ export const calculateRepeatedReminders = async () => {
     await queryRunner.manager.query(
       `
       DELETE
-        from reminders r
+        from reminders
       WHERE 
-        r.caldav_event_alarm_id = ANY($1)
+        caldav_event_alarm_id IN (${createArrayQueryReplacement(
+          eventAlarmIDs,
+          1
+        )})
     `,
-      [eventAlarmIDs]
+      [...eventAlarmIDs]
     );
 
     const promises: any = [];
@@ -117,6 +120,8 @@ export const calculateRepeatedReminders = async () => {
           rRuleResult.toISOString(),
           item.userID
         );
+
+        newReminder.caldavEventAlarm = eventAlarm;
         promises.push(queryRunner.manager.save(newReminder));
       });
 

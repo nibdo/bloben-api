@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { GetSharedLinkPublicResponse } from 'bloben-interface';
+import { MemoryClient } from '../../../../service/init';
 import { REDIS_PREFIX } from '../../../../utils/enums';
-import { redisClient } from '../../../../index';
 import SharedLinkRepository from '../../../../data/repository/SharedLinkRepository';
 
 export const getPublicSharedLink = async (
@@ -13,7 +13,7 @@ export const getPublicSharedLink = async (
   try {
     const { sharedLink } = res.locals;
 
-    const cacheResponse = await redisClient.get(
+    const cacheResponse = await MemoryClient.get(
       `${REDIS_PREFIX.PUBLIC_SHARED_LINK}_${sharedLink.id}`
     );
 
@@ -43,7 +43,7 @@ export const getPublicSharedLink = async (
       settings: result.settings,
     };
 
-    await redisClient.set(
+    await MemoryClient.set(
       `${REDIS_PREFIX.PUBLIC_SHARED_LINK}_${sharedLink.id}`,
       JSON.stringify(response),
       'EX',

@@ -15,7 +15,7 @@ export const getCalDavTaskSettings = async (
       `
       SELECT
         s.id as "id",
-        s.order as "order",
+        s."order" as "order",
         s.order_by as "orderBy",
         s.caldav_calendar_id as "calendarID"
       FROM

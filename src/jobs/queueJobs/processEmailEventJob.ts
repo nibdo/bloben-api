@@ -1,13 +1,14 @@
 import { ATTENDEE_PARTSTAT } from '../../data/types/enums';
 import { Attendee, REPEATED_EVENT_CHANGE_TYPE } from 'bloben-interface';
-import { BLOBEN_EVENT_KEY, BULL_QUEUE, LOG_TAG } from '../../utils/enums';
+import { BLOBEN_EVENT_KEY, LOG_TAG } from '../../utils/enums';
 import { CalDavEventObj, removeBlobenMetaData } from '../../utils/davHelper';
 import { Job } from 'bullmq';
-import { calDavSyncBullQueue } from '../../service/BullQueue';
 
 import { CALENDAR_METHOD } from '../../utils/ICalHelper';
 import { DavService } from '../../service/davService';
+import { QueueClient } from '../../service/init';
 import { find, uniqBy } from 'lodash';
+import { parseToJSON } from '../../utils/common';
 import { throwError } from '../../utils/errorCodes';
 import CalDavEventExceptionRepository from '../../data/repository/CalDavEventExceptionRepository';
 import CalDavEventRepository, {
@@ -163,6 +164,7 @@ export const updatePartstatStatusForAttendee = async (
     icalEvents[0].attendee,
     (item) => item.mailto === from
   );
+
   const status: ATTENDEE_PARTSTAT | undefined =
     attendeeNew?.PARTSTAT as ATTENDEE_PARTSTAT;
 
@@ -266,6 +268,8 @@ export const processEmailEventJob = async (
       icalEvents?.[0]?.uid
     );
 
+    const props = parseToJSON(existingEvent?.props);
+
     const { method } = icalJSON.calendar;
 
     const isAlreadyCanceled =
@@ -292,8 +296,8 @@ export const processEmailEventJob = async (
     } else {
       // handle external event changes from invite
       if (
-        existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_TO] &&
-        existingEvent.props?.[BLOBEN_EVENT_KEY.INVITE_FROM]
+        props?.[BLOBEN_EVENT_KEY.INVITE_TO] &&
+        props?.[BLOBEN_EVENT_KEY.INVITE_FROM]
       ) {
         if (
           (method === CALENDAR_METHOD.REQUEST ||
@@ -335,9 +339,7 @@ export const processEmailEventJob = async (
       }
     }
 
-    await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, {
-      userID: data.userID,
-    });
+    await QueueClient?.syncCalDav(data.userID);
 
     return result;
   } catch (e) {

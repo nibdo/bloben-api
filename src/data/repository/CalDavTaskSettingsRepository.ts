@@ -14,7 +14,7 @@ export default class CalDavTaskSettingsRepository extends Repository<CalDavTaskS
       `
       SELECT
         tl.id,
-        tl.order
+        tl."order"
       FROM 
         caldav_task_settings tl
       INNER JOIN caldav_calendars c ON c.id = tl.caldav_calendar_id

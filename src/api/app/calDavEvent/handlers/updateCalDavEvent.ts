@@ -1,20 +1,23 @@
 import { Request, Response } from 'express';
 
+import { CommonResponse, UpdateCalDavEventRequest } from 'bloben-interface';
+import { Connection, QueryRunner, getConnection } from 'typeorm';
+import { DateTime } from 'luxon';
+import { DavService } from '../../../../service/davService';
+import { InviteService } from '../../../../service/InviteService';
 import {
-  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
   TIMEZONE,
 } from '../../../../utils/enums';
-import { CommonResponse, UpdateCalDavEventRequest } from 'bloben-interface';
-import { Connection, QueryRunner, getConnection } from 'typeorm';
-import { DateTime } from 'luxon';
-import { DavService } from '../../../../service/davService';
-import { InviteService } from '../../../../service/InviteService';
+import {
+  QueueClient,
+  electronService,
+  socketService,
+} from '../../../../service/init';
 import { RRule } from 'rrule';
-import { cardDavBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse, formatToRRule } from '../../../../utils/common';
 import { deleteCalendarObject } from 'tsdav';
 import { forEach } from 'lodash';
@@ -23,7 +26,6 @@ import {
   handleCreateContact,
   removeOrganizerFromAttendeesOriginalData,
 } from './createCalDavEvent';
-import { io } from '../../../../app';
 import { parseAlarmDuration } from '../../../../utils/caldavAlarmHelper';
 import { throwError } from '../../../../utils/errorCodes';
 import { v4 } from 'uuid';
@@ -52,8 +54,9 @@ export const processCaldavAlarms = async (
 
       if (duration && alarm?.trigger) {
         const entries = Object.entries(duration);
-        const newAlarm = new CalDavEventAlarmEntity(event);
+        const newAlarm = new CalDavEventAlarmEntity();
 
+        newAlarm.event = event;
         newAlarm.amount = Number(entries[0][1]);
         newAlarm.timeUnit = entries[0][0];
         newAlarm.beforeStart = isBefore;
@@ -110,7 +113,10 @@ export const processCaldavAlarms = async (
           rRuleResult.toISOString(),
           userID
         );
-        remindersPromises.push(queryRunner.manager.save(newReminder));
+        newReminder.caldavEventAlarm = eventAlarm;
+        remindersPromises.push(
+          queryRunner.manager.insert(ReminderEntity, newReminder)
+        );
       });
     } else {
       const newReminder = new ReminderEntity(
@@ -118,7 +124,11 @@ export const processCaldavAlarms = async (
         sendAt.toISOString(),
         userID
       );
-      remindersPromises.push(queryRunner.manager.save(newReminder));
+      newReminder.caldavEventAlarm = eventAlarm;
+
+      remindersPromises.push(
+        queryRunner.manager.insert(ReminderEntity, newReminder)
+      );
     }
   });
 
@@ -259,7 +269,7 @@ export const updateCalDavEvent = async (
 
         await Promise.all(carddavPromises);
 
-        await cardDavBullQueue.add(BULL_QUEUE.CARDDAV_SYNC, { userID });
+        await QueueClient.syncCardDav(userID);
       }
     }
 
@@ -277,10 +287,13 @@ export const updateCalDavEvent = async (
     await queryRunner.commitTransaction();
     await queryRunner.release();
 
-    io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+    socketService.emit(
+      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
       SOCKET_CHANNEL.SYNC,
-      JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+      `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
     );
+
+    await electronService.processWidgetFile();
 
     return createCommonResponse('Event updated');
   } catch (e) {

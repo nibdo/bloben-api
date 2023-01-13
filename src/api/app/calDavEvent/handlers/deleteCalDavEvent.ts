@@ -12,8 +12,8 @@ import {
   createCommonResponse,
   isExternalEmailInvite,
 } from '../../../../utils/common';
+import { electronService, socketService } from '../../../../service/init';
 import { excludeEmailsFromAttendees } from './createCalDavEvent';
-import { io } from '../../../../app';
 import { map } from 'lodash';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
@@ -63,10 +63,13 @@ export const deleteCalDavEvent = async (
     id: body.id,
   });
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
+
+  await electronService.processWidgetFile();
 
   return createCommonResponse('Event deleted');
 };

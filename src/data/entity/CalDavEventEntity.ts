@@ -1,32 +1,34 @@
+import { CalDavEventObj } from '../../utils/davHelper';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
-
-import { CalDavEventObj } from '../../utils/davHelper';
 import { DateTime } from 'luxon';
 import { EVENT_TYPE, TASK_STATUS } from 'bloben-interface';
 import { FLOATING_DATETIME } from 'kalend/layout/constants';
+import { datetimeColumnType } from '../../utils/constants';
 import { map } from 'lodash';
-import { removeArtifacts, validateStringDate } from '../../utils/common';
+import {
+  parseJSON,
+  removeArtifacts,
+  validateStringDate,
+} from '../../utils/common';
+import { v4 } from 'uuid';
 import CalDavCalendarEntity from './CalDavCalendar';
 import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
 import CalDavEventExceptionEntity from './CalDavEventExceptionEntity';
 
 export const columnJSON = {
-  type: 'jsonb',
-  array: false,
-  default: () => "'[]'",
-  nullable: true,
+  type: 'text',
 };
 
 @Entity('caldav_events')
 export default class CalDavEventEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
 
   @Column({ name: 'external_id' })
@@ -38,13 +40,13 @@ export default class CalDavEventEntity {
   @Column({ nullable: true })
   color: string;
 
-  @Column({ type: 'timestamptz', name: 'start_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'start_at', nullable: true })
   startAt: Date;
 
   @Column({ name: 'timezone_start_at', nullable: true })
   timezoneStartAt: string;
 
-  @Column({ type: 'timestamptz', name: 'end_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'end_at', nullable: true })
   endAt: Date;
 
   @Column({ name: 'timezone_end_at', nullable: true })
@@ -66,37 +68,31 @@ export default class CalDavEventEntity {
   data: string;
 
   @Column({
-    type: 'jsonb',
-    array: false,
-    default: () => "'[]'",
+    type: 'text',
     nullable: true,
   })
-  exdates: object[];
+  exdates: string;
 
   @Column({
-    type: 'jsonb',
-    array: false,
-    default: () => "'[]'",
+    type: 'text',
     nullable: true,
   })
-  attendees: object[];
+  attendees: string;
 
-  @Column({ name: 'organizer', type: 'json', nullable: true })
-  organizer: object;
+  @Column({ name: 'organizer', type: 'text', nullable: true })
+  organizer: string;
 
-  @Column({ name: 'recurrence_id', type: 'json', nullable: true })
-  recurrenceID: object;
+  @Column({ name: 'recurrence_id', type: 'text', nullable: true })
+  recurrenceID: string;
 
   @Column({
-    type: 'jsonb',
-    array: false,
-    default: () => "'[]'",
+    type: 'text',
     nullable: true,
   })
-  valarms: object[];
+  valarms: string;
 
-  @Column({ type: 'json', nullable: true })
-  props: object;
+  @Column({ type: 'text', nullable: true })
+  props: string;
 
   @Column({ name: 'etag', nullable: true })
   etag: string;
@@ -111,15 +107,19 @@ export default class CalDavEventEntity {
   location: string;
 
   @Column({ type: 'varchar', default: EVENT_TYPE.EVENT })
-  type: EVENT_TYPE;
+  type: string;
 
-  @Column({ type: 'timestamptz', name: 'external_created_at', nullable: true })
+  @Column({
+    type: datetimeColumnType,
+    name: 'external_created_at',
+    nullable: true,
+  })
   externalCreatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'created_at' })
+  @Column({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'updated_at' })
+  @Column({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
   @Column({ type: 'uuid', name: 'caldav_calendar_id' })
@@ -161,6 +161,7 @@ export default class CalDavEventEntity {
 
   constructor(item?: CalDavEventObj) {
     if (item) {
+      this.id = v4();
       if (item.startAt) {
         validateStringDate(item.startAt);
         this.startAt = DateTime.fromISO(item.startAt).toUTC().toJSDate();
@@ -201,9 +202,9 @@ export default class CalDavEventEntity {
         this.timezoneStartAt = FLOATING_DATETIME;
       }
 
-      this.props = item.props;
+      this.props = parseJSON(item.props);
       this.externalID = item.externalID;
-      this.recurrenceID = item.recurrenceID;
+      this.recurrenceID = parseJSON(item.recurrenceID);
 
       this.etag = item.etag;
       this.allDay = item.allDay;
@@ -215,21 +216,23 @@ export default class CalDavEventEntity {
       this.summary = item.summary;
       this.calendar = calendar;
       this.href = item.href;
-      this.exdates = item.exdates || [];
+      this.exdates = parseJSON(item.exdates);
       this.attendees = item.attendees
-        ? map(item.attendees, (attendee) => ({
-            ...attendee,
-            CN: removeArtifacts(attendee.CN),
-            mailto: removeArtifacts(attendee.mailto),
-          }))
-        : [];
+        ? JSON.stringify(
+            map(item.attendees, (attendee) => ({
+              ...attendee,
+              CN: removeArtifacts(attendee.CN),
+              mailto: removeArtifacts(attendee.mailto),
+            }))
+          )
+        : '[]';
       this.organizer = item.organizer
-        ? ({
+        ? JSON.stringify({
             ...item.organizer,
             mailto: removeArtifacts(item.organizer?.mailto),
           } as any)
-        : null;
-      this.valarms = item.valarms || [];
+        : '{}';
+      this.valarms = item.valarms ? JSON.stringify(item.valarms) : '[]';
       this.createdAt = item.created
         ? DateTime.fromISO(item.created).toUTC().toJSDate()
         : new Date();

@@ -9,10 +9,8 @@ import LuxonHelper from '../../../../utils/luxonHelper';
 import WebcalEventEntity from '../../../../data/entity/WebcalEventEntity';
 import WebcalEventRepository from '../../../../data/repository/WebcalEventRepository';
 
-export const overlapCondition: string =
-  '(we.start_at, we.end_at) OVERLAPS (CAST(:rangeFrom AS timestamp),' +
-  ' CAST(:rangeTo AS' +
-  ' timestamp))';
+export const overlapCondition = `(we.start_at BETWEEN CAST(:rangeFrom AS timestamp) AND CAST(:rangeTo AS timestamp) OR we.end_at BETWEEN CAST(:rangeFrom AS timestamp) AND CAST(:rangeTo AS timestamp)
+`;
 
 export const getWebcalEvents = async (
   req: Request,
@@ -56,35 +54,8 @@ export const getWebcalEvents = async (
       .andWhere('we.deletedAt IS NULL')
       .getMany();
 
-  // get recurrence events
-  // const repeatedEvents: WebcalEventEntity[] = await WebcalEventRepository.getRepository()
-  //   .createQueryBuilder('we')
-  //   .leftJoinAndSelect('we.webcalCalendar', 'wc')
-  //   // .leftJoinAndSelect('exceptions', 'e', 'e.external_id')
-  //   .addSelect([
-  //     'we.id',
-  //     'we.summary',
-  //     'we.description',
-  //     'we.location',
-  //     'we.sequence',
-  //     'we.organizer',
-  //     'we.attendees',
-  //     'we.allDay',
-  //     'we.isRepeated',
-  //     'we.rRule',
-  //     'we.createdAt',
-  //     'we.updatedAt',
-  //     'we.deletedAt',
-  //     'we.externalID'
-  //   ])
-  //   .where('wc.user_id = :userID', { userID })
-  //   .andWhere('we.isRepeated = true')
-  //   .andWhere('we.deletedAt IS NULL')
-  //   .getMany();
-
-  const repeatedEventsRaw: any =
-    await WebcalEventRepository.getRepository().query(
-      `SELECT
+  const repeatedEventsRaw = await WebcalEventRepository.getRepository().query(
+    `SELECT
                 we.id as id,
                 we.summary as summary,
                 we.start_at as "startAt",
@@ -117,8 +88,8 @@ export const getWebcalEvents = async (
                 we.is_repeated = TRUE AND 
                 we.deleted_at IS NULL
                 `,
-      [userID]
-    );
+    [userID]
+  );
 
   const groupedRepeatedEvents: any = groupBy(repeatedEventsRaw, 'id');
 
@@ -165,31 +136,6 @@ export const getWebcalEvents = async (
     repeatedEvents.push(event);
   });
 
-  // const repeatedEvents: any = repeatedEventsRaw?.map((item: any) => ({
-  //   id: item.id,
-  //   summary: item.summary,
-  //   description: item.description,
-  //   location: item.location,
-  //   sequence: item.sequence,
-  //   organizer: item.organizer,
-  //   attendees: item.attendees,
-  //   allDay: item.allDay,
-  //   isRepeated: item.isRepeated,
-  //   rRule: item.rRule,
-  //   createdAt: item.createdAt,
-  //   updatedAt: item.updatedAt,
-  //   deletedAt: item.deletedAt,
-  //   externalID: item.externalID,
-  //   startAt: item.startAt,
-  //   endAt: item.endAt,
-  //   timezoneEnd: item.timezoneStart,
-  //   timezoneStart: item.timezoneStart,
-  //   webcalCalendar: {
-  //     id: item.calendarID,
-  //     color: item.color
-  //   }
-  // }));
-
   let repeatedEventsResult: WebcalEventEntity[] = [];
 
   forEach(repeatedEvents, (event) => {
@@ -203,54 +149,6 @@ export const getWebcalEvents = async (
   });
 
   result = [...result, ...normalEvents, ...repeatedEventsResult];
-
-  // find and filter duplicates from exceptions in repeated events
-  // const usedExternalIDs: any = {};
-  // forEach(result, (item: any) => {
-  //   usedExternalIDs[item.externalID] = usedExternalIDs[item.externalID]
-  //     ? (usedExternalIDs[item.externalID] = [
-  //         ...usedExternalIDs[item.externalID],
-  //         ...[
-  //           {
-  //             id: item.id,
-  //             sequence: item.sequence,
-  //             isRepeated: item.isRepeated
-  //           }
-  //         ]
-  //       ])
-  //     : [{ id: item.id, sequence: item.sequence, isRepeated: item.isRepeated }];
-  // });
-  //
-  // let sortedResult;
-  // forEach(usedExternalIDs, (items, key) => {
-  //   // found duplicate
-  //   if (items.length > 1) {
-  //     // find which to keep
-  //     // todo check
-  //     sortedResult = items.sort((a: any, b: any) => {
-  //       if (a.isRepeated && !b.isRepeated) {
-  //         return 1;
-  //       } else if (!a.isRepeated && !b.isRepeated) {
-  //         if (a.sequence > b.sequence) {
-  //           return -1;
-  //         }
-  //       } else {
-  //         return -1;
-  //       }
-  //     });
-  //   }
-  // });
-  //
-  // // filter duplicates from result
-  // const idsToRemove: string[] = map(sortedResult, item => item.id)?.slice(1);
-  //
-  // if (idsToRemove && idsToRemove.length > 0) {
-  //   result = filter(result, (item: any) => {
-  //     if (!idsToRemove.includes(item.id)) {
-  //       return item;
-  //     }
-  //   });
-  // }
 
   return map(result, (event) => ({
     id: event.id,

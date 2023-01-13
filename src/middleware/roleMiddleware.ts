@@ -14,7 +14,7 @@ dotenv.config();
 export const roleMiddleware = (
   roles: USER_ROLE[]
 ): ((req: Request, res: Response, next: NextFunction) => any) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
       const userRole: string = req.session?.[SESSION.ROLE] || res.locals.role;
 
@@ -25,6 +25,7 @@ export const roleMiddleware = (
       let isAllowed = false;
 
       forEach(roles, (role) => {
+        // @ts-ignore
         if (role === userRole) {
           isAllowed = true;
         }

@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import { DateTime } from 'luxon';
+import { datetimeColumnType } from '../../utils/constants';
 import CalDavEventAlarmEntity from './CalDavEventAlarmEntity';
 import WebcalEventEntity from './WebcalEventEntity';
 
@@ -35,13 +36,13 @@ export default class ReminderEntity {
   @Column({ default: 0 })
   attempt: number;
 
-  @Column({ type: 'timestamptz', name: 'send_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'send_at', nullable: true })
   sendAt: Date;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
   @ManyToOne(

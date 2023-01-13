@@ -1,5 +1,4 @@
 import { Connection, createConnection, getConnection } from 'typeorm';
-
 import { createORMConfig } from '../../config/ormconfig';
 
 export const dropDatabase = async () => {

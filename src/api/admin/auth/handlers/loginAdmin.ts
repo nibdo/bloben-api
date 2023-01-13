@@ -9,7 +9,7 @@ import {
 import { throwError } from '../../../../utils/errorCodes';
 import UserEntity from '../../../../data/entity/UserEntity';
 import UserRepository from '../../../../data/repository/UserRepository';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import logger from '../../../../utils/logger';
 
 export const loginAdmin = async (req: Request): Promise<any> => {

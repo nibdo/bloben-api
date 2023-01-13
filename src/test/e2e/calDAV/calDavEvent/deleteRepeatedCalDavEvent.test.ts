@@ -7,9 +7,11 @@ import {
   formatIcalStringDates,
 } from '../calDavServerTestHelper';
 import { createE2ETestServerWithSession } from '../../../testHelpers/initE2ETestServer';
-import { createTestCalendarCalendar } from '../../../testHelpers/calDavServerTestHelper';
-import { invalidUUID } from '../../../testHelpers/common';
-import { seedUsersE2E } from '../../seeds/user-caldav-seed';
+import {
+  createE2EUserWithCalendars,
+  invalidUUID,
+} from '../../../testHelpers/common';
+import { parseToJSON } from '../../../../utils/common';
 import { syncCalDavQueueJob } from '../../../../jobs/queueJobs/syncCalDavQueueJob';
 import { v4 } from 'uuid';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
@@ -23,21 +25,22 @@ const PATH = '/api/app/v1/caldav-events/repeated';
 
 const createBody = (body: DeleteRepeatedCalDavEventRequest) => body;
 
-const getSyncedEvents = async (userID: string, remoteID: string) => {
+const getSyncedEvents = async (
+  userID: string,
+  remoteID: string,
+  calendarID: string
+) => {
   await syncCalDavQueueJob({ data: { userID } } as any);
 
   return CalDavEventRepository.getRepository().find({
     where: {
       externalID: remoteID,
+      calendarID,
     },
   });
 };
 
 describe(`[E2E] Delete calDav event repeated [DELETE] ${PATH}`, async function () {
-  let eventData;
-  let calendarID;
-  let accountID;
-
   const baseDateTime = DateTime.now()
     .set({
       hour: 14,
@@ -47,24 +50,9 @@ describe(`[E2E] Delete calDav event repeated [DELETE] ${PATH}`, async function (
     })
     .toUTC();
 
-  let userID;
-  beforeEach(async () => {
-    const { userData } = await seedUsersE2E();
-    userID = userData.user.id;
-    const calDavCalendar = await createTestCalendarCalendar(
-      userData.user.id,
-      userData.calDavAccount
-    );
-    eventData = await createRepeatedTestCalDavEvent(
-      userData.user.id,
-      userData.calDavAccount,
-      calDavCalendar.id,
-      baseDateTime
-    );
-    calendarID = calDavCalendar.id;
-  });
-
   it('Should get status 404', async function () {
+    const { userID, eventData } = await createE2EUserWithCalendars(true);
+
     const body = createBody(
       createDeleteRepeatedEventBodyJSON(
         invalidUUID,
@@ -85,6 +73,10 @@ describe(`[E2E] Delete calDav event repeated [DELETE] ${PATH}`, async function (
   });
 
   it('Should get status 200 delete all', async function () {
+    const { userID, eventData, calendarID } = await createE2EUserWithCalendars(
+      true
+    );
+
     const body = createBody(
       createDeleteRepeatedEventBodyJSON(
         calendarID,
@@ -104,7 +96,11 @@ describe(`[E2E] Delete calDav event repeated [DELETE] ${PATH}`, async function (
 
     assert.equal(status, 200);
 
-    const events = await getSyncedEvents(userID, eventData.remoteID);
+    const events = await getSyncedEvents(
+      userID,
+      eventData.remoteID,
+      calendarID
+    );
 
     assert.equal(events.length, 0);
   });
@@ -153,6 +149,9 @@ SEQUENCE:0
 END:VEVENT
 END:VCALENDAR`;
 
+    const { userID, accountID, calendarID } =
+      await createE2EUserWithCalendars();
+
     const eventDataCustom = await createRepeatedTestCalDavEvent(
       userID,
       accountID,
@@ -186,13 +185,17 @@ END:VCALENDAR`;
     assert.equal(status, 200);
 
     // trigger sync
-    const events = await getSyncedEvents(userID, eventDataCustom.remoteID);
+    const events = await getSyncedEvents(
+      userID,
+      eventDataCustom.remoteID,
+      calendarID
+    );
 
     const baseEvent = events[0];
 
     assert.equal(events.length, 1);
     assert.notEqual(baseEvent.rRule, null);
-    assert.equal(baseEvent.exdates.length, 2);
+    assert.equal(parseToJSON(baseEvent.exdates).length, 2);
   });
 
   it('Should get status 200 delete one occurrence', async function () {
@@ -216,6 +219,9 @@ SEQUENCE:0
 RRULE:FREQ=DAILY;INTERVAL=1
 END:VEVENT
 END:VCALENDAR`;
+
+    const { userID, accountID, calendarID } =
+      await createE2EUserWithCalendars();
 
     const eventDataCustom = await createRepeatedTestCalDavEvent(
       userID,
@@ -257,22 +263,26 @@ END:VCALENDAR`;
     assert.equal(status, 200);
 
     // trigger sync
-    const events = await getSyncedEvents(userID, eventDataCustom.remoteID);
+    const events = await getSyncedEvents(
+      userID,
+      eventDataCustom.remoteID,
+      calendarID
+    );
 
     const baseEvent = events[0];
 
     assert.equal(events.length, 1);
     assert.notEqual(baseEvent.rRule, null);
-    assert.equal(baseEvent.exdates.length, 2);
+    assert.equal(parseToJSON(baseEvent.exdates).length, 2);
     assert.equal(
-      JSON.stringify(baseEvent.exdates[0]),
+      JSON.stringify(parseToJSON(baseEvent.exdates)[0]),
       JSON.stringify({
         value: formatIcalStringDates(baseDateTime.plus({ day: 5 })).startAt,
         timezone: 'Europe/Berlin',
       })
     );
     assert.equal(
-      JSON.stringify(baseEvent.exdates[1]),
+      JSON.stringify(parseToJSON(baseEvent.exdates)[1]),
       JSON.stringify({
         value: formatIcalStringDates(baseDateTime.plus({ day: 6 })).startAt,
         timezone: 'Europe/Berlin',

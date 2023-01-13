@@ -1,18 +1,20 @@
 import { Request, Response } from 'express';
 
+import { CommonResponse } from 'bloben-interface';
 import {
-  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse } from 'bloben-interface';
-import { calDavSyncBullQueue } from '../../../../service/BullQueue';
+import {
+  QueueClient,
+  electronService,
+  socketService,
+} from '../../../../service/init';
 import { createCommonResponse } from '../../../../utils/common';
 import { deleteObject } from 'tsdav';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
-import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavCalendarRepository from '../../../../data/repository/CalDavCalendarRepository';
 import UserEmailConfigRepository from '../../../../data/repository/UserEmailConfigRepository';
@@ -61,12 +63,14 @@ export const deleteCalDavCalendar = async (
 
   await CalDavCalendarRepository.getRepository().delete(id);
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
+  await electronService.processWidgetFile();
 
-  await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
+  await QueueClient.syncCalDav(userID);
 
   return createCommonResponse('CalDav calendar deleted');
 };

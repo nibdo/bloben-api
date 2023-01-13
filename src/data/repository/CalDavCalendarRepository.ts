@@ -73,11 +73,11 @@ export default class CalDavCalendarRepository extends Repository<CalDavCalendarE
       WHERE
         cc.id = $1
         AND ca.user_id = $2
-        AND $3 = ANY (cc.components)
+        AND cc.components LIKE $3
         AND ca.deleted_at IS NULL
         AND cc.deleted_at IS NULL;
     `,
-      [id, userID, component]
+      [id, userID, `%${component}%`]
     );
 
     return getOneResult(result);

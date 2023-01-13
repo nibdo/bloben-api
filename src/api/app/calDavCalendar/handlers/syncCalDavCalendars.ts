@@ -19,7 +19,7 @@ import { fetchCalendars } from 'tsdav';
 import { find, forEach } from 'lodash';
 import { formatCalendarResponse } from './getCalDavCalendars';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
-import { io } from '../../../../app';
+import { socketService } from '../../../../service/init';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
 import CalDavCalendarEntity from '../../../../data/entity/CalDavCalendar';
@@ -92,30 +92,36 @@ export const getRemoteCalDavCalendars = async (userID: string) => {
 
       const newCalendars: any = await Promise.all(newCalendarsPromises);
       forEach(newCalendars, (newCalendar: any) => {
-        io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+        socketService.emit(
+          JSON.stringify(
+            createSocketCrudMsg(
+              newCalendar.id,
+              new Date().toISOString(),
+              SOCKET_CRUD_ACTION.CREATE,
+              SOCKET_APP_TYPE.CALENDAR,
+              formatCalendarResponse(newCalendar, calDavAccount)
+            )
+          ),
           SOCKET_CHANNEL.SYNC,
-          createSocketCrudMsg(
-            newCalendar.id,
-            new Date().toISOString(),
-            SOCKET_CRUD_ACTION.CREATE,
-            SOCKET_APP_TYPE.CALENDAR,
-            formatCalendarResponse(newCalendar, calDavAccount)
-          )
+          `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
         );
       });
       const updateCalendars: GetCalDavCalendar[] = await Promise.all(
         updateCalendarsPromises
       );
       forEach(updateCalendars, (updateCalendar: any) => {
-        io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
-          SOCKET_CHANNEL.CALENDAR,
-          createSocketCrudMsg(
-            updateCalendar.id,
-            new Date().toISOString(),
-            SOCKET_CRUD_ACTION.UPDATE,
-            SOCKET_APP_TYPE.CALENDAR,
-            updateCalendar
-          )
+        socketService.emit(
+          JSON.stringify(
+            createSocketCrudMsg(
+              updateCalendar.id,
+              new Date().toISOString(),
+              SOCKET_CRUD_ACTION.UPDATE,
+              SOCKET_APP_TYPE.CALENDAR,
+              updateCalendar
+            )
+          ),
+          SOCKET_CHANNEL.SYNC,
+          `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
         );
       });
 
@@ -143,14 +149,17 @@ export const getRemoteCalDavCalendars = async (userID: string) => {
 
       await Promise.all(promisesToDelete);
       forEach(idsToDelete, (id: string) => {
-        io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+        socketService.emit(
+          JSON.stringify(
+            createSocketCrudMsg(
+              id,
+              new Date().toISOString(),
+              SOCKET_CRUD_ACTION.DELETE,
+              SOCKET_APP_TYPE.CALENDAR
+            )
+          ),
           SOCKET_CHANNEL.CALENDAR,
-          createSocketCrudMsg(
-            id,
-            new Date().toISOString(),
-            SOCKET_CRUD_ACTION.DELETE,
-            SOCKET_APP_TYPE.CALENDAR
-          )
+          `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
         );
       });
 

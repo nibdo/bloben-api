@@ -1,19 +1,17 @@
+import { CommonResponse, CreateCalDavCalendarRequest } from 'bloben-interface';
+import { DAVNamespaceShort, makeCalendar } from 'tsdav';
 import {
-  BULL_QUEUE,
   LOG_TAG,
   SOCKET_CHANNEL,
   SOCKET_MSG_TYPE,
   SOCKET_ROOM_NAMESPACE,
 } from '../../../../utils/enums';
-import { CommonResponse, CreateCalDavCalendarRequest } from 'bloben-interface';
-import { DAVNamespaceShort, makeCalendar } from 'tsdav';
+import { QueueClient, socketService } from '../../../../service/init';
 import { Request, Response } from 'express';
-import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
 import { fetch } from 'cross-fetch';
 import { forEach } from 'lodash';
 import { getDavRequestData } from '../../../../utils/davAccountHelper';
-import { io } from '../../../../app';
 import { throwError } from '../../../../utils/errorCodes';
 import { v4 } from 'uuid';
 import CalDavAccountRepository from '../../../../data/repository/CalDavAccountRepository';
@@ -126,12 +124,13 @@ export const createCalDavCalendar = async (
     }
   }
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_CALENDARS })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
 
-  await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
+  await QueueClient.syncCalDav(userID);
 
   return createCommonResponse('CalDav calendar created', { remoteID });
 };

@@ -56,10 +56,10 @@ export const seedCalDavCalendars = async (
     newCalendar.calDavAccount = newAccount;
     newCalendar.displayName = 'default';
     newCalendar.data = JSON.stringify({ displayName: 'default' });
-    newCalendar.components = [
+    newCalendar.components = JSON.stringify([
       CALDAV_COMPONENTS.VEVENT,
       CALDAV_COMPONENTS.VTODO,
-    ];
+    ]);
 
     calDavAccounts.push(newAccount);
     calDavCalendars.push(newCalendar);

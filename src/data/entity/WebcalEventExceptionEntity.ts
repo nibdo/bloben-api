@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DateTimeObject, EventJSON } from 'ical-js-parser';
+import { datetimeColumnType } from '../../utils/constants';
 import { formatDate } from './CalDavEventExceptionEntity';
 import WebcalCalendarEntity from './WebcalCalendarEntity';
 
@@ -14,7 +15,7 @@ export default class WebcalEventExceptionEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'timestamptz', name: 'exception_date', nullable: true }) // original date
+  @Column({ type: datetimeColumnType, name: 'exception_date', nullable: true }) // original date
   exceptionDate: Date;
 
   @Column({ name: 'exception_timezone', nullable: true })

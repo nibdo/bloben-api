@@ -9,6 +9,8 @@ import {
 } from 'typeorm';
 
 import { ParsedContact } from '../../utils/davHelper';
+import { datetimeColumnType } from '../../utils/constants';
+import { parseJSON } from '../../utils/common';
 import CardDavAddressBook from './CardDavAddressBook';
 
 @Entity('carddav_contacts')
@@ -25,8 +27,8 @@ export default class CardDavContact {
   // @Column({ name: 'nick_name', nullable: true })
   // nickName: string;
 
-  @Column({ type: 'text', name: 'emails', nullable: true, array: true })
-  emails: string[];
+  @Column({ type: 'text', name: 'emails', nullable: true })
+  emails: string;
 
   @Column({ nullable: true })
   url: string;
@@ -37,13 +39,13 @@ export default class CardDavContact {
   @Column({ name: 'external_id', nullable: false })
   externalID: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: datetimeColumnType, name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @UpdateDateColumn({ type: datetimeColumnType, name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ type: datetimeColumnType, name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @Column({ type: 'uuid', name: 'carddav_address_book_id' })
@@ -61,7 +63,7 @@ export default class CardDavContact {
       this.url = item.url;
       this.etag = item.etag;
       this.fullName = item.data?.fullName;
-      this.emails = item.data?.emails;
+      this.emails = parseJSON(item.data?.emails);
       this.externalID = item.data?.externalID;
 
       this.cardDavAddressBookID = addressBookID;

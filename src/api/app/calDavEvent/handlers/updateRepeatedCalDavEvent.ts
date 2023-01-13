@@ -1,25 +1,26 @@
 import { Request, Response } from 'express';
 
 import {
-  BULL_QUEUE,
-  LOG_TAG,
-  SOCKET_CHANNEL,
-  SOCKET_MSG_TYPE,
-  SOCKET_ROOM_NAMESPACE,
-} from '../../../../utils/enums';
-import { CalDavEventObj } from '../../../../utils/davHelper';
-import {
   CommonResponse,
   EventResult,
   UpdateRepeatedCalDavEventRequest,
 } from 'bloben-interface';
 import { DavService } from '../../../../service/davService';
 import { InviteService } from '../../../../service/InviteService';
+import {
+  LOG_TAG,
+  SOCKET_CHANNEL,
+  SOCKET_MSG_TYPE,
+  SOCKET_ROOM_NAMESPACE,
+} from '../../../../utils/enums';
 import { REPEATED_EVENT_CHANGE_TYPE } from '../../../../data/types/enums';
-import { calDavSyncBullQueue } from '../../../../service/BullQueue';
 import { createCommonResponse } from '../../../../utils/common';
 
-import { io } from '../../../../app';
+import {
+  QueueClient,
+  electronService,
+  socketService,
+} from '../../../../service/init';
 import { throwError } from '../../../../utils/errorCodes';
 import CalDavEventExceptionRepository from '../../../../data/repository/CalDavEventExceptionRepository';
 import CalDavEventRepository, {
@@ -27,52 +28,6 @@ import CalDavEventRepository, {
 } from '../../../../data/repository/CalDavEventRepository';
 import ICalHelperV2 from '../../../../utils/ICalHelperV2';
 import logger from '../../../../utils/logger';
-
-export interface RepeatEventUpdateResult {
-  response: Response;
-}
-
-export const createICalStringMultiEventForAttendees = (
-  data: CalDavEventObj[]
-) => {
-  if (data[0]?.attendees?.length) {
-    return new ICalHelperV2(data).parseTo();
-  }
-};
-export const createICalStringForAttendees = (data: CalDavEventObj) => {
-  if (data?.attendees?.length) {
-    return new ICalHelperV2([data]).parseTo();
-  }
-};
-
-export const eventResultToCalDavEventObj = (
-  eventResult: EventResult,
-  href?: string
-): CalDavEventObj => {
-  return {
-    externalID: eventResult.externalID,
-    calendarID: eventResult.calendarID,
-    startAt: eventResult.startAt,
-    endAt: eventResult.endAt,
-    timezone: eventResult.timezoneStartAt,
-    timezoneEnd: eventResult.timezoneEndAt || eventResult.timezoneStartAt,
-    isRepeated: eventResult.isRepeated,
-    summary: eventResult.summary,
-    location: eventResult.location,
-    description: eventResult.description,
-    etag: eventResult.etag,
-    color: eventResult.color,
-    recurrenceID: eventResult.recurrenceID,
-    // @ts-ignore
-    organizer: eventResult?.organizer,
-    alarms: eventResult?.valarms || [],
-    attendees: eventResult?.attendees || [],
-    exdates: eventResult?.exdates || [],
-    rRule: eventResult.rRule,
-    href: href,
-    type: eventResult.type,
-  };
-};
 
 const handleSingleEventChange = async (
   prevEvent: CalDavEventsRaw,
@@ -265,12 +220,14 @@ export const updateRepeatedCalDavEvent = async (
     throw throwError(409, `Cannot create event: ${result.response.statusText}`);
   }
 
-  io.to(`${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`).emit(
+  socketService.emit(
+    JSON.stringify({ type: SOCKET_MSG_TYPE.CALDAV_EVENTS }),
     SOCKET_CHANNEL.SYNC,
-    JSON.stringify({ type: SOCKET_MSG_TYPE.SYNCING, value: true })
+    `${SOCKET_ROOM_NAMESPACE.USER_ID}${userID}`
   );
+  await electronService.processWidgetFile();
 
-  await calDavSyncBullQueue.add(BULL_QUEUE.CALDAV_SYNC, { userID });
+  await QueueClient.syncCalDav(userID);
 
   return createCommonResponse('Event updated', {});
 };

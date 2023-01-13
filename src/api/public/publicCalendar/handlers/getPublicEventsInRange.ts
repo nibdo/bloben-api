@@ -2,12 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 
 import { DateTime } from 'luxon';
 import { EventResult } from 'bloben-interface';
+import { MemoryClient } from '../../../../service/init';
 import { REDIS_PREFIX } from '../../../../utils/enums';
 import { formatEventRawToResult } from '../../../../utils/format';
 import { getRepeatedEvents } from '../../../app/event/helpers/getRepeatedEvents';
 import { getSharedWebcalEvents } from '../../../app/event/helpers/getWebCalEvents';
 import { map } from 'lodash';
-import { redisClient } from '../../../../index';
 import CalDavEventRepository from '../../../../data/repository/CalDavEventRepository';
 import LuxonHelper from '../../../../utils/luxonHelper';
 import SharedLinkRepository from '../../../../data/repository/SharedLinkRepository';
@@ -33,7 +33,7 @@ export const getPublicEventsInRange = async (
     const { sharedLink } = res.locals;
     const { rangeFrom, rangeTo, isDark } = req.query as unknown as Query;
 
-    const cacheResponse = await redisClient.get(
+    const cacheResponse = await MemoryClient.get(
       `${REDIS_PREFIX.PUBLIC_EVENTS_CACHE}_${sharedLink.id}_${rangeFrom}_${rangeTo}`
     );
 
@@ -91,7 +91,7 @@ export const getPublicEventsInRange = async (
       ...webCalEvents,
     ];
 
-    await redisClient.set(
+    await MemoryClient.set(
       `${REDIS_PREFIX.PUBLIC_EVENTS_CACHE}_${sharedLink.id}_${rangeFrom}_${rangeTo}`,
       JSON.stringify(response),
       'EX',
