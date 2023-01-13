@@ -1121,6 +1121,10 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
 
   const promises: any = [];
 
+  const calendarSettings = await CalendarSettingsRepository.findByUserID(
+    calDavAccount.userID
+  );
+
   for (const item of serverAddressBooks) {
     const existingAddressBook =
       await CardDavAddressBookRepository.findByUserIdAndUrl(
@@ -1151,8 +1155,12 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
     }
   }
 
+  const idsToDelete = [];
+
   forEach(localBooksKeyed, (item) => {
     if (!serverBooksKeyed[item.url]) {
+      idsToDelete.push(item.id);
+
       promises.push(
         CardDavAddressBookRepository.getRepository().query(
           `
@@ -1163,6 +1171,12 @@ export const syncCardDav = async (calDavAccount: AccountWithAddressBooks) => {
       );
     }
   });
+
+  // reset calendar settings if address book will be deleted
+  if (idsToDelete.includes(calendarSettings.defaultAddressBookID)) {
+    calendarSettings.defaultAddressBookID = null;
+    await CalendarSettingsRepository.getRepository().save(calendarSettings);
+  }
 
   await Promise.all(promises);
 

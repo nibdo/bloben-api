@@ -3,6 +3,7 @@ import { Queue, Worker } from 'bullmq';
 import { calculateWebcalAlarms } from '../jobs/queueJobs/calculateWebcalAlarmsJob';
 import { createRedisConfig } from '../config/redis';
 import { isElectron } from '../config/env';
+import { isString } from 'lodash';
 import { processEmailEventJob } from '../jobs/queueJobs/processEmailEventJob';
 import { sendEmailQueueJob } from '../jobs/queueJobs/sendEmailQueueJob';
 import { syncCalDavQueueJob } from '../jobs/queueJobs/syncCalDavQueueJob';
@@ -30,14 +31,8 @@ const getConnection = () => {
 
   const config = createRedisConfig();
 
-  if (config.host && config.port) {
-    return {
-      host: config.host,
-      port: config.port,
-    };
-  } else {
+  if (isString(config)) {
     const url = new URL(config);
-
     if (url) {
       return {
         host: url.hostname,
@@ -46,6 +41,8 @@ const getConnection = () => {
         password: url.password,
       };
     }
+  } else {
+    return config;
   }
 };
 
