@@ -1,4 +1,4 @@
-import * as os from 'os';
+import { APP_DIR } from '../utils/constants';
 import { DateTime } from 'luxon';
 import { NODE_ENV } from '../utils/enums';
 import { ROLE } from '../data/types/enums';
@@ -10,7 +10,6 @@ import fs from 'fs';
 
 export class ElectronService {
   protected isElectron = false;
-  private dir = `${os.tmpdir()}/bloben_cache`;
   private fileName = 'widget.json';
 
   constructor(isElectron?: boolean) {
@@ -32,12 +31,21 @@ export class ElectronService {
     const user = await UserRepository.getRepository().findOne({
       where: { role: ROLE.USER },
     });
+
+    if (!user) {
+      return;
+    }
+
     const calendarSettings =
       await CalendarSettingsRepository.getRepository().findOne({
         where: {
           userID: user.id,
         },
       });
+
+    if (!calendarSettings) {
+      return;
+    }
 
     const date = DateTime.now().toUTC().toJSDate().toISOString();
 
@@ -82,6 +90,6 @@ export class ElectronService {
       }))
     );
 
-    await fs.writeFileSync(`${this.dir}/${this.fileName}`, file);
+    await fs.writeFileSync(`${APP_DIR}/${this.fileName}`, file);
   };
 }

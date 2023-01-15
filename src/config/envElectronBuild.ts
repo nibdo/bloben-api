@@ -1,3 +1,4 @@
+import { APP_DIR, SQLITE_DB_NAME } from '../utils/constants';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -54,8 +55,8 @@ export const loadEnv = (): Env => {
       password: undefined,
       type: 'sqlite',
       database: process.env.SNAP_USER_DATA
-        ? `${process.env.SNAP_USER_DATA}/data.sqlite`
-        : './data.sqlite',
+        ? `${process.env.SNAP_USER_DATA}/${SQLITE_DB_NAME}`
+        : `${APP_DIR}/${SQLITE_DB_NAME}`,
       synchronize: false,
       logging: false,
       entities: __dirname + '/../data/entity/*.js',

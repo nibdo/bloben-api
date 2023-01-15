@@ -1,3 +1,4 @@
+import { APP_DIR, SQLITE_DB_NAME } from '../utils/constants';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -53,7 +54,7 @@ export const loadEnv = (): Env => {
       username: undefined,
       password: undefined,
       type: 'sqlite',
-      database: './data.sqlite',
+      database: `${APP_DIR}/${SQLITE_DB_NAME}`,
       synchronize: false,
       logging: false,
       entities: './src/data/entity/*.ts',
