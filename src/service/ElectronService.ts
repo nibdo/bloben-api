@@ -70,6 +70,10 @@ export class ElectronService {
       false
     );
 
+    if (!result?.length) {
+      return;
+    }
+
     const file = JSON.stringify(
       sortBy(result, 'startAt').map((item) => ({
         id: item.id,
@@ -90,6 +94,11 @@ export class ElectronService {
       }))
     );
 
-    await fs.writeFileSync(`${APP_DIR}/${this.fileName}`, file);
+    await fs.writeFileSync(
+      `${
+        process.env.SNAP_USER_DATA ? `${process.env.SNAP_USER_DATA}` : APP_DIR
+      }/${this.fileName}`,
+      file
+    );
   };
 }
