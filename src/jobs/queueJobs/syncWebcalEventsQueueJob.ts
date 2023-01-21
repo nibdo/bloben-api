@@ -27,6 +27,7 @@ import logger, { groupLogs } from '../../utils/logger';
 
 interface WebcalCalendar {
   id: string;
+  name: string;
   url: string;
   userID: string;
   updatedAt: string;
@@ -41,6 +42,7 @@ export const getWebcalendarsForSync = (data?: {
     `
             SELECT 
                 wc.id as id, 
+                wc.name as name,
                 wc.url as url, 
                 wc.user_id as "userID",
                 wc.attempt as "attempt",
@@ -98,9 +100,9 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
         let connection: Connection | null;
         let queryRunner: QueryRunner | null;
         try {
-          await groupLogs(
-            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
-            `Checking webcal calendar with id: ${webcalCalendar.id}`
+          logger.info(
+            `Fetching webcal calendar with id: ${webcalCalendar.id} and name: ${webcalCalendar.name}`,
+            [LOG_TAG.CRON, LOG_TAG.WEBCAL]
           );
 
           // get file
@@ -124,9 +126,9 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             );
           }
 
-          await groupLogs(
-            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
-            `Deleting previous records for webcal calendar ${webcalCalendar.id}`
+          logger.info(
+            `Deleting previous records for webcal calendar ${webcalCalendar.id}`,
+            [LOG_TAG.CRON, LOG_TAG.WEBCAL]
           );
           // delete previous records
           await queryRunner.manager.query(deleteWebcalEventsExceptionsSql, [
@@ -136,9 +138,9 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             webcalCalendar.id,
           ]);
 
-          await groupLogs(
-            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
-            `Deleted previous records for webcal calendar ${webcalCalendar.id}`
+          logger.info(
+            `Deleted previous records for webcal calendar ${webcalCalendar.id}`,
+            [LOG_TAG.CRON, LOG_TAG.WEBCAL]
           );
 
           // recreate records
@@ -213,10 +215,10 @@ export const syncWebcalEventsQueueJob = async (job?: Job) => {
             `${SOCKET_ROOM_NAMESPACE.USER_ID}${webcalCalendar.userID}`
           );
 
-          await groupLogs(
-            GROUP_LOG_KEY.WEBCAL_SYNC_JOB,
-            `Webcal update job done for ${webcalCalendar.id}`
-          );
+          logger.info(`Webcal update job done for ${webcalCalendar.id}`, [
+            LOG_TAG.CRON,
+            LOG_TAG.WEBCAL,
+          ]);
         } catch (e) {
           if (queryRunner) {
             await queryRunner.rollbackTransaction();

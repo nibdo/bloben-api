@@ -27,7 +27,7 @@ RUN npm run build-electron
 
 RUN mkdir /usr/app/electron
 
-RUN cp -r ./* /usr/app/electron
+RUN cp -r /usr/app/source/* /usr/app/electron
 
 ENV NODE_ENV production
 
