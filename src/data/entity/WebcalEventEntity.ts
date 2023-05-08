@@ -141,7 +141,7 @@ export default class WebcalEventEntity {
       })) as any;
       this.description = data.description;
       this.location = data.location;
-      this.updatedAt = DateTime.fromISO(data.lastModified?.value)
+      this.updatedAt = (!data.lastModified?.value ? DateTime.now() : DateTime.fromISO(data.lastModified?.value))
         .toUTC()
         .toJSDate();
       this.sequence = Number(data.sequence);
